@@ -1,119 +1,198 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { db } from "./firebase/config";
+import './App.css';
+import type {
+    Venue,
+    NewVenue,
+    Promoter,
+    VenuePromoter,
+    VenueWithPromoters,
+} from "./types/venue";
+import VenueCard from "./components/VenueCard";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function Venues() {
+    const [venues, setVenues] = useState<VenueWithPromoters[]>([]);
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    // Form inputs
+    const [newVenue, setNewVenue] = useState<NewVenue>({
+        name: "",
+        city: "",
+        website: "",
+        instagram: "",
+        facebook: "",
+    });
+
+    async function loadVenues() {
+        try {
+            // Get all three collections at the same time
+            const [
+                venuesSnapshot,
+                promotersSnapshot,
+                venuePromotersSnapshot,
+            ] = await Promise.all([
+                getDocs(collection(db, "venues")),
+                getDocs(collection(db, "promoters")),
+                getDocs(collection(db, "venue-promoters")),
+            ]);
+
+            // Get all venues
+            const venuesData: Venue[] = venuesSnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            })) as Venue[];
+
+            // Get all promoters
+            const promotersData: Promoter[] = promotersSnapshot.docs.map(
+                (doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })
+            ) as Promoter[];
+
+            // Get all venue/promoter relationships
+            const relationships: VenuePromoter[] =
+                venuePromotersSnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as VenuePromoter[];
+
+            // Add promoters to each venue
+            const venuesWithPromoters: VenueWithPromoters[] =
+                venuesData.map((venue) => {
+                    const venueRelationships = relationships.filter(
+                        (relationship) => relationship.venueId === venue.id
+                    );
+
+                    const promoterIds = venueRelationships.map(
+                        (relationship) => relationship.promoterId
+                    );
+
+                    const promoters = promotersData.filter((promoter) =>
+                        promoterIds.includes(promoter.id)
+                    );
+
+                    return {
+                        ...venue,
+                        promoters,
+                    };
+                });
+
+            setVenues(venuesWithPromoters);
+        } catch (error) {
+            console.error("Error loading venues:", error);
+        }
+    }
+
+    useEffect(() => {
+        loadVenues();
+    }, []);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setNewVenue({
+            ...newVenue,
+            [e.target.name]: e.target.value,
+        });
+    }
+
+    async function addVenue(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+
+        try {
+            await addDoc(collection(db, "venues"), newVenue);
+
+            // Get the updated venues from Firebase
+            await loadVenues();
+
+            // Clear the form
+            setNewVenue({
+                name: "",
+                city: "",
+                website: "",
+                instagram: "",
+                facebook: "",
+            });
+        } catch (error) {
+            console.error("Error adding venue:", error);
+        }
+    }
+
+    return (
         <div>
-          <h1>Venmoter</h1>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+            <div className="venues-title"><h1>Venues</h1></div>
 
-      <div className="ticks"></div>
+            <div className="venues">
+                {venues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                ))}
+            </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <hr />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <div className="add-venue-form">
+                <h2>Add Venue</h2>
+
+                <form onSubmit={addVenue}>
+                    <div>
+                        <label htmlFor="venueName">Name</label>
+                        <input
+                            id="venueName"
+                            name="name"
+                            type="text"
+                            value={newVenue.name}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="venueCity">City</label>
+                        <input
+                            id="venueCity"
+                            name="city"
+                            type="text"
+                            value={newVenue.city}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="venueWebsite">Website</label>
+                        <input
+                            id="venueWebsite"
+                            name="website"
+                            type="text"
+                            value={newVenue.website}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="venueInstagram">Instagram</label>
+                        <input
+                            id="venueInstagram"
+                            name="instagram"
+                            type="text"
+                            value={newVenue.instagram}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="venueFacebook">Facebook</label>
+                        <input
+                            id="venueFacebook"
+                            name="facebook"
+                            type="text"
+                            value={newVenue.facebook}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+        </div>
+    );
+
 }
-
-export default App
