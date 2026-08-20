@@ -1,9 +1,9 @@
 import { useRef, useState, forwardRef, useImperativeHandle } from "react";
-import type { NewVenue } from "../types/venue";
-import "./AddVenueModal.css";
+import type { NewVenue, Venue } from "../types/venue";
+import "./VenueFormModal.css";
 
-type AddVenueModalProps = {
-    onSubmit: (venue: NewVenue) => Promise<void>;
+type VenueFormModalProps = {
+    onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
 };
 
 const emptyVenue: NewVenue = {
@@ -14,25 +14,43 @@ const emptyVenue: NewVenue = {
     facebook: "",
 };
 
-export type AddVenueModalHandle = {
-    close: () => void;
+function toFormValues(venue: Venue): NewVenue {
+    return {
+        name: venue.name,
+        city: venue.city,
+        website: venue.website,
+        instagram: venue.instagram ?? "",
+        facebook: venue.facebook ?? "",
+    };
+}
+
+export type VenueFormModalHandle = {
+    open: (venue?: Venue) => void;
 };
 
-const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
-    function AddVenueModal({ onSubmit }, ref) {
+const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
+    function VenueFormModal({ onSubmit }, ref) {
         const modalRef = useRef<HTMLDialogElement>(null);
-        const [newVenue, setNewVenue] = useState<NewVenue>(emptyVenue);
+        const [formValues, setFormValues] = useState<NewVenue>(emptyVenue);
+        const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
+
+        useImperativeHandle(ref, () => ({
+            open(venue) {
+                setEditingVenueId(venue?.id ?? null);
+                setFormValues(venue ? toFormValues(venue) : emptyVenue);
+                modalRef.current?.showModal();
+            },
+        }));
 
         function closeModal() {
-            setNewVenue(emptyVenue);
+            setFormValues(emptyVenue);
+            setEditingVenueId(null);
             modalRef.current?.close();
         }
 
-        useImperativeHandle(ref, () => ({ close: closeModal }));
-
         function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-            setNewVenue({
-                ...newVenue,
+            setFormValues({
+                ...formValues,
                 [e.target.name]: e.target.value,
             });
         }
@@ -40,17 +58,19 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
         async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
             e.preventDefault();
             try {
-                await onSubmit(newVenue);
+                await onSubmit(formValues, editingVenueId);
                 closeModal();
             } catch (error) {
-                console.error("Error adding venue:", error);
+                console.error("Error saving venue:", error);
             }
         }
 
         return (
-            <dialog id="add-venue-modal" ref={modalRef}>
-                <div className="add-venue-form">
-                    <div className="add-venue-form-title">Add Venue</div>
+            <dialog id="venue-form-modal" ref={modalRef}>
+                <div className="venue-form">
+                    <div className="venue-form-title">
+                        {editingVenueId ? "Edit Venue" : "Add Venue"}
+                    </div>
                     <form onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="venueName">Name *</label>
@@ -59,7 +79,7 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
                                 name="name"
                                 type="text"
                                 required
-                                value={newVenue.name}
+                                value={formValues.name}
                                 onChange={handleChange}
                             />
                         </div>
@@ -70,7 +90,7 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
                                 id="venueCity"
                                 name="city"
                                 type="text"
-                                value={newVenue.city}
+                                value={formValues.city}
                                 onChange={handleChange}
                             />
                         </div>
@@ -81,7 +101,7 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
                                 id="venueWebsite"
                                 name="website"
                                 type="text"
-                                value={newVenue.website}
+                                value={formValues.website}
                                 onChange={handleChange}
                             />
                         </div>
@@ -92,7 +112,7 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
                                 id="venueInstagram"
                                 name="instagram"
                                 type="text"
-                                value={newVenue.instagram}
+                                value={formValues.instagram}
                                 onChange={handleChange}
                             />
                         </div>
@@ -103,7 +123,7 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
                                 id="venueFacebook"
                                 name="facebook"
                                 type="text"
-                                value={newVenue.facebook}
+                                value={formValues.facebook}
                                 onChange={handleChange}
                             />
                         </div>
@@ -119,4 +139,4 @@ const AddVenueModal = forwardRef<AddVenueModalHandle, AddVenueModalProps>(
     }
 );
 
-export default AddVenueModal;
+export default VenueFormModal;

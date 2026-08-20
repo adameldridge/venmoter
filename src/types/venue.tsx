@@ -23,10 +23,4 @@ export type VenueWithPromoters = Venue & {
   promoters: Promoter[];
 };
 
-export type NewVenue = {
-  name: string;
-  city: string;
-  website: string;
-  facebook?: string;
-  instagram?: string;
-};
+export type NewVenue = Omit<Venue, "id">;
