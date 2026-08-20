@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { collection, doc, getDocs, addDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase/config";
-import './App.css';
+import "./App.css";
 import type {
     Venue,
     NewVenue,
@@ -10,31 +10,24 @@ import type {
     VenueWithPromoters,
 } from "./types/venue";
 import VenueCard from "./components/VenueCard";
+import VenueFormModal from "./components/VenueFormModal";
+import type { VenueFormModalHandle } from "./components/VenueFormModal";
 
 export default function Venues() {
     const [venues, setVenues] = useState<VenueWithPromoters[]>([]);
-
-    // Form inputs
-    const [newVenue, setNewVenue] = useState<NewVenue>({
-        name: "",
-        city: "",
-        website: "",
-        instagram: "",
-        facebook: "",
-    });
+    const [cities, setCities] = useState<string[]>();
+    const [selectedCity, setSelectedCity] = useState("All");
+    const formModalRef = useRef<VenueFormModalHandle>(null);
 
     async function loadVenues() {
         try {
             // Get all three collections at the same time
-            const [
-                venuesSnapshot,
-                promotersSnapshot,
-                venuePromotersSnapshot,
-            ] = await Promise.all([
-                getDocs(collection(db, "venues")),
-                getDocs(collection(db, "promoters")),
-                getDocs(collection(db, "venue-promoters")),
-            ]);
+            const [venuesSnapshot, promotersSnapshot, venuePromotersSnapshot] =
+                await Promise.all([
+                    getDocs(collection(db, "venues")),
+                    getDocs(collection(db, "promoters")),
+                    getDocs(collection(db, "venue-promoters")),
+                ]);
 
             // Get all venues
             const venuesData: Venue[] = venuesSnapshot.docs.map((doc) => ({
@@ -43,11 +36,10 @@ export default function Venues() {
             })) as Venue[];
 
             // Get all promoters
-            const promotersData: Promoter[] = promotersSnapshot.docs.map(
-                (doc) => ({
+            const promotersData: Promoter[] = promotersSnapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
-                })
+                }),
             ) as Promoter[];
 
             // Get all venue/promoter relationships
@@ -57,142 +49,107 @@ export default function Venues() {
                     ...doc.data(),
                 })) as VenuePromoter[];
 
+            // Get unique list of cities
+            setCities(
+                ["All", ...new Set(venuesData.map(venue => venue.city))]
+            ); 
+
             // Add promoters to each venue
-            const venuesWithPromoters: VenueWithPromoters[] =
-                venuesData.map((venue) => {
-                    const venueRelationships = relationships.filter(
-                        (relationship) => relationship.venueId === venue.id
-                    );
+            setVenues(
+                buildVenuesWithPromoters(
+                    venuesData,
+                    promotersData,
+                    relationships,
+                ),
+            );
 
-                    const promoterIds = venueRelationships.map(
-                        (relationship) => relationship.promoterId
-                    );
-
-                    const promoters = promotersData.filter((promoter) =>
-                        promoterIds.includes(promoter.id)
-                    );
-
-                    return {
-                        ...venue,
-                        promoters,
-                    };
-                });
-
-            setVenues(venuesWithPromoters);
         } catch (error) {
             console.error("Error loading venues:", error);
         }
     }
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadVenues();
     }, []);
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setNewVenue({
-            ...newVenue,
-            [e.target.name]: e.target.value,
-        });
-    }
-
-    async function addVenue(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        try {
-            await addDoc(collection(db, "venues"), newVenue);
-
-            // Get the updated venues from Firebase
-            await loadVenues();
-
-            // Clear the form
-            setNewVenue({
-                name: "",
-                city: "",
-                website: "",
-                instagram: "",
-                facebook: "",
-            });
-        } catch (error) {
-            console.error("Error adding venue:", error);
+    async function saveVenue(venue: NewVenue, editingVenueId: string | null) {
+        if (editingVenueId) {
+            await updateDoc(doc(db, "venues", editingVenueId), venue);
+        } else {
+            await addDoc(collection(db, "venues"), venue);
         }
+        await loadVenues();
     }
+
+    function handleCityChange(e: React.ChangeEvent<HTMLSelectElement>) {
+        setSelectedCity(e.target.value);
+    }
+
+    const visibleVenues =
+        selectedCity === "All"
+            ? venues
+            : venues.filter((venue) => venue.city === selectedCity);
 
     return (
         <div>
-            <div className="venues-title"><h1>Venues</h1></div>
+            <div className="venues-header">
+                <div className="venues-title">Venues</div>
+                <button
+                    className="create-button"
+                    type="button"
+                    onClick={() => formModalRef.current?.open()}
+                >
+                    Add Venue
+                </button>
+
+                <select
+                    className="cities-select"
+                    value={selectedCity}
+                    onChange={handleCityChange}
+                >
+                    {cities?.map((city) =>(
+                        <option value={city} key={city}>{city}</option>
+                    ))}
+                </select>
+            </div>
 
             <div className="venues">
-                {venues.map((venue) => (
-                    <VenueCard key={venue.id} venue={venue} />
+                {visibleVenues.map((venue) => (
+                    <VenueCard
+                        key={venue.id}
+                        venue={venue}
+                        onEdit={() => formModalRef.current?.open(venue)}
+                    />
                 ))}
             </div>
 
-            <hr />
-
-            <div className="add-venue-form">
-                <h2>Add Venue</h2>
-
-                <form onSubmit={addVenue}>
-                    <div>
-                        <label htmlFor="venueName">Name</label>
-                        <input
-                            id="venueName"
-                            name="name"
-                            type="text"
-                            value={newVenue.name}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueCity">City</label>
-                        <input
-                            id="venueCity"
-                            name="city"
-                            type="text"
-                            value={newVenue.city}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueWebsite">Website</label>
-                        <input
-                            id="venueWebsite"
-                            name="website"
-                            type="text"
-                            value={newVenue.website}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueInstagram">Instagram</label>
-                        <input
-                            id="venueInstagram"
-                            name="instagram"
-                            type="text"
-                            value={newVenue.instagram}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueFacebook">Facebook</label>
-                        <input
-                            id="venueFacebook"
-                            name="facebook"
-                            type="text"
-                            value={newVenue.facebook}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-
-                    <button type="submit">Add</button>
-                </form>
-            </div>
+            <VenueFormModal ref={formModalRef} onSubmit={saveVenue} />
         </div>
     );
+}
 
+function buildVenuesWithPromoters(
+    venues: Venue[],
+    promoters: Promoter[],
+    relationships: VenuePromoter[],
+): VenueWithPromoters[] {
+    return venues.map((venue) => {
+        const venueRelationships = relationships.filter(
+            (relationship) => relationship.venueId === venue.id,
+        );
+
+        const promoterIds = venueRelationships.map(
+            (relationship) => relationship.promoterId,
+        );
+
+        const venuePromoters = promoters.filter((promoter) =>
+            promoterIds.includes(promoter.id),
+        );
+
+        return {
+            ...venue,
+            promoters: venuePromoters,
+        };
+    });
 }
