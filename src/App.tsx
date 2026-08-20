@@ -15,6 +15,8 @@ import type { VenueFormModalHandle } from "./components/VenueFormModal";
 
 export default function Venues() {
     const [venues, setVenues] = useState<VenueWithPromoters[]>([]);
+    const [cities, setCities] = useState<string[]>();
+    const [selectedCity, setSelectedCity] = useState("All");
     const formModalRef = useRef<VenueFormModalHandle>(null);
 
     async function loadVenues() {
@@ -47,6 +49,11 @@ export default function Venues() {
                     ...doc.data(),
                 })) as VenuePromoter[];
 
+            // Get unique list of cities
+            setCities(
+                ["All", ...new Set(venuesData.map(venue => venue.city))]
+            ); 
+
             // Add promoters to each venue
             setVenues(
                 buildVenuesWithPromoters(
@@ -55,6 +62,7 @@ export default function Venues() {
                     relationships,
                 ),
             );
+
         } catch (error) {
             console.error("Error loading venues:", error);
         }
@@ -74,6 +82,15 @@ export default function Venues() {
         await loadVenues();
     }
 
+    function handleCityChange(e: React.ChangeEvent<HTMLSelectElement>) {
+        setSelectedCity(e.target.value);
+    }
+
+    const visibleVenues =
+        selectedCity === "All"
+            ? venues
+            : venues.filter((venue) => venue.city === selectedCity);
+
     return (
         <div>
             <div className="venues-header">
@@ -85,10 +102,20 @@ export default function Venues() {
                 >
                     Add Venue
                 </button>
+
+                <select
+                    className="cities-select"
+                    value={selectedCity}
+                    onChange={handleCityChange}
+                >
+                    {cities?.map((city) =>(
+                        <option value={city} key={city}>{city}</option>
+                    ))}
+                </select>
             </div>
 
             <div className="venues">
-                {venues.map((venue) => (
+                {visibleVenues.map((venue) => (
                     <VenueCard
                         key={venue.id}
                         venue={venue}
