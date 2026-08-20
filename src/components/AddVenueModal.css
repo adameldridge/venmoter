@@ -1,0 +1,28 @@
+.add-venue-form{
+  width: 350px;
+
+  padding: 10px;
+}
+
+.add-venue-form-title{
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+
+.add-venue-form label {
+  display : block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.add-venue-form input{
+  display : block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 95%;
+}
+
+.add-venue-form button{
+    display: inline-block;
+    margin-right: 10px;
+}

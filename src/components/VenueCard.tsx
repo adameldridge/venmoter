@@ -12,9 +12,9 @@ export default function VenueCard({ venue }: VenueCardProps) {
             <div className="venue-card-title">{venue.name}</div>
             <div className="venue-card-city">{venue.city}</div>
             <div className="venue-card-social-icons">
-                <a href={venue.website} target="_blank"><FaLink /></a>
-                <a href={venue.instagram} target="_blank"><FaInstagram /></a>
-                <a href={venue.facebook} target="_blank"><FaFacebook /></a>
+                {venue.website ? (<a href={venue.website} target="_blank"><FaLink /></a>): ''}
+                {venue.instagram ? (<a href={venue.instagram} target="_blank"><FaInstagram /></a>): ''}
+                {venue.facebook ? (<a href={venue.facebook} target="_blank"><FaFacebook /></a>): ''}
             </div>
 
             <div className="venue-card-promoters">
