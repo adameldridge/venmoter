@@ -1,62 +1,60 @@
 import { forwardRef } from "react";
-import type { NewVenue, Venue } from "../types/venue";
+import type { NewPromoter, Promoter } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
 import "./FormModal.css";
 
-type VenueFormModalProps = {
-    onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
+type PromoterFormModalProps = {
+    onSubmit: (promoter: NewPromoter, editingPromoterId: string | null) => Promise<void>;
 };
 
-const emptyVenue: NewVenue = {
+const emptyPromoter: NewPromoter = {
     name: "",
-    city: "",
     website: "",
     instagram: "",
     facebook: "",
     email: "",
 };
 
-function toFormValues(venue: Venue): NewVenue {
+function toFormValues(promoter: Promoter): NewPromoter {
     return {
-        name: venue.name,
-        city: venue.city,
-        website: venue.website,
-        instagram: venue.instagram ?? "",
-        facebook: venue.facebook ?? "",
-        email: venue.email ?? "",
+        name: promoter.name,
+        website: promoter.website,
+        instagram: promoter.instagram ?? "",
+        facebook: promoter.facebook ?? "",
+        email: promoter.email ?? "",
     };
 }
 
-export type VenueFormModalHandle = EntityFormModalHandle<Venue>;
+export type PromoterFormModalHandle = EntityFormModalHandle<Promoter>;
 
-const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
-    function VenueFormModal({ onSubmit }, ref) {
+const PromoterFormModal = forwardRef<PromoterFormModalHandle, PromoterFormModalProps>(
+    function PromoterFormModal({ onSubmit }, ref) {
         const {
             modalRef,
             formValues,
-            editingId: editingVenueId,
+            editingId: editingPromoterId,
             isSaving,
             closeModal,
             handleChange,
             handleSubmit,
-        } = useEntityFormModal<Venue, NewVenue>(ref, {
-            emptyValues: emptyVenue,
+        } = useEntityFormModal<Promoter, NewPromoter>(ref, {
+            emptyValues: emptyPromoter,
             toFormValues,
             onSubmit,
         });
 
         return (
-            <dialog id="venue-form-modal" ref={modalRef}>
+            <dialog id="promoter-form-modal" ref={modalRef}>
                 <div className="entity-form">
                     <div className="entity-form-title">
-                        {editingVenueId ? "Edit Venue" : "Add Venue"}
+                        {editingPromoterId ? "Edit Promoter" : "Add Promoter"}
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="venueName">Name *</label>
+                            <label htmlFor="promoterName">Name *</label>
                             <input
-                                id="venueName"
+                                id="promoterName"
                                 name="name"
                                 type="text"
                                 required
@@ -66,20 +64,9 @@ const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
                         </div>
 
                         <div>
-                            <label htmlFor="venueCity">City *</label>
+                            <label htmlFor="promoterWebsite">Website</label>
                             <input
-                                id="venueCity"
-                                name="city"
-                                type="text"
-                                value={formValues.city}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="venueWebsite">Website</label>
-                            <input
-                                id="venueWebsite"
+                                id="promoterWebsite"
                                 name="website"
                                 type="text"
                                 value={formValues.website}
@@ -88,9 +75,9 @@ const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
                         </div>
 
                         <div>
-                            <label htmlFor="venueInstagram">Instagram</label>
+                            <label htmlFor="promoterInstagram">Instagram</label>
                             <input
-                                id="venueInstagram"
+                                id="promoterInstagram"
                                 name="instagram"
                                 type="text"
                                 value={formValues.instagram}
@@ -99,9 +86,9 @@ const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
                         </div>
 
                         <div>
-                            <label htmlFor="venueFacebook">Facebook</label>
+                            <label htmlFor="promoterFacebook">Facebook</label>
                             <input
-                                id="venueFacebook"
+                                id="promoterFacebook"
                                 name="facebook"
                                 type="text"
                                 value={formValues.facebook}
@@ -110,9 +97,9 @@ const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
                         </div>
 
                         <div>
-                            <label htmlFor="venueEmail">Email</label>
+                            <label htmlFor="promoterEmail">Email</label>
                             <input
-                                id="venueEmail"
+                                id="promoterEmail"
                                 name="email"
                                 type="email"
                                 value={formValues.email}
@@ -135,4 +122,4 @@ const VenueFormModal = forwardRef<VenueFormModalHandle, VenueFormModalProps>(
     }
 );
 
-export default VenueFormModal;
+export default PromoterFormModal;

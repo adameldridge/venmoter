@@ -8,7 +8,7 @@ const firebaseConfig = {
   storageBucket: "venmoter.firebasestorage.app",
   messagingSenderId: "190689019316",
   appId: "1:190689019316:web:73917dd1e8d5915fbadee1",
-  measurementId: "£G-6DW3JR0CCP",
+  measurementId: "G-6DW3JR0CCP",
 };
 
 const app = initializeApp(firebaseConfig);
