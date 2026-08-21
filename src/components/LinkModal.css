@@ -1,0 +1,43 @@
+.link-modal{
+  width: 350px;
+  padding: 10px;
+}
+
+.link-modal-title{
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+
+.link-modal-search{
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 95%;
+}
+
+.link-modal-list{
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
+.link-modal-option{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.link-modal-empty{
+  font-size: 12px;
+  padding: 10px 0;
+}
+
+.link-modal-actions button{
+    display: inline-block;
+    margin-right: 10px;
+}

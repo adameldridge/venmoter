@@ -1,0 +1,132 @@
+.entity-card{
+    border: 1px solid #fff;
+    border-radius: 5px;
+    padding: 15px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.entity-card-header{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.entity-card-title{
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.entity-card-edit-button{
+    background: none;
+    border: none;
+    padding: 2px;
+    margin: 0;
+    font-size: 14px;
+    color: #fff;
+    opacity: 0.7;
+}
+
+.entity-card-edit-button:hover{
+    opacity: 1;
+}
+
+.entity-card-city{
+    font-size: 14px;
+    margin-top: 5px;
+    opacity: 0.7;
+}
+
+
+.entity-card-social-icons{
+    margin-top: 15px;
+}
+
+.entity-card-social-icons a{
+    margin-right: 10px;
+    font-size: 18px;
+
+}
+
+.entity-card-relations{
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.entity-card-relations-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.entity-card-relations-title{
+    font-size: 14px;
+    font-weight:bold;
+}
+
+.entity-card-relations-empty{
+    font-size: 12px
+}
+
+.entity-card-chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.entity-card-chip{
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin: 0;
+    font-size: 12px;
+    color: #fff;
+}
+
+.entity-card-chip:hover{
+    opacity: 0.85;
+}
+
+.entity-card-chip-active{
+    background: #029742;
+    border-color: #029742;
+}
+
+.entity-card-chip-detail{
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 12px;
+}
+
+.entity-card-chip-detail-title{
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.entity-card-chip-detail-city{
+    margin-bottom: 8px;
+}
+
+.entity-card-chip-detail-icons{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.entity-card-chip-detail-icons a{
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.entity-card-chip-detail-relations{
+    margin-top: 10px;
+    opacity: 0.8;
+}

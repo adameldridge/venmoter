@@ -1,27 +1,27 @@
-.venue-form{
+.entity-form{
   width: 350px;
   padding: 10px;
 }
 
-.venue-form-title{
+.entity-form-title{
     font-size: 25px;
     margin-bottom: 20px;
 }
 
-.venue-form label {
+.entity-form label {
   display : block;
   margin-bottom: 5px;
   font-size: 14px;
 }
 
-.venue-form input{
+.entity-form input{
   display : block;
   margin-bottom: 10px;
   padding: 10px;
   width: 95%;
 }
 
-.venue-form button{
+.entity-form button{
     display: inline-block;
     margin-right: 10px;
 }
