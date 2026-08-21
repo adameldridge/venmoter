@@ -186,7 +186,6 @@ export default function App() {
             {activeTab === "venues" && (
                 <div>
                     <div className="venues-header">
-                        <div className="venues-title">Venues</div>
                         <button
                             className="create-button"
                             type="button"
@@ -232,7 +231,6 @@ export default function App() {
             {activeTab === "promoters" && (
                 <div>
                     <div className="venues-header">
-                        <div className="venues-title">Promoters</div>
                         <button
                             className="create-button"
                             type="button"
