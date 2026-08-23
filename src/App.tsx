@@ -21,6 +21,7 @@ import LinkModal from "./components/LinkModal";
 import type { LinkModalHandle } from "./components/LinkModal";
 import { Toaster, toast } from "sonner";
 import Spinner from "./components/Spinner";
+import { FaRegUser } from "react-icons/fa";
 
 type Tab = "venues" | "promoters";
 
@@ -175,6 +176,9 @@ export default function App() {
                 >
                     Promoters
                 </button>
+            </div>
+            <div className="login">
+                <FaRegUser onClick={}/>
             </div>
 
             {isInitialLoading ? (

@@ -14,6 +14,13 @@ a{
   gap: 5px;
 }
 
+.login{
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  font-size: 20px;
+}
+
 .tab-button{
   background: none;
   color: #fff;
