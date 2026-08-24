@@ -94,7 +94,9 @@ export default function App() {
         .filter((venue) => matchesSearch(venue.name))
         .sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
-    const visiblePromoters = promotersWithVenues.filter((promoter) => matchesSearch(promoter.name));
+    const visiblePromoters = promotersWithVenues
+        .filter((promoter) => matchesSearch(promoter.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
         <div>
