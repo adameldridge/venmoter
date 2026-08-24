@@ -9,9 +9,10 @@ type PromoterCardProps = {
     onEdit: () => void;
     onManageVenues: () => void;
     allVenues: VenueWithPromoters[];
+    canEdit: boolean;
 };
 
-export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenues }: PromoterCardProps) {
+export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenues, canEdit }: PromoterCardProps) {
     const [activeVenueId, setActiveVenueId] = useState<string | null>(null);
 
     function toggleActiveVenue(venueId: string) {
@@ -25,9 +26,11 @@ export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenu
         <div className="entity-card">
             <div className="entity-card-header">
                 <div className="entity-card-title">{promoter.name}</div>
-                <button className="entity-card-edit-button" type="button" onClick={onEdit} aria-label="Edit promoter">
-                    <FaPen />
-                </button>
+                {canEdit && (
+                    <button className="entity-card-edit-button" type="button" onClick={onEdit} aria-label="Edit promoter">
+                        <FaPen />
+                    </button>
+                )}
             </div>
             <SocialLinks
                 website={promoter.website}
@@ -39,14 +42,16 @@ export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenu
             <div className="entity-card-relations">
                 <div className="entity-card-relations-header">
                     <div className="entity-card-relations-title">Venues</div>
-                    <button
-                        className="entity-card-edit-button"
-                        type="button"
-                        onClick={onManageVenues}
-                        aria-label="Manage venues"
-                    >
-                        <FaPen />
-                    </button>
+                    {canEdit && (
+                        <button
+                            className="entity-card-edit-button"
+                            type="button"
+                            onClick={onManageVenues}
+                            aria-label="Manage venues"
+                        >
+                            <FaPen />
+                        </button>
+                    )}
                 </div>
 
                 {promoter.venues.length > 0 ? (

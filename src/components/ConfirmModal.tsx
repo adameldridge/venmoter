@@ -1,0 +1,51 @@
+import { useRef, useState, useImperativeHandle, type Ref } from "react";
+import "./FormModal.css";
+
+export type ConfirmModalHandle = {
+    open: (options: { message: string; confirmLabel?: string; onConfirm: () => void }) => void;
+};
+
+type ConfirmModalProps = {
+    ref?: Ref<ConfirmModalHandle>;
+};
+
+export default function ConfirmModal({ ref }: ConfirmModalProps) {
+    const modalRef = useRef<HTMLDialogElement>(null);
+    const [message, setMessage] = useState("");
+    const [confirmLabel, setConfirmLabel] = useState("Confirm");
+    const onConfirmRef = useRef<() => void>(() => {});
+
+    useImperativeHandle(ref, () => ({
+        open({ message, confirmLabel, onConfirm }) {
+            setMessage(message);
+            setConfirmLabel(confirmLabel ?? "Confirm");
+            onConfirmRef.current = onConfirm;
+            modalRef.current?.showModal();
+        },
+    }));
+
+    function closeModal() {
+        modalRef.current?.close();
+    }
+
+    function handleConfirm() {
+        closeModal();
+        onConfirmRef.current();
+    }
+
+    return (
+        <dialog id="confirm-modal" ref={modalRef}>
+            <div className="entity-form">
+                <div className="entity-form-title">{message}</div>
+                <div>
+                    <button className="create-button" type="button" onClick={handleConfirm}>
+                        {confirmLabel}
+                    </button>
+                    <button className="cancel-button" type="button" onClick={closeModal}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </dialog>
+    );
+}

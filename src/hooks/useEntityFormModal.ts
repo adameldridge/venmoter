@@ -11,7 +11,7 @@ type UseEntityFormModalOptions<TEntity, TFormValues> = {
 };
 
 export function useEntityFormModal<TEntity extends { id: string }, TFormValues>(
-    ref: Ref<EntityFormModalHandle<TEntity>>,
+    ref: Ref<EntityFormModalHandle<TEntity>> | undefined,
     { emptyValues, toFormValues, onSubmit }: UseEntityFormModalOptions<TEntity, TFormValues>,
 ) {
     const modalRef = useRef<HTMLDialogElement>(null);

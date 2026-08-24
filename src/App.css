@@ -11,7 +11,12 @@ a{
 .tabs{
   padding: 10px 10px 0 10px;
   display: flex;
+  align-items: center;
   gap: 5px;
+}
+
+.login-button{
+  margin-left: auto;
 }
 
 .tab-button{
@@ -34,13 +39,23 @@ a{
 }
 
 .venues-header{
+ display: flex;
+ align-items: stretch;
+ gap: 10px;
  padding: 10px;
 }
 
+.venues-header button{
+    margin-top: 0;
+}
+
 .venues-header select{
-    margin-left: 10px;
+    box-sizing: border-box;
     padding: 10px;
+    border: none;
     border-radius: 5px;
+    font-family: inherit;
+    font-size: 14px;
 }
 
 .venues-header select:hover{
