@@ -56,19 +56,37 @@ export default function VenuesTab({
                 </div>
             </ListHeader>
 
-            <div className="card-grid">
-                {venues.map((venue) => (
-                    <VenueCard
-                        key={venue.id}
-                        venue={venue}
-                        allPromoters={allPromoters}
-                        canEdit={canEdit}
-                        onEdit={() => onEditVenue(venue)}
-                        onDelete={() => onDeleteVenue(venue)}
-                        onManagePromoters={() => onManagePromoters(venue)}
-                    />
-                ))}
-            </div>
+            {groupByCity(venues).map(({ city, venues: cityVenues }) => (
+                <details key={city} open>
+                    <summary className="city-heading">{city}</summary>
+                    <div className="card-grid">
+                        {cityVenues.map((venue) => (
+                            <VenueCard
+                                key={venue.id}
+                                venue={venue}
+                                allPromoters={allPromoters}
+                                canEdit={canEdit}
+                                onEdit={() => onEditVenue(venue)}
+                                onDelete={() => onDeleteVenue(venue)}
+                                onManagePromoters={() => onManagePromoters(venue)}
+                            />
+                        ))}
+                    </div>
+                </details>
+            ))}
         </div>
     );
+}
+
+function groupByCity(venues: VenueWithPromoters[]) {
+    const groups: { city: string; venues: VenueWithPromoters[] }[] = [];
+    for (const venue of venues) {
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.city === venue.city) {
+            lastGroup.venues.push(venue);
+        } else {
+            groups.push({ city: venue.city, venues: [venue] });
+        }
+    }
+    return groups;
 }
