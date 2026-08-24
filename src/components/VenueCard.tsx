@@ -37,7 +37,6 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
                     />
                 )}
             </div>
-            <div className="entity-card-city">{venue.city}</div>
             <SocialLinks
                 website={venue.website}
                 instagram={venue.instagram}

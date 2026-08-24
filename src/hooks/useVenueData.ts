@@ -96,7 +96,9 @@ export function useVenueData() {
                 })) as VenuePromoter[];
 
             setCities(
-                ["All Cities", ...new Set(venuesData.map(venue => venue.city))]
+                ["All Cities", ...new Set(venuesData.map(venue => venue.city))].sort((a, b) =>
+                    a === "All Cities" ? -1 : b === "All Cities" ? 1 : a.localeCompare(b),
+                )
             );
 
             setVenues(venuesData);

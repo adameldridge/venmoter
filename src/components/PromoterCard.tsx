@@ -51,20 +51,23 @@ export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenue
 
                 {promoter.venues.length > 0 ? (
                     <div className="entity-card-chips">
-                        {promoter.venues.map((venue) => (
-                            <button
-                                key={venue.id}
-                                type="button"
-                                className={
-                                    venue.id === activeVenueId
-                                        ? "entity-card-chip entity-card-chip-active"
-                                        : "entity-card-chip"
-                                }
-                                onClick={() => toggleActiveVenue(venue.id)}
-                            >
-                                {venue.name}
-                            </button>
-                        ))}
+                        {[...promoter.venues]
+                            .sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name))
+                            .map((venue) => (
+                                <button
+                                    key={venue.id}
+                                    type="button"
+                                    className={
+                                        venue.id === activeVenueId
+                                            ? "entity-card-chip entity-card-chip-active"
+                                            : "entity-card-chip"
+                                    }
+                                    onClick={() => toggleActiveVenue(venue.id)}
+                                >
+                                    {venue.name}
+                                    <span className="entity-card-chip-meta"> · {venue.city}</span>
+                                </button>
+                            ))}
                     </div>
                 ) : (
                     <div className="entity-card-relations-empty">No venues</div>
