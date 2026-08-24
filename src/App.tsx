@@ -39,7 +39,9 @@ export default function App() {
     const [promoters, setPromoters] = useState<Promoter[]>([]);
     const [relationships, setRelationships] = useState<VenuePromoter[]>([]);
     const [cities, setCities] = useState<string[]>();
-    const [selectedCity, setSelectedCity] = useState("All");
+    const [selectedCity, setSelectedCity] = useState("All Cities");
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
@@ -91,7 +93,7 @@ export default function App() {
                 })) as VenuePromoter[];
 
             setCities(
-                ["All", ...new Set(venuesData.map(venue => venue.city))]
+                ["All Cities", ...new Set(venuesData.map(venue => venue.city))]
             );
 
             setVenues(venuesData);
@@ -108,6 +110,11 @@ export default function App() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         loadAll();
     }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => setSearchTerm(searchInput), 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     async function saveVenue(venue: NewVenue, editingVenueId: string | null) {
         try {
@@ -225,13 +232,22 @@ export default function App() {
         setSelectedCity(e.target.value);
     }
 
+    function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setSearchInput(e.target.value);
+    }
+
+    function matchesSearch(name: string) {
+        return name.toLowerCase().includes(searchTerm.trim().toLowerCase());
+    }
+
     const venuesWithPromoters = buildVenuesWithPromoters(venues, promoters, relationships);
     const promotersWithVenues = buildPromotersWithVenues(promoters, venues, relationships);
 
-    const visibleVenues =
-        selectedCity === "All"
-            ? venuesWithPromoters
-            : venuesWithPromoters.filter((venue) => venue.city === selectedCity);
+    const visibleVenues = venuesWithPromoters
+        .filter((venue) => selectedCity === "All Cities" || venue.city === selectedCity)
+        .filter((venue) => matchesSearch(venue.name));
+
+    const visiblePromoters = promotersWithVenues.filter((promoter) => matchesSearch(promoter.name));
 
     return (
         <div>
@@ -279,15 +295,26 @@ export default function App() {
                             </button>
                         )}
 
-                        <select
-                            className="cities-select"
-                            value={selectedCity}
-                            onChange={handleCityChange}
-                        >
-                            {cities?.map((city) =>(
-                                <option value={city} key={city}>{city}</option>
-                            ))}
-                        </select>
+                        <div className="filter-group">
+                            <select
+                                className="cities-select"
+                                value={selectedCity}
+                                onChange={handleCityChange}
+                            >
+                                {cities?.map((city) =>(
+                                    <option value={city} key={city}>{city}</option>
+                                ))}
+                            </select>
+
+                            <input
+                                className="search-input"
+                                type="search"
+                                value={searchInput}
+                                onChange={handleSearchChange}
+                                placeholder="Search venues..."
+                                aria-label="Search venues"
+                            />
+                        </div>
                     </div>
 
                     <div className="venues">
@@ -327,10 +354,19 @@ export default function App() {
                                 Add Promoter
                             </button>
                         )}
+
+                        <input
+                            className="search-input"
+                            type="search"
+                            value={searchInput}
+                            onChange={handleSearchChange}
+                            placeholder="Search promoters..."
+                            aria-label="Search promoters"
+                        />
                     </div>
 
                     <div className="venues">
-                        {promotersWithVenues.map((promoter) => (
+                        {visiblePromoters.map((promoter) => (
                             <PromoterCard
                                 key={promoter.id}
                                 promoter={promoter}
