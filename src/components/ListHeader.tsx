@@ -10,12 +10,12 @@ type ListHeaderProps = {
 export default function ListHeader({ canEdit, addLabel, onAdd, children }: ListHeaderProps) {
     return (
         <div className="list-header">
+            {children}
             {canEdit && (
                 <button className="create-button" type="button" onClick={onAdd}>
                     {addLabel}
                 </button>
             )}
-            {children}
         </div>
     );
 }
