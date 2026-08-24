@@ -1,5 +1,5 @@
 import { useRef, useState, useImperativeHandle, type Ref } from "react";
-import "./FormModal.css";
+import "./Modal.css";
 
 export type ConfirmModalHandle = {
     open: (options: { message: string; confirmLabel?: string; danger?: boolean; onConfirm: () => void }) => void;
@@ -37,9 +37,9 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
 
     return (
         <dialog id="confirm-modal" ref={modalRef}>
-            <div className="entity-form">
-                <div className="entity-form-title">{message}</div>
-                <div>
+            <div className="modal-box">
+                <div className="modal-title">{message}</div>
+                <div className="modal-actions">
                     <button
                         className={danger ? "danger-button" : "create-button"}
                         type="button"

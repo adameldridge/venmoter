@@ -1,0 +1,14 @@
+.modal-box{
+  width: 350px;
+  padding: 10px;
+}
+
+.modal-title{
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+
+.modal-actions button{
+    display: inline-block;
+    margin-right: 10px;
+}

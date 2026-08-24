@@ -20,12 +20,6 @@ a{
 }
 
 .search-input{
-  box-sizing: border-box;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  font-family: inherit;
-  font-size: 14px;
   width: 220px;
 }
 
@@ -48,18 +42,18 @@ a{
   border-bottom: 2px solid #029742;
 }
 
-.venues-header{
+.list-header{
  display: flex;
  align-items: stretch;
  gap: 10px;
  padding: 10px;
 }
 
-.venues-header button{
+.list-header button{
     margin-top: 0;
 }
 
-.venues-header > .create-button{
+.list-header > .create-button{
     order: 1;
     margin-left: 20px;
 }
@@ -71,12 +65,8 @@ a{
     border-radius: 8px;
 }
 
-.filter-group .cities-select,
-.filter-group .search-input{
-    border-radius: 5px;
-}
-
-.venues-header select{
+.search-input,
+.cities-select{
     box-sizing: border-box;
     padding: 10px;
     border: none;
@@ -85,12 +75,12 @@ a{
     font-size: 14px;
 }
 
-.venues-header select:hover{
+.cities-select:hover{
     cursor: pointer;
     opacity: 0.8;
 }
 
-.venues{
+.card-grid{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 15px;
@@ -127,4 +117,10 @@ button{
 button:hover{
   opacity: 0.8;
   cursor: pointer;
+}
+
+.page-loading{
+    display: flex;
+    justify-content: center;
+    padding: 80px 0;
 }

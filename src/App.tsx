@@ -1,33 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "./firebase/config";
 import "./App.css";
-import type {
-    Venue,
-    NewVenue,
-    Promoter,
-    NewPromoter,
-    VenuePromoter,
-    VenueWithPromoters,
-    PromoterWithVenues,
-} from "./types/venue";
-import VenueCard from "./components/VenueCard";
-import VenueFormModal from "./components/VenueFormModal";
-import type { VenueFormModalHandle } from "./components/VenueFormModal";
-import PromoterCard from "./components/PromoterCard";
-import PromoterFormModal from "./components/PromoterFormModal";
-import type { PromoterFormModalHandle } from "./components/PromoterFormModal";
-import LinkModal from "./components/LinkModal";
-import type { LinkModalHandle } from "./components/LinkModal";
-import LoginModal from "./components/LoginModal";
-import type { LoginModalHandle } from "./components/LoginModal";
-import ConfirmModal from "./components/ConfirmModal";
-import type { ConfirmModalHandle } from "./components/ConfirmModal";
+import type { PromoterWithVenues, VenueWithPromoters } from "./types/venue";
+import VenuesTab from "./components/VenuesTab";
+import PromotersTab from "./components/PromotersTab";
+import VenueFormModal, { type VenueFormModalHandle } from "./components/VenueFormModal";
+import PromoterFormModal, { type PromoterFormModalHandle } from "./components/PromoterFormModal";
+import LinkModal, { type LinkModalHandle } from "./components/LinkModal";
+import LoginModal, { type LoginModalHandle } from "./components/LoginModal";
+import ConfirmModal, { type ConfirmModalHandle } from "./components/ConfirmModal";
 import { Toaster, toast } from "sonner";
 import Spinner from "./components/Spinner";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/config";
 import { useAuth } from "./hooks/useAuth";
+import { useVenueData } from "./hooks/useVenueData";
 
 type Tab = "venues" | "promoters";
 
@@ -35,20 +21,35 @@ export default function App() {
     const { user } = useAuth();
     const canEdit = !!user;
     const [activeTab, setActiveTab] = useState<Tab>("venues");
-    const [venues, setVenues] = useState<Venue[]>([]);
-    const [promoters, setPromoters] = useState<Promoter[]>([]);
-    const [relationships, setRelationships] = useState<VenuePromoter[]>([]);
-    const [cities, setCities] = useState<string[]>();
     const [selectedCity, setSelectedCity] = useState("All Cities");
     const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
+
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
     const venuePromotersLinkModalRef = useRef<LinkModalHandle>(null);
     const promoterVenuesLinkModalRef = useRef<LinkModalHandle>(null);
     const loginModalRef = useRef<LoginModalHandle>(null);
     const confirmModalRef = useRef<ConfirmModalHandle>(null);
+
+    const {
+        venues,
+        promoters,
+        cities,
+        isInitialLoading,
+        venuesWithPromoters,
+        promotersWithVenues,
+        saveVenue,
+        savePromoter,
+        deleteVenue,
+        deletePromoter,
+        saveLinks,
+    } = useVenueData();
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => setSearchTerm(searchInput), 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     function handleAuthButtonClick() {
         if (user) {
@@ -66,119 +67,7 @@ export default function App() {
         }
     }
 
-    async function loadAll() {
-        try {
-            const [venuesSnapshot, promotersSnapshot, venuePromotersSnapshot] =
-                await Promise.all([
-                    getDocs(collection(db, "venues")),
-                    getDocs(collection(db, "promoters")),
-                    getDocs(collection(db, "venue-promoters")),
-                ]);
-
-            const venuesData: Venue[] = venuesSnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            })) as Venue[];
-
-            const promotersData: Promoter[] = promotersSnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }),
-            ) as Promoter[];
-
-            const relationshipsData: VenuePromoter[] =
-                venuePromotersSnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                })) as VenuePromoter[];
-
-            setCities(
-                ["All Cities", ...new Set(venuesData.map(venue => venue.city))]
-            );
-
-            setVenues(venuesData);
-            setPromoters(promotersData);
-            setRelationships(relationshipsData);
-        } catch (error) {
-            console.error("Error loading data:", error);
-        } finally {
-            setIsInitialLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        loadAll();
-    }, []);
-
-    useEffect(() => {
-        const timeoutId = setTimeout(() => setSearchTerm(searchInput), 300);
-        return () => clearTimeout(timeoutId);
-    }, [searchInput]);
-
-    async function saveVenue(venue: NewVenue, editingVenueId: string | null) {
-        try {
-            if (editingVenueId) {
-                await updateDoc(doc(db, "venues", editingVenueId), venue);
-            } else {
-                await addDoc(collection(db, "venues"), venue);
-            }
-            await loadAll();
-            toast.success(editingVenueId ? "Venue updated" : "Venue added");
-        } catch (error) {
-            console.error("Error saving venue:", error);
-            toast.error("Failed to save venue");
-            throw error;
-        }
-    }
-
-    async function savePromoter(promoter: NewPromoter, editingPromoterId: string | null) {
-        try {
-            if (editingPromoterId) {
-                await updateDoc(doc(db, "promoters", editingPromoterId), promoter);
-            } else {
-                await addDoc(collection(db, "promoters"), promoter);
-            }
-            await loadAll();
-            toast.success(editingPromoterId ? "Promoter updated" : "Promoter added");
-        } catch (error) {
-            console.error("Error saving promoter:", error);
-            toast.error("Failed to save promoter");
-            throw error;
-        }
-    }
-
-
-    async function deleteRelationshipsFor(field: "venueId" | "promoterId", id: string) {
-        const toDelete = relationships.filter((r) => r[field] === id);
-        await Promise.all(toDelete.map((r) => deleteDoc(doc(db, "venue-promoters", r.id))));
-    }
-
-    async function deleteVenue(id: string) {
-        try {
-            await deleteRelationshipsFor("venueId", id);
-            await deleteDoc(doc(db, "venues", id));
-            await loadAll();
-            toast.success("Venue deleted");
-        } catch (error) {
-            console.error("Error deleting venue:", error);
-            toast.error("Failed to delete venue");
-        }
-    }
-
-    async function deletePromoter(id: string) {
-        try {
-            await deleteRelationshipsFor("promoterId", id);
-            await deleteDoc(doc(db, "promoters", id));
-            await loadAll();
-            toast.success("Promoter deleted");
-        } catch (error) {
-            console.error("Error deleting promoter:", error);
-            toast.error("Failed to delete promoter");
-        }
-    }
-
-    function confirmDeleteVenue(venue: Venue) {
+    function confirmDeleteVenue(venue: VenueWithPromoters) {
         confirmModalRef.current?.open({
             message: `Delete ${venue.name}? This cannot be undone.`,
             confirmLabel: "Delete",
@@ -187,7 +76,7 @@ export default function App() {
         });
     }
 
-    function confirmDeletePromoter(promoter: Promoter) {
+    function confirmDeletePromoter(promoter: PromoterWithVenues) {
         confirmModalRef.current?.open({
             message: `Delete ${promoter.name}? This cannot be undone.`,
             confirmLabel: "Delete",
@@ -196,52 +85,9 @@ export default function App() {
         });
     }
 
-    async function saveLinks(
-        fixedField: "venueId" | "promoterId",
-        fixedId: string,
-        otherField: "venueId" | "promoterId",
-        selectedOtherIds: string[],
-    ) {
-        try {
-            const current = relationships.filter((r) => r[fixedField] === fixedId);
-            const currentOtherIds = current.map((r) => r[otherField]);
-
-            const toAdd = selectedOtherIds.filter((id) => !currentOtherIds.includes(id));
-            const toRemove = current.filter((r) => !selectedOtherIds.includes(r[otherField]));
-
-            await Promise.all([
-                ...toAdd.map((otherId) =>
-                    addDoc(collection(db, "venue-promoters"), {
-                        [fixedField]: fixedId,
-                        [otherField]: otherId,
-                    }),
-                ),
-                ...toRemove.map((r) => deleteDoc(doc(db, "venue-promoters", r.id))),
-            ]);
-
-            await loadAll();
-            toast.success(fixedField === "venueId" ? "Promoters updated" : "Venues updated");
-        } catch (error) {
-            console.error("Error saving links:", error);
-            toast.error("Failed to save links");
-            throw error;
-        }
-    }
-
-    function handleCityChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        setSelectedCity(e.target.value);
-    }
-
-    function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setSearchInput(e.target.value);
-    }
-
     function matchesSearch(name: string) {
         return name.toLowerCase().includes(searchTerm.trim().toLowerCase());
     }
-
-    const venuesWithPromoters = buildVenuesWithPromoters(venues, promoters, relationships);
-    const promotersWithVenues = buildPromotersWithVenues(promoters, venues, relationships);
 
     const visibleVenues = venuesWithPromoters
         .filter((venue) => selectedCity === "All Cities" || venue.city === selectedCity)
@@ -281,115 +127,56 @@ export default function App() {
                     <Spinner size={32} />
                 </div>
             ) : (
-            <>
-            {activeTab === "venues" && (
-                <div>
-                    <div className="venues-header">
-                        {canEdit && (
-                            <button
-                                className="create-button"
-                                type="button"
-                                onClick={() => venueFormModalRef.current?.open()}
-                            >
-                                Add Venue
-                            </button>
-                        )}
-
-                        <div className="filter-group">
-                            <select
-                                className="cities-select"
-                                value={selectedCity}
-                                onChange={handleCityChange}
-                            >
-                                {cities?.map((city) =>(
-                                    <option value={city} key={city}>{city}</option>
-                                ))}
-                            </select>
-
-                            <input
-                                className="search-input"
-                                type="search"
-                                value={searchInput}
-                                onChange={handleSearchChange}
-                                placeholder="Search venues..."
-                                aria-label="Search venues"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="venues">
-                        {visibleVenues.map((venue) => (
-                            <VenueCard
-                                key={venue.id}
-                                venue={venue}
-                                allPromoters={promotersWithVenues}
-                                canEdit={canEdit}
-                                onEdit={() => venueFormModalRef.current?.open(venue)}
-                                onDelete={() => confirmDeleteVenue(venue)}
-                                onManagePromoters={() =>
-                                    venuePromotersLinkModalRef.current?.open(
-                                        venue.id,
-                                        promoters.map((promoter) => ({
-                                            id: promoter.id,
-                                            name: promoter.name,
-                                        })),
-                                        venue.promoters.map((promoter) => promoter.id),
-                                    )
-                                }
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {activeTab === "promoters" && (
-                <div>
-                    <div className="venues-header">
-                        {canEdit && (
-                            <button
-                                className="create-button"
-                                type="button"
-                                onClick={() => promoterFormModalRef.current?.open()}
-                            >
-                                Add Promoter
-                            </button>
-                        )}
-
-                        <input
-                            className="search-input"
-                            type="search"
-                            value={searchInput}
-                            onChange={handleSearchChange}
-                            placeholder="Search promoters..."
-                            aria-label="Search promoters"
+                <>
+                    {activeTab === "venues" && (
+                        <VenuesTab
+                            venues={visibleVenues}
+                            allPromoters={promotersWithVenues}
+                            cities={cities}
+                            selectedCity={selectedCity}
+                            onCityChange={setSelectedCity}
+                            searchInput={searchInput}
+                            onSearchChange={setSearchInput}
+                            canEdit={canEdit}
+                            onAddVenue={() => venueFormModalRef.current?.open()}
+                            onEditVenue={(venue) => venueFormModalRef.current?.open(venue)}
+                            onDeleteVenue={confirmDeleteVenue}
+                            onManagePromoters={(venue) =>
+                                venuePromotersLinkModalRef.current?.open(
+                                    venue.id,
+                                    promoters.map((promoter) => ({
+                                        id: promoter.id,
+                                        name: promoter.name,
+                                    })),
+                                    venue.promoters.map((promoter) => promoter.id),
+                                )
+                            }
                         />
-                    </div>
+                    )}
 
-                    <div className="venues">
-                        {visiblePromoters.map((promoter) => (
-                            <PromoterCard
-                                key={promoter.id}
-                                promoter={promoter}
-                                allVenues={venuesWithPromoters}
-                                canEdit={canEdit}
-                                onEdit={() => promoterFormModalRef.current?.open(promoter)}
-                                onDelete={() => confirmDeletePromoter(promoter)}
-                                onManageVenues={() =>
-                                    promoterVenuesLinkModalRef.current?.open(
-                                        promoter.id,
-                                        venues.map((venue) => ({
-                                            id: venue.id,
-                                            name: venue.name,
-                                        })),
-                                        promoter.venues.map((venue) => venue.id),
-                                    )
-                                }
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-            </>
+                    {activeTab === "promoters" && (
+                        <PromotersTab
+                            promoters={visiblePromoters}
+                            allVenues={venuesWithPromoters}
+                            searchInput={searchInput}
+                            onSearchChange={setSearchInput}
+                            canEdit={canEdit}
+                            onAddPromoter={() => promoterFormModalRef.current?.open()}
+                            onEditPromoter={(promoter) => promoterFormModalRef.current?.open(promoter)}
+                            onDeletePromoter={confirmDeletePromoter}
+                            onManageVenues={(promoter) =>
+                                promoterVenuesLinkModalRef.current?.open(
+                                    promoter.id,
+                                    venues.map((venue) => ({
+                                        id: venue.id,
+                                        name: venue.name,
+                                    })),
+                                    promoter.venues.map((venue) => venue.id),
+                                )
+                            }
+                        />
+                    )}
+                </>
             )}
 
             <VenueFormModal ref={venueFormModalRef} onSubmit={saveVenue} />
@@ -418,54 +205,4 @@ export default function App() {
             <Toaster position="top-center" theme="light" richColors />
         </div>
     );
-}
-
-function buildVenuesWithPromoters(
-    venues: Venue[],
-    promoters: Promoter[],
-    relationships: VenuePromoter[],
-): VenueWithPromoters[] {
-    return venues.map((venue) => {
-        const venueRelationships = relationships.filter(
-            (relationship) => relationship.venueId === venue.id,
-        );
-
-        const promoterIds = venueRelationships.map(
-            (relationship) => relationship.promoterId,
-        );
-
-        const venuePromoters = promoters.filter((promoter) =>
-            promoterIds.includes(promoter.id),
-        );
-
-        return {
-            ...venue,
-            promoters: venuePromoters,
-        };
-    });
-}
-
-function buildPromotersWithVenues(
-    promoters: Promoter[],
-    venues: Venue[],
-    relationships: VenuePromoter[],
-): PromoterWithVenues[] {
-    return promoters.map((promoter) => {
-        const promoterRelationships = relationships.filter(
-            (relationship) => relationship.promoterId === promoter.id,
-        );
-
-        const venueIds = promoterRelationships.map(
-            (relationship) => relationship.venueId,
-        );
-
-        const promoterVenues = venues.filter((venue) =>
-            venueIds.includes(venue.id),
-        );
-
-        return {
-            ...promoter,
-            venues: promoterVenues,
-        };
-    });
 }

@@ -3,7 +3,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { toast } from "sonner";
 import Spinner from "./Spinner";
-import "./FormModal.css";
+import "./Modal.css";
+import "./Forms.css";
 
 export type LoginModalHandle = {
     open: () => void;
@@ -48,8 +49,8 @@ export default function LoginModal({ ref }: LoginModalProps) {
 
     return (
         <dialog id="login-modal" ref={modalRef}>
-            <div className="entity-form">
-                <div className="entity-form-title">Log In</div>
+            <div className="modal-box entity-form">
+                <div className="modal-title">Log In</div>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="loginEmail">Email *</label>
@@ -77,7 +78,7 @@ export default function LoginModal({ ref }: LoginModalProps) {
                         />
                     </div>
 
-                    <div>
+                    <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSubmitting}>
                             {isSubmitting ? <Spinner size={14} /> : "Log In"}
                         </button>

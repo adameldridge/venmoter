@@ -1,6 +1,7 @@
 import { useRef, useState, useImperativeHandle, type Ref } from "react";
 import type { LinkOption } from "../types/venue";
 import Spinner from "./Spinner";
+import "./Modal.css";
 import "./LinkModal.css";
 
 type LinkModalProps = {
@@ -71,8 +72,8 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
 
     return (
         <dialog id="link-modal" ref={modalRef}>
-            <div className="link-modal">
-                <div className="link-modal-title">{title}</div>
+            <div className="modal-box">
+                <div className="modal-title">{title}</div>
 
                 <input
                     className="link-modal-search"
@@ -99,7 +100,7 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
                     )}
                 </div>
 
-                <div className="link-modal-actions">
+                <div className="modal-actions">
                     <button className="create-button" type="button" onClick={handleSave} disabled={isSaving}>
                         {isSaving ? <Spinner size={14} /> : "Save"}
                     </button>

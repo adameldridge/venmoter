@@ -1,5 +1,5 @@
 import { useState } from "react";
-import './Card.css';
+import './Cards.css';
 import type { VenueWithPromoters, PromoterWithVenues } from "../types/venue";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";

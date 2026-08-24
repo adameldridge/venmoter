@@ -2,7 +2,8 @@ import type { Ref } from "react";
 import type { NewPromoter, Promoter } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
-import "./FormModal.css";
+import "./Modal.css";
+import "./Forms.css";
 
 type PromoterFormModalProps = {
     onSubmit: (promoter: NewPromoter, editingPromoterId: string | null) => Promise<void>;
@@ -46,8 +47,8 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
 
     return (
         <dialog id="promoter-form-modal" ref={modalRef}>
-            <div className="entity-form">
-                <div className="entity-form-title">
+            <div className="modal-box entity-form">
+                <div className="modal-title">
                     {editingPromoterId ? "Edit Promoter" : "Add Promoter"}
                 </div>
                 <form onSubmit={handleSubmit}>
@@ -107,7 +108,7 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
                         />
                     </div>
 
-                    <div>
+                    <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>
                             {isSaving ? <Spinner size={14} /> : "Save"}
                         </button>

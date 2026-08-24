@@ -2,7 +2,8 @@ import type { Ref } from "react";
 import type { NewVenue, Venue } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
-import "./FormModal.css";
+import "./Modal.css";
+import "./Forms.css";
 
 type VenueFormModalProps = {
     onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
@@ -48,8 +49,8 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
 
     return (
         <dialog id="venue-form-modal" ref={modalRef}>
-            <div className="entity-form">
-                <div className="entity-form-title">
+            <div className="modal-box entity-form">
+                <div className="modal-title">
                     {editingVenueId ? "Edit Venue" : "Add Venue"}
                 </div>
                 <form onSubmit={handleSubmit}>
@@ -120,7 +121,7 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                         />
                     </div>
 
-                    <div>
+                    <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>
                             {isSaving ? <Spinner size={14} /> : "Save"}
                         </button>
