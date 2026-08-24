@@ -53,6 +53,7 @@ export default function App() {
             confirmModalRef.current?.open({
                 message: "Are you sure you want to sign out?",
                 confirmLabel: "Sign Out",
+                danger: true,
                 onConfirm: async () => {
                     await signOut(auth);
                     toast.success("Logged out");
@@ -138,6 +139,54 @@ export default function App() {
             toast.error("Failed to save promoter");
             throw error;
         }
+    }
+
+
+    async function deleteRelationshipsFor(field: "venueId" | "promoterId", id: string) {
+        const toDelete = relationships.filter((r) => r[field] === id);
+        await Promise.all(toDelete.map((r) => deleteDoc(doc(db, "venue-promoters", r.id))));
+    }
+
+    async function deleteVenue(id: string) {
+        try {
+            await deleteRelationshipsFor("venueId", id);
+            await deleteDoc(doc(db, "venues", id));
+            await loadAll();
+            toast.success("Venue deleted");
+        } catch (error) {
+            console.error("Error deleting venue:", error);
+            toast.error("Failed to delete venue");
+        }
+    }
+
+    async function deletePromoter(id: string) {
+        try {
+            await deleteRelationshipsFor("promoterId", id);
+            await deleteDoc(doc(db, "promoters", id));
+            await loadAll();
+            toast.success("Promoter deleted");
+        } catch (error) {
+            console.error("Error deleting promoter:", error);
+            toast.error("Failed to delete promoter");
+        }
+    }
+
+    function confirmDeleteVenue(venue: Venue) {
+        confirmModalRef.current?.open({
+            message: `Delete ${venue.name}? This cannot be undone.`,
+            confirmLabel: "Delete",
+            danger: true,
+            onConfirm: () => deleteVenue(venue.id),
+        });
+    }
+
+    function confirmDeletePromoter(promoter: Promoter) {
+        confirmModalRef.current?.open({
+            message: `Delete ${promoter.name}? This cannot be undone.`,
+            confirmLabel: "Delete",
+            danger: true,
+            onConfirm: () => deletePromoter(promoter.id),
+        });
     }
 
     async function saveLinks(
@@ -249,6 +298,7 @@ export default function App() {
                                 allPromoters={promotersWithVenues}
                                 canEdit={canEdit}
                                 onEdit={() => venueFormModalRef.current?.open(venue)}
+                                onDelete={() => confirmDeleteVenue(venue)}
                                 onManagePromoters={() =>
                                     venuePromotersLinkModalRef.current?.open(
                                         venue.id,
@@ -287,6 +337,7 @@ export default function App() {
                                 allVenues={venuesWithPromoters}
                                 canEdit={canEdit}
                                 onEdit={() => promoterFormModalRef.current?.open(promoter)}
+                                onDelete={() => confirmDeletePromoter(promoter)}
                                 onManageVenues={() =>
                                     promoterVenuesLinkModalRef.current?.open(
                                         promoter.id,

@@ -1,0 +1,51 @@
+.card-menu{
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card-menu-trigger{
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    margin: 0;
+    font-size: 14px;
+    color: #fff;
+    opacity: 0.7;
+}
+
+.card-menu-trigger:hover{
+    opacity: 1;
+}
+
+.card-menu-dropdown{
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: #012430;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 5px;
+    min-width: 130px;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.card-menu-item{
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    margin: 0;
+    font-size: 13px;
+    color: #fff;
+}
+
+.card-menu-item:hover{
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.card-menu-item-danger{
+    color: #e5484d;
+}

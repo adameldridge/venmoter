@@ -1,18 +1,19 @@
 import { useState } from "react";
 import './Card.css';
 import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
-import { FaPen } from "react-icons/fa";
 import SocialLinks from "./SocialLinks";
+import CardMenu from "./CardMenu";
 
 type PromoterCardProps = {
     promoter: PromoterWithVenues;
     onEdit: () => void;
+    onDelete: () => void;
     onManageVenues: () => void;
     allVenues: VenueWithPromoters[];
     canEdit: boolean;
 };
 
-export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenues, canEdit }: PromoterCardProps) {
+export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues, canEdit }: PromoterCardProps) {
     const [activeVenueId, setActiveVenueId] = useState<string | null>(null);
 
     function toggleActiveVenue(venueId: string) {
@@ -27,9 +28,13 @@ export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenu
             <div className="entity-card-header">
                 <div className="entity-card-title">{promoter.name}</div>
                 {canEdit && (
-                    <button className="entity-card-edit-button" type="button" onClick={onEdit} aria-label="Edit promoter">
-                        <FaPen />
-                    </button>
+                    <CardMenu
+                        items={[
+                            { label: "Edit promoter", onClick: onEdit },
+                            { label: "Edit venues", onClick: onManageVenues },
+                            { label: "Delete promoter", onClick: onDelete, danger: true },
+                        ]}
+                    />
                 )}
             </div>
             <SocialLinks
@@ -42,16 +47,6 @@ export default function PromoterCard({ promoter, onEdit, onManageVenues, allVenu
             <div className="entity-card-relations">
                 <div className="entity-card-relations-header">
                     <div className="entity-card-relations-title">Venues</div>
-                    {canEdit && (
-                        <button
-                            className="entity-card-edit-button"
-                            type="button"
-                            onClick={onManageVenues}
-                            aria-label="Manage venues"
-                        >
-                            <FaPen />
-                        </button>
-                    )}
                 </div>
 
                 {promoter.venues.length > 0 ? (

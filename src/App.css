@@ -92,6 +92,11 @@ button{
   border: 1px solid #454545;
 }
 
+.danger-button{
+  background: #e5484d;
+  color: #fff;
+}
+
 button:hover{
   opacity: 0.8;
   cursor: pointer;

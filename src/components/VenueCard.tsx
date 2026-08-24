@@ -1,18 +1,19 @@
 import { useState } from "react";
 import './Card.css';
 import type { VenueWithPromoters, PromoterWithVenues } from "../types/venue";
-import { FaPen } from "react-icons/fa";
 import SocialLinks from "./SocialLinks";
+import CardMenu from "./CardMenu";
 
 type VenueCardProps = {
     venue: VenueWithPromoters;
     onEdit: () => void;
+    onDelete: () => void;
     onManagePromoters: () => void;
     allPromoters: PromoterWithVenues[];
     canEdit: boolean;
 };
 
-export default function VenueCard({ venue, onEdit, onManagePromoters, allPromoters, canEdit }: VenueCardProps) {
+export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters, canEdit }: VenueCardProps) {
     const [activePromoterId, setActivePromoterId] = useState<string | null>(null);
 
     function toggleActivePromoter(promoterId: string) {
@@ -27,9 +28,13 @@ export default function VenueCard({ venue, onEdit, onManagePromoters, allPromote
             <div className="entity-card-header">
                 <div className="entity-card-title">{venue.name}</div>
                 {canEdit && (
-                    <button className="entity-card-edit-button" type="button" onClick={onEdit} aria-label="Edit venue">
-                        <FaPen />
-                    </button>
+                    <CardMenu
+                        items={[
+                            { label: "Edit venue", onClick: onEdit },
+                            { label: "Edit promoters", onClick: onManagePromoters },
+                            { label: "Delete venue", onClick: onDelete, danger: true },
+                        ]}
+                    />
                 )}
             </div>
             <div className="entity-card-city">{venue.city}</div>
@@ -43,16 +48,6 @@ export default function VenueCard({ venue, onEdit, onManagePromoters, allPromote
             <div className="entity-card-relations">
                 <div className="entity-card-relations-header">
                     <div className="entity-card-relations-title">Promoters</div>
-                    {canEdit && (
-                        <button
-                            className="entity-card-edit-button"
-                            type="button"
-                            onClick={onManagePromoters}
-                            aria-label="Manage promoters"
-                        >
-                            <FaPen />
-                        </button>
-                    )}
                 </div>
 
                 {venue.promoters.length > 0 ? (
