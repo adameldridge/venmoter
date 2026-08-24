@@ -1,0 +1,12 @@
+.entity-form label {
+  display : block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.entity-form input{
+  display : block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 95%;
+}

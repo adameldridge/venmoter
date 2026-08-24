@@ -1,13 +1,3 @@
-.link-modal{
-  width: 350px;
-  padding: 10px;
-}
-
-.link-modal-title{
-    font-size: 25px;
-    margin-bottom: 20px;
-}
-
 .link-modal-search{
   display: block;
   margin-bottom: 10px;
@@ -35,9 +25,4 @@
 .link-modal-empty{
   font-size: 12px;
   padding: 10px 0;
-}
-
-.link-modal-actions button{
-    display: inline-block;
-    margin-right: 10px;
 }
