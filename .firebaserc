@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "venmoter"
+    "default": "venmoter",
+    "dev": "venmoter-dev"
   }
 }
