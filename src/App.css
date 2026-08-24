@@ -19,6 +19,16 @@ a{
   margin-left: auto;
 }
 
+.search-input{
+  box-sizing: border-box;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 14px;
+  width: 220px;
+}
+
 .tab-button{
   background: none;
   color: #fff;
@@ -47,6 +57,23 @@ a{
 
 .venues-header button{
     margin-top: 0;
+}
+
+.venues-header > .create-button{
+    order: 1;
+    margin-left: 20px;
+}
+
+.filter-group{
+    display: flex;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+.filter-group .cities-select,
+.filter-group .search-input{
+    border-radius: 5px;
 }
 
 .venues-header select{
@@ -90,6 +117,11 @@ button{
   background: #fffefe;
   color: #454545;
   border: 1px solid #454545;
+}
+
+.danger-button{
+  background: #e5484d;
+  color: #fff;
 }
 
 button:hover{

@@ -39,7 +39,9 @@ export default function App() {
     const [promoters, setPromoters] = useState<Promoter[]>([]);
     const [relationships, setRelationships] = useState<VenuePromoter[]>([]);
     const [cities, setCities] = useState<string[]>();
-    const [selectedCity, setSelectedCity] = useState("All");
+    const [selectedCity, setSelectedCity] = useState("All Cities");
+    const [searchInput, setSearchInput] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
@@ -53,6 +55,7 @@ export default function App() {
             confirmModalRef.current?.open({
                 message: "Are you sure you want to sign out?",
                 confirmLabel: "Sign Out",
+                danger: true,
                 onConfirm: async () => {
                     await signOut(auth);
                     toast.success("Logged out");
@@ -90,7 +93,7 @@ export default function App() {
                 })) as VenuePromoter[];
 
             setCities(
-                ["All", ...new Set(venuesData.map(venue => venue.city))]
+                ["All Cities", ...new Set(venuesData.map(venue => venue.city))]
             );
 
             setVenues(venuesData);
@@ -107,6 +110,11 @@ export default function App() {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         loadAll();
     }, []);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => setSearchTerm(searchInput), 300);
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
 
     async function saveVenue(venue: NewVenue, editingVenueId: string | null) {
         try {
@@ -138,6 +146,54 @@ export default function App() {
             toast.error("Failed to save promoter");
             throw error;
         }
+    }
+
+
+    async function deleteRelationshipsFor(field: "venueId" | "promoterId", id: string) {
+        const toDelete = relationships.filter((r) => r[field] === id);
+        await Promise.all(toDelete.map((r) => deleteDoc(doc(db, "venue-promoters", r.id))));
+    }
+
+    async function deleteVenue(id: string) {
+        try {
+            await deleteRelationshipsFor("venueId", id);
+            await deleteDoc(doc(db, "venues", id));
+            await loadAll();
+            toast.success("Venue deleted");
+        } catch (error) {
+            console.error("Error deleting venue:", error);
+            toast.error("Failed to delete venue");
+        }
+    }
+
+    async function deletePromoter(id: string) {
+        try {
+            await deleteRelationshipsFor("promoterId", id);
+            await deleteDoc(doc(db, "promoters", id));
+            await loadAll();
+            toast.success("Promoter deleted");
+        } catch (error) {
+            console.error("Error deleting promoter:", error);
+            toast.error("Failed to delete promoter");
+        }
+    }
+
+    function confirmDeleteVenue(venue: Venue) {
+        confirmModalRef.current?.open({
+            message: `Delete ${venue.name}? This cannot be undone.`,
+            confirmLabel: "Delete",
+            danger: true,
+            onConfirm: () => deleteVenue(venue.id),
+        });
+    }
+
+    function confirmDeletePromoter(promoter: Promoter) {
+        confirmModalRef.current?.open({
+            message: `Delete ${promoter.name}? This cannot be undone.`,
+            confirmLabel: "Delete",
+            danger: true,
+            onConfirm: () => deletePromoter(promoter.id),
+        });
     }
 
     async function saveLinks(
@@ -176,13 +232,22 @@ export default function App() {
         setSelectedCity(e.target.value);
     }
 
+    function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setSearchInput(e.target.value);
+    }
+
+    function matchesSearch(name: string) {
+        return name.toLowerCase().includes(searchTerm.trim().toLowerCase());
+    }
+
     const venuesWithPromoters = buildVenuesWithPromoters(venues, promoters, relationships);
     const promotersWithVenues = buildPromotersWithVenues(promoters, venues, relationships);
 
-    const visibleVenues =
-        selectedCity === "All"
-            ? venuesWithPromoters
-            : venuesWithPromoters.filter((venue) => venue.city === selectedCity);
+    const visibleVenues = venuesWithPromoters
+        .filter((venue) => selectedCity === "All Cities" || venue.city === selectedCity)
+        .filter((venue) => matchesSearch(venue.name));
+
+    const visiblePromoters = promotersWithVenues.filter((promoter) => matchesSearch(promoter.name));
 
     return (
         <div>
@@ -230,15 +295,26 @@ export default function App() {
                             </button>
                         )}
 
-                        <select
-                            className="cities-select"
-                            value={selectedCity}
-                            onChange={handleCityChange}
-                        >
-                            {cities?.map((city) =>(
-                                <option value={city} key={city}>{city}</option>
-                            ))}
-                        </select>
+                        <div className="filter-group">
+                            <select
+                                className="cities-select"
+                                value={selectedCity}
+                                onChange={handleCityChange}
+                            >
+                                {cities?.map((city) =>(
+                                    <option value={city} key={city}>{city}</option>
+                                ))}
+                            </select>
+
+                            <input
+                                className="search-input"
+                                type="search"
+                                value={searchInput}
+                                onChange={handleSearchChange}
+                                placeholder="Search venues..."
+                                aria-label="Search venues"
+                            />
+                        </div>
                     </div>
 
                     <div className="venues">
@@ -249,6 +325,7 @@ export default function App() {
                                 allPromoters={promotersWithVenues}
                                 canEdit={canEdit}
                                 onEdit={() => venueFormModalRef.current?.open(venue)}
+                                onDelete={() => confirmDeleteVenue(venue)}
                                 onManagePromoters={() =>
                                     venuePromotersLinkModalRef.current?.open(
                                         venue.id,
@@ -277,16 +354,26 @@ export default function App() {
                                 Add Promoter
                             </button>
                         )}
+
+                        <input
+                            className="search-input"
+                            type="search"
+                            value={searchInput}
+                            onChange={handleSearchChange}
+                            placeholder="Search promoters..."
+                            aria-label="Search promoters"
+                        />
                     </div>
 
                     <div className="venues">
-                        {promotersWithVenues.map((promoter) => (
+                        {visiblePromoters.map((promoter) => (
                             <PromoterCard
                                 key={promoter.id}
                                 promoter={promoter}
                                 allVenues={venuesWithPromoters}
                                 canEdit={canEdit}
                                 onEdit={() => promoterFormModalRef.current?.open(promoter)}
+                                onDelete={() => confirmDeletePromoter(promoter)}
                                 onManageVenues={() =>
                                     promoterVenuesLinkModalRef.current?.open(
                                         promoter.id,
@@ -328,7 +415,7 @@ export default function App() {
             <LoginModal ref={loginModalRef} />
             <ConfirmModal ref={confirmModalRef} />
 
-            <Toaster position="top-center" theme="dark" richColors />
+            <Toaster position="top-center" theme="light" richColors />
         </div>
     );
 }

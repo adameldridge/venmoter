@@ -2,7 +2,7 @@ import { useRef, useState, useImperativeHandle, type Ref } from "react";
 import "./FormModal.css";
 
 export type ConfirmModalHandle = {
-    open: (options: { message: string; confirmLabel?: string; onConfirm: () => void }) => void;
+    open: (options: { message: string; confirmLabel?: string; danger?: boolean; onConfirm: () => void }) => void;
 };
 
 type ConfirmModalProps = {
@@ -13,12 +13,14 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [message, setMessage] = useState("");
     const [confirmLabel, setConfirmLabel] = useState("Confirm");
+    const [danger, setDanger] = useState(false);
     const onConfirmRef = useRef<() => void>(() => {});
 
     useImperativeHandle(ref, () => ({
-        open({ message, confirmLabel, onConfirm }) {
+        open({ message, confirmLabel, danger, onConfirm }) {
             setMessage(message);
             setConfirmLabel(confirmLabel ?? "Confirm");
+            setDanger(danger ?? false);
             onConfirmRef.current = onConfirm;
             modalRef.current?.showModal();
         },
@@ -38,7 +40,11 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
             <div className="entity-form">
                 <div className="entity-form-title">{message}</div>
                 <div>
-                    <button className="create-button" type="button" onClick={handleConfirm}>
+                    <button
+                        className={danger ? "danger-button" : "create-button"}
+                        type="button"
+                        onClick={handleConfirm}
+                    >
                         {confirmLabel}
                     </button>
                     <button className="cancel-button" type="button" onClick={closeModal}>
