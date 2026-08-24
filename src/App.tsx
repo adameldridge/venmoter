@@ -379,7 +379,7 @@ export default function App() {
             <LoginModal ref={loginModalRef} />
             <ConfirmModal ref={confirmModalRef} />
 
-            <Toaster position="top-center" theme="dark" richColors />
+            <Toaster position="top-center" theme="light" richColors />
         </div>
     );
 }
