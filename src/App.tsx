@@ -19,13 +19,21 @@ import PromoterFormModal from "./components/PromoterFormModal";
 import type { PromoterFormModalHandle } from "./components/PromoterFormModal";
 import LinkModal from "./components/LinkModal";
 import type { LinkModalHandle } from "./components/LinkModal";
+import LoginModal from "./components/LoginModal";
+import type { LoginModalHandle } from "./components/LoginModal";
+import ConfirmModal from "./components/ConfirmModal";
+import type { ConfirmModalHandle } from "./components/ConfirmModal";
 import { Toaster, toast } from "sonner";
 import Spinner from "./components/Spinner";
-import { FaRegUser } from "react-icons/fa";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase/config";
+import { useAuth } from "./hooks/useAuth";
 
 type Tab = "venues" | "promoters";
 
 export default function App() {
+    const { user } = useAuth();
+    const canEdit = !!user;
     const [activeTab, setActiveTab] = useState<Tab>("venues");
     const [venues, setVenues] = useState<Venue[]>([]);
     const [promoters, setPromoters] = useState<Promoter[]>([]);
@@ -37,6 +45,23 @@ export default function App() {
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
     const venuePromotersLinkModalRef = useRef<LinkModalHandle>(null);
     const promoterVenuesLinkModalRef = useRef<LinkModalHandle>(null);
+    const loginModalRef = useRef<LoginModalHandle>(null);
+    const confirmModalRef = useRef<ConfirmModalHandle>(null);
+
+    function handleAuthButtonClick() {
+        if (user) {
+            confirmModalRef.current?.open({
+                message: "Are you sure you want to sign out?",
+                confirmLabel: "Sign Out",
+                onConfirm: async () => {
+                    await signOut(auth);
+                    toast.success("Logged out");
+                },
+            });
+        } else {
+            loginModalRef.current?.open();
+        }
+    }
 
     async function loadAll() {
         try {
@@ -176,9 +201,14 @@ export default function App() {
                 >
                     Promoters
                 </button>
-            </div>
-            <div className="login">
-                <FaRegUser onClick={}/>
+
+                <button
+                    className={user ? "login-button cancel-button" : "login-button create-button"}
+                    type="button"
+                    onClick={handleAuthButtonClick}
+                >
+                    {user ? "Sign Out" : "Sign In"}
+                </button>
             </div>
 
             {isInitialLoading ? (
@@ -190,13 +220,15 @@ export default function App() {
             {activeTab === "venues" && (
                 <div>
                     <div className="venues-header">
-                        <button
-                            className="create-button"
-                            type="button"
-                            onClick={() => venueFormModalRef.current?.open()}
-                        >
-                            Add Venue
-                        </button>
+                        {canEdit && (
+                            <button
+                                className="create-button"
+                                type="button"
+                                onClick={() => venueFormModalRef.current?.open()}
+                            >
+                                Add Venue
+                            </button>
+                        )}
 
                         <select
                             className="cities-select"
@@ -215,6 +247,7 @@ export default function App() {
                                 key={venue.id}
                                 venue={venue}
                                 allPromoters={promotersWithVenues}
+                                canEdit={canEdit}
                                 onEdit={() => venueFormModalRef.current?.open(venue)}
                                 onManagePromoters={() =>
                                     venuePromotersLinkModalRef.current?.open(
@@ -235,13 +268,15 @@ export default function App() {
             {activeTab === "promoters" && (
                 <div>
                     <div className="venues-header">
-                        <button
-                            className="create-button"
-                            type="button"
-                            onClick={() => promoterFormModalRef.current?.open()}
-                        >
-                            Add Promoter
-                        </button>
+                        {canEdit && (
+                            <button
+                                className="create-button"
+                                type="button"
+                                onClick={() => promoterFormModalRef.current?.open()}
+                            >
+                                Add Promoter
+                            </button>
+                        )}
                     </div>
 
                     <div className="venues">
@@ -250,6 +285,7 @@ export default function App() {
                                 key={promoter.id}
                                 promoter={promoter}
                                 allVenues={venuesWithPromoters}
+                                canEdit={canEdit}
                                 onEdit={() => promoterFormModalRef.current?.open(promoter)}
                                 onManageVenues={() =>
                                     promoterVenuesLinkModalRef.current?.open(
@@ -288,6 +324,9 @@ export default function App() {
                     saveLinks("promoterId", promoterId, "venueId", venueIds)
                 }
             />
+
+            <LoginModal ref={loginModalRef} />
+            <ConfirmModal ref={confirmModalRef} />
 
             <Toaster position="top-center" theme="dark" richColors />
         </div>
