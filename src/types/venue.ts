@@ -6,6 +6,7 @@ export type Venue = {
   facebook?: string;
   instagram?: string;
   email?: string;
+  managesInHouse?: boolean;
 };
 
 export type Promoter = {
@@ -38,4 +39,5 @@ export type NewPromoter = Omit<Promoter, "id">;
 export type LinkOption = {
   id: string;
   name: string;
+  city?: string;
 };

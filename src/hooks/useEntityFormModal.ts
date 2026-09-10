@@ -34,9 +34,10 @@ export function useEntityFormModal<TEntity extends { id: string }, TFormValues>(
     }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const { name, type, value, checked } = e.target;
         setFormValues((current) => ({
             ...current,
-            [e.target.name]: e.target.value,
+            [name]: type === "checkbox" ? checked : value,
         }));
     }
 
