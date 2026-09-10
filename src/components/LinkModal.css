@@ -1,8 +1,15 @@
-.link-modal-search{
-  display: block;
+.link-modal-filters{
+  padding: 8px;
   margin-bottom: 10px;
-  padding: 10px;
-  width: 95%;
+}
+
+.link-modal-search{
+  flex: 1;
+  width: auto;
+}
+
+.link-modal-filters .cities-select{
+  border: 1px solid #ccc;
 }
 
 .link-modal-list{
@@ -20,6 +27,11 @@
   gap: 8px;
   padding: 6px 0;
   font-size: 14px;
+}
+
+.link-modal-option-city{
+  opacity: 0.7;
+  font-size: 12px;
 }
 
 .link-modal-empty{

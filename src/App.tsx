@@ -94,6 +94,12 @@ export default function App() {
         .filter((venue) => matchesSearch(venue.name))
         .sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
+    const sortedVenues = [...venues].sort(
+        (a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name),
+    );
+
+    const sortedPromoters = [...promoters].sort((a, b) => a.name.localeCompare(b.name));
+
     const visiblePromoters = promotersWithVenues
         .filter((promoter) => matchesSearch(promoter.name))
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -147,7 +153,7 @@ export default function App() {
                             onManagePromoters={(venue) =>
                                 venuePromotersLinkModalRef.current?.open(
                                     venue.id,
-                                    promoters.map((promoter) => ({
+                                    sortedPromoters.map((promoter) => ({
                                         id: promoter.id,
                                         name: promoter.name,
                                     })),
@@ -170,9 +176,10 @@ export default function App() {
                             onManageVenues={(promoter) =>
                                 promoterVenuesLinkModalRef.current?.open(
                                     promoter.id,
-                                    venues.map((venue) => ({
+                                    sortedVenues.map((venue) => ({
                                         id: venue.id,
                                         name: venue.name,
+                                        city: venue.city,
                                     })),
                                     promoter.venues.map((venue) => venue.id),
                                 )
@@ -197,6 +204,7 @@ export default function App() {
                 ref={promoterVenuesLinkModalRef}
                 title="Manage Venues"
                 itemLabel="venues"
+                cities={cities}
                 onSave={(promoterId, venueIds) =>
                     saveLinks("promoterId", promoterId, "venueId", venueIds)
                 }

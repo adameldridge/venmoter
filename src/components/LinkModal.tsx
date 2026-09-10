@@ -7,6 +7,7 @@ import "./LinkModal.css";
 type LinkModalProps = {
     title: string;
     itemLabel: string;
+    cities?: string[];
     onSave: (subjectId: string, selectedIds: string[]) => Promise<void>;
     ref?: Ref<LinkModalHandle>;
 };
@@ -15,12 +16,13 @@ export type LinkModalHandle = {
     open: (subjectId: string, options: LinkOption[], selectedIds: string[]) => void;
 };
 
-function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
+function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [subjectId, setSubjectId] = useState<string | null>(null);
     const [options, setOptions] = useState<LinkOption[]>([]);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState("");
+    const [selectedCity, setSelectedCity] = useState("All Cities");
     const [isSaving, setIsSaving] = useState(false);
 
     useImperativeHandle(ref, () => ({
@@ -29,6 +31,7 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
             setOptions(options);
             setCheckedIds(new Set(selectedIds));
             setSearch("");
+            setSelectedCity("All Cities");
             modalRef.current?.showModal();
         },
     }));
@@ -38,6 +41,7 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
         setOptions([]);
         setCheckedIds(new Set());
         setSearch("");
+        setSelectedCity("All Cities");
         modalRef.current?.close();
     }
 
@@ -66,22 +70,36 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
         }
     }
 
-    const visibleOptions = options.filter((option) =>
-        option.name.toLowerCase().includes(search.toLowerCase()),
-    );
+    const visibleOptions = options
+        .filter((option) => selectedCity === "All Cities" || option.city === selectedCity)
+        .filter((option) => option.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
         <dialog id="link-modal" ref={modalRef}>
             <div className="modal-box">
                 <div className="modal-title">{title}</div>
 
-                <input
-                    className="link-modal-search"
-                    type="text"
-                    placeholder={`Search ${itemLabel}...`}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+                <div className="filter-group link-modal-filters">
+                    {cities && (
+                        <select
+                            className="cities-select"
+                            value={selectedCity}
+                            onChange={(e) => setSelectedCity(e.target.value)}
+                        >
+                            {cities.map((city) => (
+                                <option value={city} key={city}>{city}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    <input
+                        className="search-input link-modal-search"
+                        type="text"
+                        placeholder={`Search ${itemLabel}...`}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
 
                 <div className="link-modal-list">
                     {visibleOptions.length > 0 ? (
@@ -93,6 +111,9 @@ function LinkModal({ title, itemLabel, onSave, ref }: LinkModalProps) {
                                     onChange={() => toggleOption(option.id)}
                                 />
                                 {option.name}
+                                {option.city && (
+                                    <span className="link-modal-option-city">{option.city}</span>
+                                )}
                             </label>
                         ))
                     ) : (

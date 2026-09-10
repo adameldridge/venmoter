@@ -39,4 +39,5 @@ export type NewPromoter = Omit<Promoter, "id">;
 export type LinkOption = {
   id: string;
   name: string;
+  city?: string;
 };
