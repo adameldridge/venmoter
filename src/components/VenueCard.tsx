@@ -49,8 +49,11 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
                     <div className="entity-card-relations-title">Promoters</div>
                 </div>
 
-                {venue.promoters.length > 0 ? (
+                {venue.promoters.length > 0 || venue.managesInHouse ? (
                     <div className="entity-card-chips">
+                        {venue.managesInHouse && (
+                            <span className="entity-card-chip-inhouse">In-house</span>
+                        )}
                         {venue.promoters.map((promoter) => (
                             <button
                                 key={promoter.id}

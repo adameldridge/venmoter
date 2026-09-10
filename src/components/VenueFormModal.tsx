@@ -17,6 +17,7 @@ const emptyVenue: NewVenue = {
     instagram: "",
     facebook: "",
     email: "",
+    managesInHouse: false,
 };
 
 function toFormValues(venue: Venue): NewVenue {
@@ -27,6 +28,7 @@ function toFormValues(venue: Venue): NewVenue {
         instagram: venue.instagram ?? "",
         facebook: venue.facebook ?? "",
         email: venue.email ?? "",
+        managesInHouse: venue.managesInHouse ?? false,
     };
 }
 
@@ -119,6 +121,19 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                             value={formValues.email}
                             onChange={handleChange}
                         />
+                    </div>
+
+                    <div className="entity-form-checkbox">
+                        <label htmlFor="venueManagesInHouse">
+                            <input
+                                id="venueManagesInHouse"
+                                name="managesInHouse"
+                                type="checkbox"
+                                checked={formValues.managesInHouse ?? false}
+                                onChange={handleChange}
+                            />
+                            Manages some promotions in-house
+                        </label>
                     </div>
 
                     <div className="modal-actions">

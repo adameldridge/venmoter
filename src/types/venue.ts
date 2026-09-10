@@ -6,6 +6,7 @@ export type Venue = {
   facebook?: string;
   instagram?: string;
   email?: string;
+  managesInHouse?: boolean;
 };
 
 export type Promoter = {

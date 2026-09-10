@@ -77,6 +77,18 @@
     border-color: #029742;
 }
 
+.entity-card-chip-inhouse{
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    padding: 4px 12px;
+    margin: 0;
+    font-size: 12px;
+    font-style: italic;
+    color: #fff;
+    cursor: default;
+}
+
 .entity-card-chip-meta{
     opacity: 0.7;
 }
