@@ -1,6 +1,14 @@
+dialog{
+    box-sizing: border-box;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+}
+
 .modal-box{
   width: 350px;
+  max-width: calc(100vw - 52px);
   padding: 10px;
+  box-sizing: border-box;
 }
 
 .modal-title{
@@ -11,4 +19,10 @@
 .modal-actions button{
     display: inline-block;
     margin-right: 10px;
+}
+
+@media (max-width: 480px){
+  .modal-actions button{
+    padding: 10px 20px;
+  }
 }
