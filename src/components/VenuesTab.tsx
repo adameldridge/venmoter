@@ -10,7 +10,6 @@ type VenuesTabProps = {
     onCityChange: (city: string) => void;
     searchInput: string;
     onSearchChange: (search: string) => void;
-    canEdit: boolean;
     onAddVenue: () => void;
     onEditVenue: (venue: VenueWithPromoters) => void;
     onDeleteVenue: (venue: VenueWithPromoters) => void;
@@ -25,7 +24,6 @@ export default function VenuesTab({
     onCityChange,
     searchInput,
     onSearchChange,
-    canEdit,
     onAddVenue,
     onEditVenue,
     onDeleteVenue,
@@ -33,7 +31,7 @@ export default function VenuesTab({
 }: VenuesTabProps) {
     return (
         <div>
-            <ListHeader canEdit={canEdit} addLabel="Add Venue" onAdd={onAddVenue}>
+            <ListHeader addLabel="Add Venue" onAdd={onAddVenue}>
                 <div className="filter-group">
                     <select
                         className="cities-select"
@@ -65,7 +63,6 @@ export default function VenuesTab({
                                 key={venue.id}
                                 venue={venue}
                                 allPromoters={allPromoters}
-                                canEdit={canEdit}
                                 onEdit={() => onEditVenue(venue)}
                                 onDelete={() => onDeleteVenue(venue)}
                                 onManagePromoters={() => onManagePromoters(venue)}

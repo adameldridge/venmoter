@@ -7,7 +7,6 @@ type PromotersTabProps = {
     allVenues: VenueWithPromoters[];
     searchInput: string;
     onSearchChange: (search: string) => void;
-    canEdit: boolean;
     onAddPromoter: () => void;
     onEditPromoter: (promoter: PromoterWithVenues) => void;
     onDeletePromoter: (promoter: PromoterWithVenues) => void;
@@ -19,7 +18,6 @@ export default function PromotersTab({
     allVenues,
     searchInput,
     onSearchChange,
-    canEdit,
     onAddPromoter,
     onEditPromoter,
     onDeletePromoter,
@@ -27,7 +25,7 @@ export default function PromotersTab({
 }: PromotersTabProps) {
     return (
         <div>
-            <ListHeader canEdit={canEdit} addLabel="Add Promoter" onAdd={onAddPromoter}>
+            <ListHeader addLabel="Add Promoter" onAdd={onAddPromoter}>
                 <input
                     className="search-input"
                     type="search"
@@ -44,7 +42,6 @@ export default function PromotersTab({
                         key={promoter.id}
                         promoter={promoter}
                         allVenues={allVenues}
-                        canEdit={canEdit}
                         onEdit={() => onEditPromoter(promoter)}
                         onDelete={() => onDeletePromoter(promoter)}
                         onManageVenues={() => onManageVenues(promoter)}
