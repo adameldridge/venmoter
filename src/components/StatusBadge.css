@@ -1,7 +1,5 @@
 .status-badge{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: inline-block;
     padding: 3px 10px;
     border-radius: 999px;
     font-size: 12px;
@@ -22,6 +20,11 @@
 }
 
 .status-badge-in-discussion{
+    background: #8b5cf6;
+    color: #fff;
+}
+
+.status-badge-on-hold{
     background: #f2a900;
     color: #1a1a1a;
 }
@@ -39,9 +42,4 @@
 .status-badge-no-response{
     background: #6b7280;
     color: #fff;
-}
-
-.status-badge-edit{
-    font-size: 9px;
-    opacity: 0.7;
 }

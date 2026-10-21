@@ -10,8 +10,8 @@ import ConfirmModal, { type ConfirmModalHandle } from "./components/ConfirmModal
 import TourTab from "./components/TourTab";
 import TourFormModal, { type TourFormModalHandle } from "./components/TourFormModal";
 import OutreachModal, { type OutreachModalHandle } from "./components/OutreachModal";
+import ContactLogModal, { type ContactLogModalHandle } from "./components/ContactLogModal";
 import StopFormModal, { type StopFormModalHandle } from "./components/StopFormModal";
-import HoldFormModal, { type HoldFormModalHandle } from "./components/HoldFormModal";
 import { toast } from "sonner";
 import Spinner from "./components/Spinner";
 import { signOut } from "firebase/auth";
@@ -19,7 +19,7 @@ import { auth } from "./firebase/config";
 import { useVenueData } from "./hooks/useVenueData";
 import { useTourData } from "./hooks/useTourData";
 import type { LinkOption } from "./types/venue";
-import type { Hold, Outreach, OutreachTarget, OutreachTargetType, StopOutreach, Tour, TourStop } from "./types/tour";
+import type { NewOutreach, Outreach, OutreachTarget, OutreachTargetType, StopOutreach, Tour, TourStop } from "./types/tour";
 import { sameCity } from "./utils/city";
 import { formatDate } from "./utils/date";
 
@@ -38,16 +38,16 @@ export default function App() {
     const confirmModalRef = useRef<ConfirmModalHandle>(null);
     const tourFormModalRef = useRef<TourFormModalHandle>(null);
     const outreachModalRef = useRef<OutreachModalHandle>(null);
+    const contactLogModalRef = useRef<ContactLogModalHandle>(null);
     const stopFormModalRef = useRef<StopFormModalHandle>(null);
     const stopTargetsLinkModalRef = useRef<LinkModalHandle>(null);
-    const holdFormModalRef = useRef<HoldFormModalHandle>(null);
 
     const {
         tours,
         activeTour,
         activeStops,
         activeOutreach,
-        activeHolds,
+        activeContactLog,
         isInitialLoading: isToursLoading,
         setActiveTour,
         saveTour,
@@ -55,10 +55,9 @@ export default function App() {
         saveStop,
         deleteStop,
         saveStopTargets,
-        saveHold,
-        deleteHold,
-        confirmHold,
-        unconfirmHold,
+        otherHoldsInCity,
+        logContact,
+        deleteContactLogEntry,
         saveOutreach,
         deleteOutreach,
         deleteOutreachForTarget,
@@ -154,10 +153,6 @@ export default function App() {
             .map((o) => ({ outreach: o, city: activeStops.find((stop) => stop.id === o.stopId)?.city ?? "" }));
     }
 
-    function openOutreach({ outreach, city }: StopOutreach) {
-        outreachModalRef.current?.open(outreach, `${targetName(outreach)} – ${city}`);
-    }
-
     // Picker options: the stop's city venues, promoters linked to them, plus anything already added.
     function openStopTargets(stop: TourStop) {
         const toOptionId = (target: OutreachTarget) => `${target.targetType}:${target.targetId}`;
@@ -204,36 +199,25 @@ export default function App() {
         );
     }
 
-    function openHoldForm(stop: TourStop, hold?: Hold) {
-        const cityVenues = venuesWithPromoters
-            .filter((venue) => sameCity(venue.city, stop.city))
-            .sort((a, b) => a.name.localeCompare(b.name));
-        holdFormModalRef.current?.open(stop, cityVenues, hold);
+    function linkedPromoters(venueId: string) {
+        const venue = venuesWithPromoters.find((v) => v.id === venueId);
+        return [...(venue?.promoters ?? [])].sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    function venueName(venueId: string) {
-        return venues.find((venue) => venue.id === venueId)?.name ?? "this venue";
-    }
+    // Confirming a venue sends the city's other holds back to "In discussion", so check first.
+    function saveOutreachWithConfirm(values: NewOutreach, outreachId: string) {
+        const toRelease = values.status === "confirmed" ? otherHoldsInCity(outreachId, values.stopId) : [];
+        if (toRelease.length === 0) return saveOutreach(values, outreachId);
 
-    function confirmConfirmHold(hold: Hold) {
-        const stop = activeStops.find((s) => s.id === hold.stopId);
-        const otherCount = activeHolds.filter((h) => h.stopId === hold.stopId && h.id !== hold.id).length;
-        const releaseNote = otherCount > 0
-            ? ` The other ${otherCount === 1 ? "hold" : `${otherCount} holds`} in ${stop?.city ?? "this city"} will be deleted.`
-            : "";
-        confirmModalRef.current?.open({
-            message: `Confirm ${venueName(hold.venueId)} on ${formatDate(hold.date)}?${releaseNote}`,
-            confirmLabel: "Confirm",
-            onConfirm: () => confirmHold(hold),
-        });
-    }
-
-    function confirmDeleteHold(hold: Hold) {
-        confirmModalRef.current?.open({
-            message: `Delete the hold at ${venueName(hold.venueId)} on ${formatDate(hold.date)}?`,
-            confirmLabel: "Delete",
-            danger: true,
-            onConfirm: () => deleteHold(hold.id),
+        return new Promise<void>((resolve, reject) => {
+            confirmModalRef.current?.open({
+                message: `Confirm ${targetName(values)} on ${formatDate(values.showDate)}? ${toRelease
+                    .map(targetName)
+                    .join(", ")} will go back to In discussion.`,
+                confirmLabel: "Confirm",
+                onConfirm: () => saveOutreach(values, outreachId).then(resolve, reject),
+                onCancel: () => reject(new Error("Confirmation cancelled")),
+            });
         });
     }
 
@@ -315,7 +299,6 @@ export default function App() {
                                 )
                             }
                             outreachFor={(venueId) => outreachFor("venue", venueId)}
-                            onOpenOutreach={openOutreach}
                         />
                     )}
 
@@ -340,7 +323,6 @@ export default function App() {
                                 )
                             }
                             outreachFor={(promoterId) => outreachFor("promoter", promoterId)}
-                            onOpenOutreach={openOutreach}
                         />
                     )}
 
@@ -349,8 +331,8 @@ export default function App() {
                             tours={tours}
                             activeTour={activeTour}
                             stops={activeStops}
-                            holds={activeHolds}
                             outreach={activeOutreach}
+                            contactLog={activeContactLog}
                             venues={venues}
                             promoters={promoters}
                             onSelectTour={setActiveTour}
@@ -359,15 +341,8 @@ export default function App() {
                             onAddStop={() => stopFormModalRef.current?.open()}
                             onEditStop={(stop) => stopFormModalRef.current?.open(stop)}
                             onFillStop={openStopTargets}
-                            onAddHold={(stop) => openHoldForm(stop)}
-                            onEditHold={(hold) => {
-                                const stop = activeStops.find((s) => s.id === hold.stopId);
-                                if (stop) openHoldForm(stop, hold);
-                            }}
-                            onConfirmHold={confirmConfirmHold}
-                            onUnconfirmHold={(hold) => unconfirmHold(hold.id)}
-                            onDeleteHold={confirmDeleteHold}
                             onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
+                            onOpenLog={(outreach, title) => contactLogModalRef.current?.open(outreach, title)}
                             onRemoveOutreach={confirmRemoveOutreach}
                         />
                     )}
@@ -403,7 +378,6 @@ export default function App() {
                     if (tour) confirmDeleteTour(tour);
                 }}
             />
-            <HoldFormModal ref={holdFormModalRef} onSave={saveHold} />
             <StopFormModal
                 ref={stopFormModalRef}
                 onDelete={(stopId) => {
@@ -421,7 +395,18 @@ export default function App() {
                 itemLabel="venues & promoters"
                 onSave={saveStopTargetIds}
             />
-            <OutreachModal ref={outreachModalRef} onSave={saveOutreach} onRemove={confirmRemoveOutreach} />
+            <OutreachModal
+                ref={outreachModalRef}
+                linkedPromoters={linkedPromoters}
+                onSave={saveOutreachWithConfirm}
+                onRemove={confirmRemoveOutreach}
+            />
+            <ContactLogModal
+                ref={contactLogModalRef}
+                contactLog={activeContactLog}
+                onLogContact={logContact}
+                onDeleteEntry={(entry) => deleteContactLogEntry(entry.id)}
+            />
 
             <ConfirmModal ref={confirmModalRef} />
         </div>

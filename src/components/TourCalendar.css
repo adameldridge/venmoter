@@ -52,6 +52,28 @@
     border-color: #029742;
 }
 
+.tour-calendar-day{
+    position: relative;
+}
+
+.tour-calendar-day-clash{
+    box-shadow: inset 0 0 0 2px #e5484d;
+}
+
+.tour-calendar-clash{
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #e5484d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 16px;
+}
+
 .tour-calendar-day-today{
     box-shadow: inset 0 0 0 2px #fff;
 }
@@ -73,12 +95,22 @@
     font-weight: bold;
 }
 
-.tour-calendar-label{
+.tour-calendar-label,
+.tour-calendar-sublabel{
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.tour-calendar-label{
     font-size: 11px;
+    font-weight: 600;
+}
+
+.tour-calendar-sublabel{
+    font-size: 10px;
+    opacity: 0.85;
 }
 
 .tour-calendar-legend{
@@ -105,6 +137,10 @@
 
 .tour-calendar-swatch-booked{
     background: #029742;
+}
+
+.tour-calendar-swatch-clash{
+    border: 2px solid #e5484d;
 }
 
 .tour-calendar-swatch-provisional{

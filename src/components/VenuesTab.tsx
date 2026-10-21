@@ -16,7 +16,6 @@ type VenuesTabProps = {
     onDeleteVenue: (venue: VenueWithPromoters) => void;
     onManagePromoters: (venue: VenueWithPromoters) => void;
     outreachFor: (venueId: string) => StopOutreach[];
-    onOpenOutreach: (stopOutreach: StopOutreach, venue: VenueWithPromoters) => void;
 };
 
 export default function VenuesTab({
@@ -32,7 +31,6 @@ export default function VenuesTab({
     onDeleteVenue,
     onManagePromoters,
     outreachFor,
-    onOpenOutreach,
 }: VenuesTabProps) {
     return (
         <div>
@@ -72,7 +70,6 @@ export default function VenuesTab({
                                 onDelete={() => onDeleteVenue(venue)}
                                 onManagePromoters={() => onManagePromoters(venue)}
                                 outreach={outreachFor(venue.id)}
-                                onOpenOutreach={(stopOutreach) => onOpenOutreach(stopOutreach, venue)}
                             />
                         ))}
                     </div>

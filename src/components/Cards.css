@@ -173,3 +173,35 @@
 .entity-card-statuses .entity-card-status{
     margin: 0;
 }
+
+.entity-card-clash{
+    border-color: #e5484d;
+}
+
+.entity-card-clash-note{
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ff8a8d;
+}
+
+.entity-card-latest-contact{
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: #fff;
+    font-size: 12px;
+    text-align: left;
+}
+
+.entity-card-outreach-latest{
+    display: block;
+    margin-top: 2px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.entity-card-follow-up-due{
+    color: #ff8a8d;
+    font-weight: 600;
+}

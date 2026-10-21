@@ -1,7 +1,7 @@
 import './Cards.css';
 import type { Promoter, Venue } from "../types/venue";
-import { channelLabel, type Outreach } from "../types/tour";
-import { formatDate } from "../utils/date";
+import { channelLabel, type ContactLogEntry, type Outreach } from "../types/tour";
+import { formatDate, todayIsoDate } from "../utils/date";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
 import StatusBadge from "./StatusBadge";
@@ -9,15 +9,30 @@ import StatusBadge from "./StatusBadge";
 type TourCardProps = {
     outreach: Outreach;
     target: Venue | Promoter;
+    latestContact?: ContactLogEntry;
+    viaPromoterName?: string;
+    clashMessages: string[];
     onUpdate: () => void;
+    onOpenLog: () => void;
     onRemove: () => void;
 };
 
-export default function TourCard({ outreach, target, onUpdate, onRemove }: TourCardProps) {
+export default function TourCard({
+    outreach,
+    target,
+    latestContact,
+    viaPromoterName,
+    clashMessages,
+    onUpdate,
+    onOpenLog,
+    onRemove,
+}: TourCardProps) {
     const typeLabel = outreach.targetType === "venue" ? "Venue" : "Promoter";
+    const isClosed = outreach.status === "confirmed" || outreach.status === "declined";
+    const followUpDue = !isClosed && outreach.followUpDate && outreach.followUpDate <= todayIsoDate();
 
     return (
-        <div className="entity-card">
+        <div className={clashMessages.length > 0 ? "entity-card entity-card-clash" : "entity-card"}>
             <div className="entity-card-header">
                 <div>
                     <div className="entity-card-title">{target.name}</div>
@@ -26,16 +41,23 @@ export default function TourCard({ outreach, target, onUpdate, onRemove }: TourC
                 <CardMenu
                     items={[
                         { label: "Update status", onClick: onUpdate },
+                        { label: "Contact log", onClick: onOpenLog },
                         { label: "Remove from city", onClick: onRemove, danger: true },
                     ]}
                 />
             </div>
-            <button className="entity-card-status" type="button" onClick={onUpdate}>
-                <StatusBadge status={outreach.status} editable />
+            <div className="entity-card-status">
+                <StatusBadge status={outreach.status} />
                 {outreach.showDate && (
-                    <span className="entity-card-status-date">{formatDate(outreach.showDate)}</span>
+                    <span className="entity-card-status-date">
+                        {formatDate(outreach.showDate)}
+                        {viaPromoterName && ` · via ${viaPromoterName}`}
+                    </span>
                 )}
-            </button>
+            </div>
+            {clashMessages.map((message) => (
+                <div key={message} className="entity-card-clash-note">{message}</div>
+            ))}
             <SocialLinks
                 website={target.website}
                 instagram={target.instagram}
@@ -43,17 +65,21 @@ export default function TourCard({ outreach, target, onUpdate, onRemove }: TourC
                 email={target.email}
             />
 
-            {(outreach.lastContacted || outreach.channel || outreach.notes) && (
+            {(latestContact || outreach.followUpDate || outreach.notes) && (
                 <div className="entity-card-relations">
-                    <div className="entity-card-relations-header">
-                        <div className="entity-card-relations-title">Outreach</div>
-                    </div>
                     <div className="entity-card-outreach">
-                        {(outreach.lastContacted || outreach.channel) && (
-                            <div>
-                                Contacted
-                                {outreach.lastContacted && ` ${formatDate(outreach.lastContacted)}`}
-                                {outreach.channel && ` via ${channelLabel(outreach.channel)}`}
+                        {latestContact && (
+                            <button className="entity-card-latest-contact" type="button" onClick={onOpenLog}>
+                                Contacted {formatDate(latestContact.date)}
+                                {latestContact.channel && ` via ${channelLabel(latestContact.channel)}`}
+                                {latestContact.note && (
+                                    <span className="entity-card-outreach-latest">“{latestContact.note}”</span>
+                                )}
+                            </button>
+                        )}
+                        {outreach.followUpDate && !isClosed && (
+                            <div className={followUpDue ? "entity-card-follow-up-due" : undefined}>
+                                Follow up by {formatDate(outreach.followUpDate)}
                             </div>
                         )}
                         {outreach.notes && <div className="entity-card-outreach-notes">{outreach.notes}</div>}

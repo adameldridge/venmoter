@@ -16,7 +16,7 @@ service cloud.firestore {
     match /tour-stops/{stopId} {
       allow read, create, update, delete: if request.auth != null;
     }
-    match /holds/{holdId} {
+    match /contact-log/{entryId} {
       allow read, create, update, delete: if request.auth != null;
     }
     match /outreach/{outreachId} {

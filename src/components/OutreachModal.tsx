@@ -1,6 +1,6 @@
 import { useRef, useState, useImperativeHandle, type Ref } from "react";
-import { OUTREACH_CHANNELS, OUTREACH_STATUSES, type NewOutreach, type Outreach } from "../types/tour";
-import { todayIsoDate } from "../utils/date";
+import type { Promoter } from "../types/venue";
+import { hasShowDate, statusesFor, type NewOutreach, type Outreach } from "../types/tour";
 import Spinner from "./Spinner";
 import "./Modal.css";
 import "./Forms.css";
@@ -10,12 +10,18 @@ export type OutreachModalHandle = {
 };
 
 type OutreachModalProps = {
+    linkedPromoters: (venueId: string) => Promoter[];
     onSave: (values: NewOutreach, outreachId: string) => Promise<void>;
     onRemove: (outreach: Outreach) => void;
     ref?: Ref<OutreachModalHandle>;
 };
 
-export default function OutreachModal({ onSave, onRemove, ref }: OutreachModalProps) {
+export default function OutreachModal({
+    linkedPromoters,
+    onSave,
+    onRemove,
+    ref,
+}: OutreachModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [title, setTitle] = useState("");
     const [existing, setExisting] = useState<Outreach | null>(null);
@@ -32,10 +38,10 @@ export default function OutreachModal({ onSave, onRemove, ref }: OutreachModalPr
                 targetType: outreach.targetType,
                 targetId: outreach.targetId,
                 status: outreach.status,
-                channel: outreach.channel ?? "",
-                lastContacted: outreach.lastContacted ?? "",
-                showDate: outreach.showDate ?? "",
-                notes: outreach.notes ?? "",
+                showDate: outreach.showDate,
+                viaPromoterId: outreach.viaPromoterId,
+                followUpDate: outreach.followUpDate,
+                notes: outreach.notes,
             });
             modalRef.current?.showModal();
         },
@@ -49,23 +55,23 @@ export default function OutreachModal({ onSave, onRemove, ref }: OutreachModalPr
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
     ) {
         const { name, value } = e.target;
-        setFormValues((current) => {
-            if (!current) return current;
-            const next = { ...current, [name]: value };
-            // Moving past "To contact" implies a contact was made; default the date to today.
-            if (name === "status" && value !== "to-contact" && !current.lastContacted) {
-                next.lastContacted = todayIsoDate();
-            }
-            return next;
-        });
+        setFormValues((current) => (current ? { ...current, [name]: value } : current));
     }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!formValues || !existing) return;
+        const dated = hasShowDate(formValues.status);
         setIsSaving(true);
         try {
-            await onSave(formValues, existing.id);
+            await onSave(
+                {
+                    ...formValues,
+                    showDate: dated ? formValues.showDate : "",
+                    viaPromoterId: dated ? formValues.viaPromoterId : "",
+                },
+                existing.id,
+            );
             closeModal();
         } catch (error) {
             console.error("Error saving:", error);
@@ -80,87 +86,100 @@ export default function OutreachModal({ onSave, onRemove, ref }: OutreachModalPr
         onRemove(existing);
     }
 
+    const isVenue = formValues?.targetType === "venue";
+    const showDateFields = !!formValues && hasShowDate(formValues.status);
+    const viaOptions = isVenue && formValues ? linkedPromoters(formValues.targetId) : [];
+
     return (
         <dialog id="outreach-modal" ref={modalRef}>
             <div className="modal-box entity-form">
                 <div className="modal-title">{title}</div>
                 {formValues && (
-                    <form onSubmit={handleSubmit}>
-                        <div>
-                            <label htmlFor="outreachStatus">Status *</label>
-                            <select
-                                id="outreachStatus"
-                                name="status"
-                                required
-                                value={formValues.status}
-                                onChange={handleChange}
-                            >
-                                {OUTREACH_STATUSES.map((status) => (
-                                    <option key={status.value} value={status.value}>
-                                        {status.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    <>
+                        <form onSubmit={handleSubmit}>
+                            <div>
+                                <label htmlFor="outreachStatus">Status *</label>
+                                <select
+                                    id="outreachStatus"
+                                    name="status"
+                                    required
+                                    value={formValues.status}
+                                    onChange={handleChange}
+                                >
+                                    {statusesFor(formValues.targetType).map((status) => (
+                                        <option key={status.value} value={status.value}>
+                                            {status.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                        <div>
-                            <label htmlFor="outreachChannel">Channel</label>
-                            <select
-                                id="outreachChannel"
-                                name="channel"
-                                value={formValues.channel}
-                                onChange={handleChange}
-                            >
-                                <option value="">—</option>
-                                {OUTREACH_CHANNELS.map((channel) => (
-                                    <option key={channel.value} value={channel.value}>
-                                        {channel.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                            {showDateFields && (
+                                <>
+                                    <div>
+                                        <label htmlFor="outreachShowDate">Show date *</label>
+                                        <input
+                                            id="outreachShowDate"
+                                            name="showDate"
+                                            type="date"
+                                            required
+                                            value={formValues.showDate}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
 
-                        <div>
-                            <label htmlFor="outreachLastContacted">Last contacted</label>
-                            <input
-                                id="outreachLastContacted"
-                                name="lastContacted"
-                                type="date"
-                                value={formValues.lastContacted}
-                                onChange={handleChange}
-                            />
-                        </div>
+                                    <div>
+                                        <label htmlFor="outreachVia">Via promoter</label>
+                                        <select
+                                            id="outreachVia"
+                                            name="viaPromoterId"
+                                            value={formValues.viaPromoterId}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">
+                                                {viaOptions.length === 0 ? "No linked promoters" : "— None (direct)"}
+                                            </option>
+                                            {viaOptions.map((promoter) => (
+                                                <option key={promoter.id} value={promoter.id}>
+                                                    {promoter.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </>
+                            )}
 
-                        <div>
-                            <label htmlFor="outreachShowDate">Show date</label>
-                            <input
-                                id="outreachShowDate"
-                                name="showDate"
-                                type="date"
-                                value={formValues.showDate}
-                                onChange={handleChange}
-                            />
-                        </div>
+                            <div>
+                                <label htmlFor="outreachFollowUp">Follow up by</label>
+                                <input
+                                    id="outreachFollowUp"
+                                    name="followUpDate"
+                                    type="date"
+                                    value={formValues.followUpDate}
+                                    onChange={handleChange}
+                                />
+                            </div>
 
-                        <div>
-                            <label htmlFor="outreachNotes">Notes</label>
-                            <textarea
-                                id="outreachNotes"
-                                name="notes"
-                                rows={3}
-                                value={formValues.notes}
-                                onChange={handleChange}
-                            />
-                        </div>
+                            <div>
+                                <label htmlFor="outreachNotes">Notes</label>
+                                <textarea
+                                    id="outreachNotes"
+                                    name="notes"
+                                    rows={2}
+                                    value={formValues.notes}
+                                    onChange={handleChange}
+                                />
+                            </div>
 
-                        <div className="modal-actions">
-                            <button className="create-button" type="submit" disabled={isSaving}>
-                                {isSaving ? <Spinner size={14} /> : "Save"}
-                            </button>
-                            <button className="cancel-button" type="button" onClick={closeModal} disabled={isSaving}>
-                                Cancel
-                            </button>
-                        </div>
+                            <div className="modal-actions">
+                                <button className="create-button" type="submit" disabled={isSaving}>
+                                    {isSaving ? <Spinner size={14} /> : "Save"}
+                                </button>
+                                <button className="cancel-button" type="button" onClick={closeModal} disabled={isSaving}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
 
                         <button
                             className="form-remove-button"
@@ -170,7 +189,7 @@ export default function OutreachModal({ onSave, onRemove, ref }: OutreachModalPr
                         >
                             Remove from city
                         </button>
-                    </form>
+                    </>
                 )}
             </div>
         </dialog>

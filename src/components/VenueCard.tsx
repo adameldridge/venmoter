@@ -14,10 +14,9 @@ type VenueCardProps = {
     onManagePromoters: () => void;
     allPromoters: PromoterWithVenues[];
     outreach: StopOutreach[];
-    onOpenOutreach: (stopOutreach: StopOutreach) => void;
 };
 
-export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters, outreach, onOpenOutreach }: VenueCardProps) {
+export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters, outreach }: VenueCardProps) {
     const [activePromoterId, setActivePromoterId] = useState<string | null>(null);
 
     function toggleActivePromoter(promoterId: string) {
@@ -42,18 +41,13 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
             {outreach.length > 0 && (
                 <div className="entity-card-statuses">
                     {outreach.map((stopOutreach) => (
-                        <button
-                            key={stopOutreach.outreach.id}
-                            className="entity-card-status"
-                            type="button"
-                            onClick={() => onOpenOutreach(stopOutreach)}
-                        >
-                            <StatusBadge status={stopOutreach.outreach.status} editable />
+                        <div key={stopOutreach.outreach.id} className="entity-card-status">
+                            <StatusBadge status={stopOutreach.outreach.status} />
                             <span className="entity-card-status-date">
                                 {stopOutreach.city}
                                 {stopOutreach.outreach.showDate && ` · ${formatDate(stopOutreach.outreach.showDate)}`}
                             </span>
-                        </button>
+                        </div>
                     ))}
                 </div>
             )}

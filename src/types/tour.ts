@@ -15,29 +15,15 @@ export type TourStop = {
 
 export type NewTourStop = Omit<TourStop, "id">;
 
-export type HoldStatus = "provisional" | "confirmed";
-
-// A pencilled-in date + venue for a tour city. Confirming one deletes the city's other holds.
-export type Hold = {
-  id: string;
-  tourId: string;
-  stopId: string;
-  date: string;
-  venueId: string;
-  promoterId: string;
-  notes: string;
-  status: HoldStatus;
-};
-
-export type NewHold = Omit<Hold, "id">;
-
+// "On hold" and "Confirmed" carry a show date and only apply to venues.
 export const OUTREACH_STATUSES = [
-  { value: "to-contact", label: "To contact" },
-  { value: "contacted", label: "Contacted" },
-  { value: "in-discussion", label: "In discussion" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "declined", label: "Declined" },
-  { value: "no-response", label: "No response" },
+  { value: "to-contact", label: "To contact", venueOnly: false },
+  { value: "contacted", label: "Contacted", venueOnly: false },
+  { value: "in-discussion", label: "In discussion", venueOnly: false },
+  { value: "on-hold", label: "On hold", venueOnly: true },
+  { value: "confirmed", label: "Confirmed", venueOnly: true },
+  { value: "declined", label: "Declined", venueOnly: false },
+  { value: "no-response", label: "No response", venueOnly: false },
 ] as const;
 
 export type OutreachStatus = (typeof OUTREACH_STATUSES)[number]["value"];
@@ -52,6 +38,7 @@ export type OutreachChannel = (typeof OUTREACH_CHANNELS)[number]["value"];
 
 export type OutreachTargetType = "venue" | "promoter";
 
+// A venue or promoter's progress in one tour city.
 export type Outreach = {
   id: string;
   tourId: string;
@@ -59,13 +46,24 @@ export type Outreach = {
   targetType: OutreachTargetType;
   targetId: string;
   status: OutreachStatus;
-  channel: OutreachChannel | "";
-  lastContacted: string;
   showDate: string;
+  viaPromoterId: string;
+  followUpDate: string;
   notes: string;
 };
 
 export type NewOutreach = Omit<Outreach, "id">;
+
+export type ContactLogEntry = {
+  id: string;
+  outreachId: string;
+  tourId: string;
+  date: string;
+  channel: OutreachChannel | "";
+  note: string;
+};
+
+export type NewContactLogEntry = Omit<ContactLogEntry, "id">;
 
 export type OutreachTarget = {
   targetType: OutreachTargetType;
@@ -80,6 +78,14 @@ export type StopOutreach = {
 
 export function statusLabel(status: OutreachStatus) {
   return OUTREACH_STATUSES.find((s) => s.value === status)?.label ?? status;
+}
+
+export function statusesFor(targetType: OutreachTargetType) {
+  return OUTREACH_STATUSES.filter((s) => targetType === "venue" || !s.venueOnly);
+}
+
+export function hasShowDate(status: OutreachStatus) {
+  return status === "on-hold" || status === "confirmed";
 }
 
 export function channelLabel(channel: OutreachChannel | "") {

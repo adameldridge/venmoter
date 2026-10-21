@@ -1,18 +1,26 @@
 import type { Promoter, Venue } from "../types/venue";
-import { OUTREACH_STATUSES, type Hold, type Outreach, type Tour, type TourStop } from "../types/tour";
+import {
+    OUTREACH_STATUSES,
+    hasShowDate,
+    type ContactLogEntry,
+    type Outreach,
+    type Tour,
+    type TourStop,
+} from "../types/tour";
 import { dateRange, formatDate, formatDateRange } from "../utils/date";
+import { buildAttentionItems, findClashes, latestLogEntry, type AttentionItem } from "../utils/tourInsights";
 import ListHeader from "./ListHeader";
 import TourCard from "./TourCard";
 import TourCalendar, { type CalendarEntry } from "./TourCalendar";
-import StopHolds from "./StopHolds";
+import NeedsAttention from "./NeedsAttention";
 import "./TourTab.css";
 
 type TourTabProps = {
     tours: Tour[];
     activeTour: Tour | null;
     stops: TourStop[];
-    holds: Hold[];
     outreach: Outreach[];
+    contactLog: ContactLogEntry[];
     venues: Venue[];
     promoters: Promoter[];
     onSelectTour: (tourId: string) => void;
@@ -21,12 +29,8 @@ type TourTabProps = {
     onAddStop: () => void;
     onEditStop: (stop: TourStop) => void;
     onFillStop: (stop: TourStop) => void;
-    onAddHold: (stop: TourStop) => void;
-    onEditHold: (hold: Hold) => void;
-    onConfirmHold: (hold: Hold) => void;
-    onUnconfirmHold: (hold: Hold) => void;
-    onDeleteHold: (hold: Hold) => void;
     onOpenOutreach: (outreach: Outreach, title: string) => void;
+    onOpenLog: (outreach: Outreach, title: string) => void;
     onRemoveOutreach: (outreach: Outreach) => void;
 };
 
@@ -39,8 +43,8 @@ export default function TourTab({
     tours,
     activeTour,
     stops,
-    holds,
     outreach,
+    contactLog,
     venues,
     promoters,
     onSelectTour,
@@ -49,30 +53,53 @@ export default function TourTab({
     onAddStop,
     onEditStop,
     onFillStop,
-    onAddHold,
-    onEditHold,
-    onConfirmHold,
-    onUnconfirmHold,
-    onDeleteHold,
     onOpenOutreach,
+    onOpenLog,
     onRemoveOutreach,
 }: TourTabProps) {
     const sortedTours = [...tours].sort((a, b) => a.name.localeCompare(b.name));
-    const stopEntries = sortStops(stops, holds).map((stop) => ({
+    const stopEntries = sortStops(stops, outreach).map((stop) => ({
         stop,
-        holds: holds.filter((h) => h.stopId === stop.id),
         entries: buildEntries(
             outreach.filter((o) => o.stopId === stop.id),
             venues,
             promoters,
         ),
     }));
-    const calendarEntries = buildCalendarEntries(stopEntries, venues);
+    const calendarEntries = buildCalendarEntries(stopEntries);
+    const insightInput = activeTour ? { tour: activeTour, stops, outreach, contactLog, venues, promoters } : null;
+    const attentionItems = insightInput ? buildAttentionItems(insightInput) : [];
+    const clashes = insightInput ? findClashes(insightInput) : [];
+    const clashDates = new Set(clashes.map((clash) => clash.date));
+
+    function cityOf(stopId: string) {
+        return stops.find((stop) => stop.id === stopId)?.city ?? "";
+    }
+
+    function cardTitle(o: Outreach) {
+        const target = o.targetType === "venue"
+            ? venues.find((v) => v.id === o.targetId)
+            : promoters.find((p) => p.id === o.targetId);
+        return `${target?.name ?? ""} – ${cityOf(o.stopId)}`;
+    }
+
+    function openCard(o: Outreach) {
+        onOpenOutreach(o, cardTitle(o));
+    }
 
     function scrollToStop(stopId: string) {
         const section = document.getElementById(`tour-stop-${stopId}`);
         if (section instanceof HTMLDetailsElement) section.open = true;
         section?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function handleAttentionSelect(item: AttentionItem) {
+        const target = item.outreachId && outreach.find((o) => o.id === item.outreachId);
+        if (target) {
+            openCard(target);
+        } else {
+            scrollToStop(item.stopId);
+        }
     }
 
     return (
@@ -116,9 +143,12 @@ export default function TourTab({
                 </div>
             ) : (
                 <>
+                    <NeedsAttention items={attentionItems} onSelect={handleAttentionSelect} />
+
                     <TourCalendar
                         tour={activeTour}
                         entries={calendarEntries}
+                        clashDates={clashDates}
                         onSelectStop={scrollToStop}
                     />
 
@@ -142,30 +172,27 @@ export default function TourTab({
                         </div>
                     )}
 
-                    {stopEntries.map(({ stop, holds: stopHolds, entries }) => {
-                        const confirmedHold = stopHolds.find((h) => h.status === "confirmed");
+                    {stopEntries.map(({ stop, entries }) => {
+                        const confirmed = entries.filter(({ outreach }) => outreach.status === "confirmed");
+                        const onHold = entries.filter(({ outreach }) => outreach.status === "on-hold");
+
                         return (
                             <details key={stop.id} id={`tour-stop-${stop.id}`} open>
                                 <summary className="city-heading">
                                     {stop.city}
-                                    {confirmedHold ? (
-                                        <span className="tour-stop-date">{formatDate(confirmedHold.date)}</span>
+                                    {confirmed.length > 0 ? (
+                                        <span className="tour-stop-date">
+                                            {confirmed.map(({ outreach }) => formatDate(outreach.showDate)).join(", ")}
+                                        </span>
                                     ) : (
-                                        stopHolds.length > 0 && (
-                                            <span className="tour-stop-date">
-                                                {stopHolds.length} {stopHolds.length === 1 ? "hold" : "holds"}
-                                            </span>
+                                        onHold.length > 0 && (
+                                            <span className="tour-stop-date">{onHold.length} on hold</span>
                                         )
                                     )}
                                     <span className="tour-group-count">{entries.length}</span>
                                 </summary>
 
                                 <div className="tour-stop-actions">
-                                    {!confirmedHold && (
-                                        <button className="ghost-button" type="button" onClick={() => onAddHold(stop)}>
-                                            Add Hold
-                                        </button>
-                                    )}
                                     <button className="ghost-button" type="button" onClick={() => onFillStop(stop)}>
                                         Add venues &amp; promoters
                                     </button>
@@ -174,27 +201,23 @@ export default function TourTab({
                                     </button>
                                 </div>
 
-                                <StopHolds
-                                    holds={stopHolds}
-                                    venues={venues}
-                                    promoters={promoters}
-                                    onEdit={onEditHold}
-                                    onConfirm={onConfirmHold}
-                                    onUnconfirm={onUnconfirmHold}
-                                    onDelete={onDeleteHold}
-                                />
-
                                 {entries.length === 0 ? (
                                     <div className="tour-stop-empty">Nothing added yet.</div>
                                 ) : (
                                     <div className="card-grid">
-                                        {entries.map(({ outreach, target }) => (
+                                        {entries.map(({ outreach: o, target }) => (
                                             <TourCard
-                                                key={outreach.id}
-                                                outreach={outreach}
+                                                key={o.id}
+                                                outreach={o}
                                                 target={target}
-                                                onUpdate={() => onOpenOutreach(outreach, `${target.name} – ${stop.city}`)}
-                                                onRemove={() => onRemoveOutreach(outreach)}
+                                                latestContact={latestLogEntry(o.id, contactLog)}
+                                                viaPromoterName={promoters.find((p) => p.id === o.viaPromoterId)?.name}
+                                                clashMessages={clashes
+                                                    .filter((clash) => clash.outreachId === o.id)
+                                                    .map((clash) => clash.message)}
+                                                onUpdate={() => openCard(o)}
+                                                onOpenLog={() => onOpenLog(o, cardTitle(o))}
+                                                onRemove={() => onRemoveOutreach(o)}
                                             />
                                         ))}
                                     </div>
@@ -227,48 +250,29 @@ function buildEntries(outreach: Outreach[], venues: Venue[], promoters: Promoter
     );
 }
 
-// Confirmed holds and confirmed venues/promoters with a show date are "confirmed";
-// provisional holds are "provisional". Duplicates on the same city and date are dropped.
-function buildCalendarEntries(
-    stopEntries: { stop: TourStop; holds: Hold[]; entries: TourEntry[] }[],
-    venues: Venue[],
-): CalendarEntry[] {
-    const calendarEntries: CalendarEntry[] = [];
-    for (const { stop, holds, entries } of stopEntries) {
-        for (const hold of holds) {
-            calendarEntries.push({
-                date: hold.date,
+// Venues on hold or confirmed with a show date.
+function buildCalendarEntries(stopEntries: { stop: TourStop; entries: TourEntry[] }[]): CalendarEntry[] {
+    return stopEntries.flatMap(({ stop, entries }) =>
+        entries
+            .filter(({ outreach }) => outreach.targetType === "venue" && hasShowDate(outreach.status) && outreach.showDate)
+            .map(({ outreach, target }) => ({
+                date: outreach.showDate,
                 stopId: stop.id,
                 city: stop.city,
-                venueName: venues.find((v) => v.id === hold.venueId)?.name ?? "",
-                kind: hold.status,
-            });
-        }
-        for (const { outreach, target } of entries) {
-            if (outreach.status !== "confirmed" || !outreach.showDate) continue;
-            const alreadyShown = calendarEntries.some(
-                (e) => e.kind === "confirmed" && e.stopId === stop.id && e.date === outreach.showDate,
-            );
-            if (!alreadyShown) {
-                calendarEntries.push({
-                    date: outreach.showDate,
-                    stopId: stop.id,
-                    city: stop.city,
-                    venueName: target.name,
-                    kind: "confirmed",
-                });
-            }
-        }
-    }
-    return calendarEntries;
+                venueName: target.name,
+                kind: outreach.status === "confirmed" ? ("confirmed" as const) : ("on-hold" as const),
+            })),
+    );
 }
 
-// Cities sort by confirmed date, then earliest provisional hold, then name (undated last).
-function sortStops(stops: TourStop[], holds: Hold[]) {
+// Cities sort by earliest confirmed date, then earliest hold, then name (undated last).
+function sortStops(stops: TourStop[], outreach: Outreach[]) {
     const sortDate = (stop: TourStop) => {
-        const stopHolds = holds.filter((h) => h.stopId === stop.id);
-        const confirmed = stopHolds.find((h) => h.status === "confirmed");
-        return confirmed?.date ?? stopHolds.map((h) => h.date).sort()[0] ?? "";
+        const dated = outreach.filter(
+            (o) => o.stopId === stop.id && o.targetType === "venue" && hasShowDate(o.status) && o.showDate,
+        );
+        const confirmed = dated.filter((o) => o.status === "confirmed").map((o) => o.showDate).sort();
+        return confirmed[0] ?? dated.map((o) => o.showDate).sort()[0] ?? "";
     };
     return [...stops].sort((a, b) => {
         const dateA = sortDate(a);
