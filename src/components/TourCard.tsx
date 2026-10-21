@@ -70,8 +70,8 @@ export default function TourCard({
                     <div className="entity-card-outreach">
                         {latestContact && (
                             <button className="entity-card-latest-contact" type="button" onClick={onOpenLog}>
-                                Contacted {formatDate(latestContact.date)}
-                                {latestContact.channel && ` via ${channelLabel(latestContact.channel)}`}
+                                {formatDate(latestContact.date)}
+                                {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
                                 {latestContact.note && (
                                     <span className="entity-card-outreach-latest">“{latestContact.note}”</span>
                                 )}

@@ -122,7 +122,7 @@ export default function ContactLogModal({ contactLog, onLogContact, ref }: Conta
                                 <div>
                                     <span className="contact-log-date">{formatDate(entry.date)}</span>
                                     {entry.channel && (
-                                        <span className="contact-log-channel"> · {channelLabel(entry.channel)}</span>
+                                        <span className="contact-log-channel"> - {channelLabel(entry.channel)}</span>
                                     )}
                                     {entry.note && <div className="contact-log-note">{entry.note}</div>}
                                 </div>
