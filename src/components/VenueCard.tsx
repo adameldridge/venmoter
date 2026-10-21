@@ -3,6 +3,9 @@ import './Cards.css';
 import type { VenueWithPromoters, PromoterWithVenues } from "../types/venue";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
+import StatusBadge from "./StatusBadge";
+import type { StopOutreach } from "../types/tour";
+import { formatDate } from "../utils/date";
 
 type VenueCardProps = {
     venue: VenueWithPromoters;
@@ -10,9 +13,11 @@ type VenueCardProps = {
     onDelete: () => void;
     onManagePromoters: () => void;
     allPromoters: PromoterWithVenues[];
+    outreach: StopOutreach[];
+    onOpenOutreach: (stopOutreach: StopOutreach) => void;
 };
 
-export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters }: VenueCardProps) {
+export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters, outreach, onOpenOutreach }: VenueCardProps) {
     const [activePromoterId, setActivePromoterId] = useState<string | null>(null);
 
     function toggleActivePromoter(promoterId: string) {
@@ -34,6 +39,24 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
                     ]}
                 />
             </div>
+            {outreach.length > 0 && (
+                <div className="entity-card-statuses">
+                    {outreach.map((stopOutreach) => (
+                        <button
+                            key={stopOutreach.outreach.id}
+                            className="entity-card-status"
+                            type="button"
+                            onClick={() => onOpenOutreach(stopOutreach)}
+                        >
+                            <StatusBadge status={stopOutreach.outreach.status} editable />
+                            <span className="entity-card-status-date">
+                                {stopOutreach.city}
+                                {stopOutreach.outreach.showDate && ` · ${formatDate(stopOutreach.outreach.showDate)}`}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
             <SocialLinks
                 website={venue.website}
                 instagram={venue.instagram}

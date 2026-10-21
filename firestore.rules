@@ -10,5 +10,20 @@ service cloud.firestore {
     match /venue-promoters/{relationshipId} {
       allow read, create, update, delete: if request.auth != null;
     }
+    match /tours/{tourId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /tour-stops/{stopId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /holds/{holdId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /outreach/{outreachId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
+    match /settings/{settingId} {
+      allow read, create, update, delete: if request.auth != null;
+    }
   }
 }

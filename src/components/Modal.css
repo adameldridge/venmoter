@@ -26,3 +26,14 @@ dialog{
     padding: 10px 20px;
   }
 }
+
+.modal-subtitle{
+    margin-top: 4px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.modal-message{
+    font-size: 14px;
+    line-height: 1.5;
+}

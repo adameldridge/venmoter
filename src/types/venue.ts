@@ -40,4 +40,5 @@ export type LinkOption = {
   id: string;
   name: string;
   city?: string;
+  detail?: string;
 };

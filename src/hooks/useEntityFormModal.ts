@@ -8,11 +8,12 @@ type UseEntityFormModalOptions<TEntity, TFormValues> = {
     emptyValues: TFormValues;
     toFormValues: (entity: TEntity) => TFormValues;
     onSubmit: (values: TFormValues, editingId: string | null) => Promise<void>;
+    onOpen?: (entity?: TEntity) => void;
 };
 
 export function useEntityFormModal<TEntity extends { id: string }, TFormValues>(
     ref: Ref<EntityFormModalHandle<TEntity>> | undefined,
-    { emptyValues, toFormValues, onSubmit }: UseEntityFormModalOptions<TEntity, TFormValues>,
+    { emptyValues, toFormValues, onSubmit, onOpen }: UseEntityFormModalOptions<TEntity, TFormValues>,
 ) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [formValues, setFormValues] = useState<TFormValues>(emptyValues);
@@ -23,6 +24,7 @@ export function useEntityFormModal<TEntity extends { id: string }, TFormValues>(
         open(entity) {
             setEditingId(entity?.id ?? null);
             setFormValues(entity ? toFormValues(entity) : emptyValues);
+            onOpen?.(entity);
             modalRef.current?.showModal();
         },
     }));
@@ -54,5 +56,5 @@ export function useEntityFormModal<TEntity extends { id: string }, TFormValues>(
         }
     }
 
-    return { modalRef, formValues, editingId, isSaving, closeModal, handleChange, handleSubmit };
+    return { modalRef, formValues, setFormValues, editingId, isSaving, closeModal, handleChange, handleSubmit };
 }

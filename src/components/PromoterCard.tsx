@@ -3,6 +3,9 @@ import './Cards.css';
 import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
+import StatusBadge from "./StatusBadge";
+import type { StopOutreach } from "../types/tour";
+import { formatDate } from "../utils/date";
 
 type PromoterCardProps = {
     promoter: PromoterWithVenues;
@@ -10,9 +13,11 @@ type PromoterCardProps = {
     onDelete: () => void;
     onManageVenues: () => void;
     allVenues: VenueWithPromoters[];
+    outreach: StopOutreach[];
+    onOpenOutreach: (stopOutreach: StopOutreach) => void;
 };
 
-export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues }: PromoterCardProps) {
+export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues, outreach, onOpenOutreach }: PromoterCardProps) {
     const [activeVenueId, setActiveVenueId] = useState<string | null>(null);
 
     function toggleActiveVenue(venueId: string) {
@@ -34,6 +39,24 @@ export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenue
                     ]}
                 />
             </div>
+            {outreach.length > 0 && (
+                <div className="entity-card-statuses">
+                    {outreach.map((stopOutreach) => (
+                        <button
+                            key={stopOutreach.outreach.id}
+                            className="entity-card-status"
+                            type="button"
+                            onClick={() => onOpenOutreach(stopOutreach)}
+                        >
+                            <StatusBadge status={stopOutreach.outreach.status} editable />
+                            <span className="entity-card-status-date">
+                                {stopOutreach.city}
+                                {stopOutreach.outreach.showDate && ` · ${formatDate(stopOutreach.outreach.showDate)}`}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
             <SocialLinks
                 website={promoter.website}
                 instagram={promoter.instagram}

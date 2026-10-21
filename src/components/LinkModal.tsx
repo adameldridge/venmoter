@@ -114,6 +114,9 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
                                 {option.city && (
                                     <span className="link-modal-option-city">{option.city}</span>
                                 )}
+                                {option.detail && (
+                                    <span className="link-modal-option-city">{option.detail}</span>
+                                )}
                             </label>
                         ))
                     ) : (

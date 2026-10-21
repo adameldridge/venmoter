@@ -11,6 +11,7 @@ import type {
     VenueWithPromoters,
     PromoterWithVenues,
 } from "../types/venue";
+import type { OutreachTargetType } from "../types/tour";
 
 function buildVenuesWithPromoters(
     venues: Venue[],
@@ -62,7 +63,11 @@ function buildPromotersWithVenues(
     });
 }
 
-export function useVenueData() {
+type UseVenueDataOptions = {
+    onDeleteTarget: (targetType: OutreachTargetType, targetId: string) => Promise<void>;
+};
+
+export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
     const [venues, setVenues] = useState<Venue[]>([]);
     const [promoters, setPromoters] = useState<Promoter[]>([]);
     const [relationships, setRelationships] = useState<VenuePromoter[]>([]);
@@ -157,6 +162,7 @@ export function useVenueData() {
     async function deleteVenue(id: string) {
         try {
             await deleteRelationshipsFor("venueId", id);
+            await onDeleteTarget("venue", id);
             await deleteDoc(doc(db, "venues", id));
             await loadAll();
             toast.success("Venue deleted");
@@ -169,6 +175,7 @@ export function useVenueData() {
     async function deletePromoter(id: string) {
         try {
             await deleteRelationshipsFor("promoterId", id);
+            await onDeleteTarget("promoter", id);
             await deleteDoc(doc(db, "promoters", id));
             await loadAll();
             toast.success("Promoter deleted");
