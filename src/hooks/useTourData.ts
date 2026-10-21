@@ -274,16 +274,6 @@ export function useTourData() {
         }
     }
 
-    async function deleteContactLogEntry(id: string) {
-        try {
-            await deleteDoc(doc(db, "contact-log", id));
-            await loadAll();
-        } catch (error) {
-            console.error("Error deleting log entry:", error);
-            toast.error("Failed to delete log entry");
-        }
-    }
-
     // Called when a venue or promoter is deleted. Errors propagate to the caller.
     // A deleted promoter is also cleared from any "via promoter" on venue records.
     async function deleteOutreachForTarget(targetType: OutreachTargetType, targetId: string) {
@@ -325,7 +315,6 @@ export function useTourData() {
         saveOutreach,
         deleteOutreach,
         logContact,
-        deleteContactLogEntry,
         deleteOutreachForTarget,
     };
 }

@@ -57,7 +57,6 @@ export default function App() {
         saveStopTargets,
         otherHoldsInCity,
         logContact,
-        deleteContactLogEntry,
         saveOutreach,
         deleteOutreach,
         deleteOutreachForTarget,
@@ -405,7 +404,6 @@ export default function App() {
                 ref={contactLogModalRef}
                 contactLog={activeContactLog}
                 onLogContact={logContact}
-                onDeleteEntry={(entry) => deleteContactLogEntry(entry.id)}
             />
 
             <ConfirmModal ref={confirmModalRef} />

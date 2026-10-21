@@ -1,5 +1,4 @@
 import { useRef, useState, useImperativeHandle, type Ref } from "react";
-import { FaTimes } from "react-icons/fa";
 import {
     OUTREACH_CHANNELS,
     channelLabel,
@@ -22,13 +21,12 @@ type LogDraft = Omit<NewContactLogEntry, "outreachId" | "tourId">;
 type ContactLogModalProps = {
     contactLog: ContactLogEntry[];
     onLogContact: (outreach: Outreach, entry: LogDraft) => Promise<void>;
-    onDeleteEntry: (entry: ContactLogEntry) => void;
     ref?: Ref<ContactLogModalHandle>;
 };
 
 const emptyDraft = (): LogDraft => ({ date: todayIsoDate(), channel: "", note: "" });
 
-export default function ContactLogModal({ contactLog, onLogContact, onDeleteEntry, ref }: ContactLogModalProps) {
+export default function ContactLogModal({ contactLog, onLogContact, ref }: ContactLogModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const noteRef = useRef<HTMLInputElement>(null);
     const [title, setTitle] = useState("");
@@ -62,8 +60,7 @@ export default function ContactLogModal({ contactLog, onLogContact, onDeleteEntr
         setIsLogging(true);
         try {
             await onLogContact(outreach, draft);
-            setDraft(emptyDraft());
-            noteRef.current?.focus();
+            closeModal();
         } catch (error) {
             console.error("Error logging contact:", error);
         } finally {
@@ -129,14 +126,6 @@ export default function ContactLogModal({ contactLog, onLogContact, onDeleteEntr
                                     )}
                                     {entry.note && <div className="contact-log-note">{entry.note}</div>}
                                 </div>
-                                <button
-                                    className="contact-log-delete"
-                                    type="button"
-                                    aria-label="Delete log entry"
-                                    onClick={() => onDeleteEntry(entry)}
-                                >
-                                    <FaTimes />
-                                </button>
                             </li>
                         ))}
                     </ul>
