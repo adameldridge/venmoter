@@ -10,10 +10,9 @@ type PromoterCardProps = {
     onDelete: () => void;
     onManageVenues: () => void;
     allVenues: VenueWithPromoters[];
-    canEdit: boolean;
 };
 
-export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues, canEdit }: PromoterCardProps) {
+export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues }: PromoterCardProps) {
     const [activeVenueId, setActiveVenueId] = useState<string | null>(null);
 
     function toggleActiveVenue(venueId: string) {
@@ -27,15 +26,13 @@ export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenue
         <div className="entity-card">
             <div className="entity-card-header">
                 <div className="entity-card-title">{promoter.name}</div>
-                {canEdit && (
-                    <CardMenu
-                        items={[
-                            { label: "Edit promoter", onClick: onEdit },
-                            { label: "Edit venues", onClick: onManageVenues },
-                            { label: "Delete promoter", onClick: onDelete, danger: true },
-                        ]}
-                    />
-                )}
+                <CardMenu
+                    items={[
+                        { label: "Edit promoter", onClick: onEdit },
+                        { label: "Edit venues", onClick: onManageVenues },
+                        { label: "Delete promoter", onClick: onDelete, danger: true },
+                    ]}
+                />
             </div>
             <SocialLinks
                 website={promoter.website}

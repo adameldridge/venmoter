@@ -1,56 +1,33 @@
-import { useRef, useState, useImperativeHandle, type Ref } from "react";
+import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { toast } from "sonner";
 import Spinner from "./Spinner";
-import "./Modal.css";
 import "./Forms.css";
+import "./SignInPage.css";
 
-export type LoginModalHandle = {
-    open: () => void;
-};
-
-type LoginModalProps = {
-    ref?: Ref<LoginModalHandle>;
-};
-
-export default function LoginModal({ ref }: LoginModalProps) {
-    const modalRef = useRef<HTMLDialogElement>(null);
+export default function SignInPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useImperativeHandle(ref, () => ({
-        open() {
-            setEmail("");
-            setPassword("");
-            modalRef.current?.showModal();
-        },
-    }));
-
-    function closeModal() {
-        modalRef.current?.close();
-    }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            closeModal();
             toast.success("Logged in");
         } catch (error) {
             console.error("Error logging in:", error);
             toast.error("Invalid email or password");
-        } finally {
             setIsSubmitting(false);
         }
     }
 
     return (
-        <dialog id="login-modal" ref={modalRef}>
-            <div className="modal-box entity-form">
-                <div className="modal-title">Log In</div>
+        <div className="sign-in-page">
+            <div className="sign-in-box entity-form">
+                <div className="sign-in-title">Sign In</div>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="loginEmail">Email *</label>
@@ -78,16 +55,11 @@ export default function LoginModal({ ref }: LoginModalProps) {
                         />
                     </div>
 
-                    <div className="modal-actions">
-                        <button className="create-button" type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? <Spinner size={14} /> : "Log In"}
-                        </button>
-                        <button className="cancel-button" type="button" onClick={closeModal} disabled={isSubmitting}>
-                            Cancel
-                        </button>
-                    </div>
+                    <button className="create-button sign-in-submit" type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? <Spinner size={14} /> : "Sign In"}
+                    </button>
                 </form>
             </div>
-        </dialog>
+        </div>
     );
 }

@@ -6,20 +6,16 @@ import PromotersTab from "./components/PromotersTab";
 import VenueFormModal, { type VenueFormModalHandle } from "./components/VenueFormModal";
 import PromoterFormModal, { type PromoterFormModalHandle } from "./components/PromoterFormModal";
 import LinkModal, { type LinkModalHandle } from "./components/LinkModal";
-import LoginModal, { type LoginModalHandle } from "./components/LoginModal";
 import ConfirmModal, { type ConfirmModalHandle } from "./components/ConfirmModal";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import Spinner from "./components/Spinner";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/config";
-import { useAuth } from "./hooks/useAuth";
 import { useVenueData } from "./hooks/useVenueData";
 
 type Tab = "venues" | "promoters";
 
 export default function App() {
-    const { user } = useAuth();
-    const canEdit = !!user;
     const [activeTab, setActiveTab] = useState<Tab>("venues");
     const [selectedCity, setSelectedCity] = useState("All Cities");
     const [searchInput, setSearchInput] = useState("");
@@ -29,7 +25,6 @@ export default function App() {
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
     const venuePromotersLinkModalRef = useRef<LinkModalHandle>(null);
     const promoterVenuesLinkModalRef = useRef<LinkModalHandle>(null);
-    const loginModalRef = useRef<LoginModalHandle>(null);
     const confirmModalRef = useRef<ConfirmModalHandle>(null);
 
     const {
@@ -51,20 +46,16 @@ export default function App() {
         return () => clearTimeout(timeoutId);
     }, [searchInput]);
 
-    function handleAuthButtonClick() {
-        if (user) {
-            confirmModalRef.current?.open({
-                message: "Are you sure you want to sign out?",
-                confirmLabel: "Sign Out",
-                danger: true,
-                onConfirm: async () => {
-                    await signOut(auth);
-                    toast.success("Logged out");
-                },
-            });
-        } else {
-            loginModalRef.current?.open();
-        }
+    function confirmSignOut() {
+        confirmModalRef.current?.open({
+            message: "Are you sure you want to sign out?",
+            confirmLabel: "Sign Out",
+            danger: true,
+            onConfirm: async () => {
+                await signOut(auth);
+                toast.success("Logged out");
+            },
+        });
     }
 
     function confirmDeleteVenue(venue: VenueWithPromoters) {
@@ -122,12 +113,8 @@ export default function App() {
                     Promoters
                 </button>
 
-                <button
-                    className={user ? "login-button cancel-button" : "login-button create-button"}
-                    type="button"
-                    onClick={handleAuthButtonClick}
-                >
-                    {user ? "Sign Out" : "Sign In"}
+                <button className="login-button cancel-button" type="button" onClick={confirmSignOut}>
+                    Sign Out
                 </button>
             </div>
 
@@ -146,7 +133,6 @@ export default function App() {
                             onCityChange={setSelectedCity}
                             searchInput={searchInput}
                             onSearchChange={setSearchInput}
-                            canEdit={canEdit}
                             onAddVenue={() => venueFormModalRef.current?.open()}
                             onEditVenue={(venue) => venueFormModalRef.current?.open(venue)}
                             onDeleteVenue={confirmDeleteVenue}
@@ -169,7 +155,6 @@ export default function App() {
                             allVenues={venuesWithPromoters}
                             searchInput={searchInput}
                             onSearchChange={setSearchInput}
-                            canEdit={canEdit}
                             onAddPromoter={() => promoterFormModalRef.current?.open()}
                             onEditPromoter={(promoter) => promoterFormModalRef.current?.open(promoter)}
                             onDeletePromoter={confirmDeletePromoter}
@@ -210,10 +195,7 @@ export default function App() {
                 }
             />
 
-            <LoginModal ref={loginModalRef} />
             <ConfirmModal ref={confirmModalRef} />
-
-            <Toaster position="top-center" theme="light" richColors />
         </div>
     );
 }
