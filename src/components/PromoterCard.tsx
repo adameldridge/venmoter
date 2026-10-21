@@ -3,6 +3,9 @@ import './Cards.css';
 import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
+import StatusBadge from "./StatusBadge";
+import type { StopOutreach } from "../types/tour";
+import { formatDate } from "../utils/date";
 
 type PromoterCardProps = {
     promoter: PromoterWithVenues;
@@ -10,9 +13,10 @@ type PromoterCardProps = {
     onDelete: () => void;
     onManageVenues: () => void;
     allVenues: VenueWithPromoters[];
+    outreach: StopOutreach[];
 };
 
-export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues }: PromoterCardProps) {
+export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenues, allVenues, outreach }: PromoterCardProps) {
     const [activeVenueId, setActiveVenueId] = useState<string | null>(null);
 
     function toggleActiveVenue(venueId: string) {
@@ -34,6 +38,19 @@ export default function PromoterCard({ promoter, onEdit, onDelete, onManageVenue
                     ]}
                 />
             </div>
+            {outreach.length > 0 && (
+                <div className="entity-card-statuses">
+                    {outreach.map((stopOutreach) => (
+                        <div key={stopOutreach.outreach.id} className="entity-card-status">
+                            <StatusBadge status={stopOutreach.outreach.status} />
+                            <span className="entity-card-status-date">
+                                {stopOutreach.city}
+                                {stopOutreach.outreach.showDate && ` · ${formatDate(stopOutreach.outreach.showDate)}`}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
             <SocialLinks
                 website={promoter.website}
                 instagram={promoter.instagram}

@@ -1,6 +1,7 @@
 import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
 import PromoterCard from "./PromoterCard";
 import ListHeader from "./ListHeader";
+import type { StopOutreach } from "../types/tour";
 
 type PromotersTabProps = {
     promoters: PromoterWithVenues[];
@@ -11,6 +12,7 @@ type PromotersTabProps = {
     onEditPromoter: (promoter: PromoterWithVenues) => void;
     onDeletePromoter: (promoter: PromoterWithVenues) => void;
     onManageVenues: (promoter: PromoterWithVenues) => void;
+    outreachFor: (promoterId: string) => StopOutreach[];
 };
 
 export default function PromotersTab({
@@ -22,6 +24,7 @@ export default function PromotersTab({
     onEditPromoter,
     onDeletePromoter,
     onManageVenues,
+    outreachFor,
 }: PromotersTabProps) {
     return (
         <div>
@@ -45,6 +48,7 @@ export default function PromotersTab({
                         onEdit={() => onEditPromoter(promoter)}
                         onDelete={() => onDeletePromoter(promoter)}
                         onManageVenues={() => onManageVenues(promoter)}
+                        outreach={outreachFor(promoter.id)}
                     />
                 ))}
             </div>

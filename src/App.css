@@ -154,6 +154,12 @@ button{
   color: #fff;
 }
 
+.ghost-button{
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
 button:hover{
   opacity: 0.8;
   cursor: pointer;
@@ -178,8 +184,7 @@ button:hover{
   }
 
   .login-button,
-  .login-button.create-button,
-  .login-button.cancel-button{
+  .login-button.ghost-button{
     padding: 8px 16px;
     font-size: 14px;
   }

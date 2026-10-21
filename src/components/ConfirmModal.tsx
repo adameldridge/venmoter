@@ -2,7 +2,13 @@ import { useRef, useState, useImperativeHandle, type Ref } from "react";
 import "./Modal.css";
 
 export type ConfirmModalHandle = {
-    open: (options: { message: string; confirmLabel?: string; danger?: boolean; onConfirm: () => void }) => void;
+    open: (options: {
+        message: string;
+        confirmLabel?: string;
+        danger?: boolean;
+        onConfirm: () => void;
+        onCancel?: () => void;
+    }) => void;
 };
 
 type ConfirmModalProps = {
@@ -15,13 +21,15 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
     const [confirmLabel, setConfirmLabel] = useState("Confirm");
     const [danger, setDanger] = useState(false);
     const onConfirmRef = useRef<() => void>(() => {});
+    const onCancelRef = useRef<(() => void) | undefined>(undefined);
 
     useImperativeHandle(ref, () => ({
-        open({ message, confirmLabel, danger, onConfirm }) {
+        open({ message, confirmLabel, danger, onConfirm, onCancel }) {
             setMessage(message);
             setConfirmLabel(confirmLabel ?? "Confirm");
             setDanger(danger ?? false);
             onConfirmRef.current = onConfirm;
+            onCancelRef.current = onCancel;
             modalRef.current?.showModal();
         },
     }));
@@ -35,8 +43,13 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
         onConfirmRef.current();
     }
 
+    function handleCancel() {
+        closeModal();
+        onCancelRef.current?.();
+    }
+
     return (
-        <dialog id="confirm-modal" ref={modalRef}>
+        <dialog id="confirm-modal" ref={modalRef} onCancel={() => onCancelRef.current?.()}>
             <div className="modal-box">
                 <div className="modal-title">{message}</div>
                 <div className="modal-actions">
@@ -47,7 +60,7 @@ export default function ConfirmModal({ ref }: ConfirmModalProps) {
                     >
                         {confirmLabel}
                     </button>
-                    <button className="cancel-button" type="button" onClick={closeModal}>
+                    <button className="cancel-button" type="button" onClick={handleCancel}>
                         Cancel
                     </button>
                 </div>
