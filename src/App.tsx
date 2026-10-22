@@ -21,14 +21,19 @@ import { useTourData } from "./hooks/useTourData";
 import type { NewOutreach, Outreach, OutreachTarget, Tour, TourStop } from "./types/tour";
 import { sameCity } from "./utils/city";
 import { formatDate } from "./utils/date";
+import type { RowFocus, RowKind } from "./hooks/useRowFocus";
 
 type Tab = "venues" | "promoters" | "tour";
 
+const ALL_CITIES = "All Cities";
+
 export default function App() {
     const [activeTab, setActiveTab] = useState<Tab>("tour");
-    const [selectedCity, setSelectedCity] = useState("All Cities");
+    const [selectedCity, setSelectedCity] = useState(ALL_CITIES);
     const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    // The venue or promoter row another tab sent you to.
+    const [rowFocus, setRowFocus] = useState<RowFocus | null>(null);
 
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
@@ -223,12 +228,46 @@ export default function App() {
         });
     }
 
+    function addStopVenue(stop: TourStop, venueId: string) {
+        const listedVenueIds = activeOutreach
+            .filter((o) => o.stopId === stop.id && o.targetType === "venue")
+            .map((o) => o.targetId);
+        return saveStopTargetIds(stop.id, [...listedVenueIds, venueId]);
+    }
+
     function matchesSearch(name: string) {
         return name.toLowerCase().includes(searchTerm.trim().toLowerCase());
     }
 
+    function promoterInCity(promoter: PromoterWithVenues, city: string) {
+        return promoter.venues.some((venue) => venue.city === city);
+    }
+
+    function switchTab(tab: Tab) {
+        setActiveTab(tab);
+        setRowFocus(null);
+    }
+
+    // Opens a venue or promoter on its own tab, clearing any filter that would hide its row.
+    function goTo(kind: RowKind, id: string) {
+        const venue = kind === "venue" ? venuesWithPromoters.find((v) => v.id === id) : undefined;
+        const promoter = kind === "promoter" ? promotersWithVenues.find((p) => p.id === id) : undefined;
+        const target = venue ?? promoter;
+        if (!target) return;
+
+        if (!matchesSearch(target.name)) {
+            setSearchInput("");
+            setSearchTerm("");
+        }
+        const inCity = venue ? venue.city === selectedCity : promoterInCity(promoter!, selectedCity);
+        if (selectedCity !== ALL_CITIES && !inCity) setSelectedCity(ALL_CITIES);
+
+        setActiveTab(kind === "venue" ? "venues" : "promoters");
+        setRowFocus({ kind, id, seq: Date.now() });
+    }
+
     const visibleVenues = venuesWithPromoters
-        .filter((venue) => selectedCity === "All Cities" || venue.city === selectedCity)
+        .filter((venue) => selectedCity === ALL_CITIES || venue.city === selectedCity)
         .filter((venue) => matchesSearch(venue.name))
         .sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
@@ -239,6 +278,7 @@ export default function App() {
     const sortedPromoters = [...promoters].sort((a, b) => a.name.localeCompare(b.name));
 
     const visiblePromoters = promotersWithVenues
+        .filter((promoter) => selectedCity === ALL_CITIES || promoterInCity(promoter, selectedCity))
         .filter((promoter) => matchesSearch(promoter.name))
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -248,21 +288,21 @@ export default function App() {
                 <button
                     className={activeTab === "tour" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => setActiveTab("tour")}
+                    onClick={() => switchTab("tour")}
                 >
                     Tour
                 </button>
                 <button
                     className={activeTab === "venues" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => setActiveTab("venues")}
+                    onClick={() => switchTab("venues")}
                 >
                     Venues
                 </button>
                 <button
                     className={activeTab === "promoters" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => setActiveTab("promoters")}
+                    onClick={() => switchTab("promoters")}
                 >
                     Promoters
                 </button>
@@ -281,7 +321,6 @@ export default function App() {
                     {activeTab === "venues" && (
                         <VenuesTab
                             venues={visibleVenues}
-                            allPromoters={promotersWithVenues}
                             cities={cities}
                             selectedCity={selectedCity}
                             onCityChange={setSelectedCity}
@@ -300,13 +339,20 @@ export default function App() {
                                     venue.promoters.map((promoter) => promoter.id),
                                 )
                             }
+                            tour={activeTour ? { tour: activeTour, stops: activeStops, outreach: activeOutreach } : null}
+                            onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
+                            onAddToStop={addStopVenue}
+                            focus={rowFocus}
+                            onGoTo={goTo}
                         />
                     )}
 
                     {activeTab === "promoters" && (
                         <PromotersTab
                             promoters={visiblePromoters}
-                            allVenues={venuesWithPromoters}
+                            cities={cities}
+                            selectedCity={selectedCity}
+                            onCityChange={setSelectedCity}
                             searchInput={searchInput}
                             onSearchChange={setSearchInput}
                             onAddPromoter={() => promoterFormModalRef.current?.open()}
@@ -323,6 +369,8 @@ export default function App() {
                                     promoter.venues.map((venue) => venue.id),
                                 )
                             }
+                            focus={rowFocus}
+                            onGoTo={goTo}
                         />
                     )}
 
@@ -341,15 +389,11 @@ export default function App() {
                             onAddStop={() => stopFormModalRef.current?.open()}
                             onRemoveStop={confirmDeleteStop}
                             onAddPromoter={addStopPromoter}
-                            onAddVenue={(stop, venueId) => {
-                                const listedVenueIds = activeOutreach
-                                    .filter((o) => o.stopId === stop.id && o.targetType === "venue")
-                                    .map((o) => o.targetId);
-                                return saveStopTargetIds(stop.id, [...listedVenueIds, venueId]);
-                            }}
+                            onAddVenue={addStopVenue}
                             onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
                             onOpenLog={(outreach, title) => contactLogModalRef.current?.open(outreach, title)}
                             onRemoveOutreach={confirmRemoveOutreach}
+                            onGoTo={goTo}
                         />
                     )}
                 </>
@@ -391,7 +435,7 @@ export default function App() {
                     if (stop) confirmDeleteStop(stop);
                 }}
                 cities={cities.filter(
-                    (city) => city !== "All Cities" && !activeStops.some((stop) => sameCity(stop.city, city)),
+                    (city) => city !== ALL_CITIES && !activeStops.some((stop) => sameCity(stop.city, city)),
                 )}
                 onSubmit={(stop, editingStopId) =>
                     activeTour ? saveStop({ ...stop, tourId: activeTour.id }, editingStopId) : Promise.resolve()

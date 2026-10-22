@@ -15,6 +15,8 @@ import { TourGroup, TourRow, TourTable, type AvailablePromoter, type AvailableVe
 import { sameCity } from "../utils/city";
 import TourCalendar, { type CalendarEntry } from "./TourCalendar";
 import NeedsAttention from "./NeedsAttention";
+import { useCollapsedGroups } from "../hooks/useCollapsedGroups";
+import type { RowKind } from "../hooks/useRowFocus";
 import "./TourTab.css";
 
 type TourTabProps = {
@@ -35,29 +37,10 @@ type TourTabProps = {
     onOpenOutreach: (outreach: Outreach, title: string) => void;
     onOpenLog: (outreach: Outreach, title: string) => void;
     onRemoveOutreach: (outreach: Outreach) => void;
+    onGoTo: (kind: RowKind, id: string) => void;
 };
 
 const NEW_TOUR_OPTION = "__new-tour";
-
-// Collapsed cities are a per-browser convenience, so they're kept in localStorage; storage can
-// be unavailable (private mode, blocked site data), in which case everything starts expanded.
-const COLLAPSED_CITIES_KEY = "venmoter.collapsedCities";
-
-function loadCollapsedCities(): Set<string> {
-    try {
-        return new Set(JSON.parse(localStorage.getItem(COLLAPSED_CITIES_KEY) ?? "[]") as string[]);
-    } catch {
-        return new Set();
-    }
-}
-
-function saveCollapsedCities(ids: Set<string>) {
-    try {
-        localStorage.setItem(COLLAPSED_CITIES_KEY, JSON.stringify([...ids]));
-    } catch {
-        // Not remembered this time; nothing else depends on it.
-    }
-}
 
 type TourEntry = {
     outreach: Outreach;
@@ -82,9 +65,10 @@ export default function TourTab({
     onOpenOutreach,
     onOpenLog,
     onRemoveOutreach,
+    onGoTo,
 }: TourTabProps) {
     const [cityFilter, setCityFilter] = useState("");
-    const [collapsedIds, setCollapsedIds] = useState(loadCollapsedCities);
+    const { collapsedIds, setCollapsed } = useCollapsedGroups("venmoter.collapsedCities");
     const sortedTours = [...tours].sort((a, b) => a.name.localeCompare(b.name));
     const sortedStops = sortStops(stops, outreach);
     // Falls back to all cities if the selected one was deleted or belongs to another tour.
@@ -132,16 +116,6 @@ export default function TourTab({
 
     function openCard(o: Outreach) {
         onOpenOutreach(o, cardTitle(o));
-    }
-
-    function setCollapsed(stopId: string, collapsed: boolean) {
-        setCollapsedIds((current) => {
-            const next = new Set(current);
-            if (collapsed) next.add(stopId);
-            else next.delete(stopId);
-            saveCollapsedCities(next);
-            return next;
-        });
     }
 
     function scrollToStop(stopId: string) {
@@ -289,6 +263,7 @@ export default function TourTab({
                                                 onUpdate={() => openCard(o)}
                                                 onOpenLog={() => onOpenLog(o, cardTitle(o))}
                                                 onRemove={() => onRemoveOutreach(o)}
+                                                onGoToTarget={() => onGoTo(o.targetType, o.targetId)}
                                             />
                                         ))}
                                     </TourGroup>

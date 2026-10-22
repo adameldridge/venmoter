@@ -19,7 +19,7 @@ export default function SocialLinks({
     facebook,
     email,
     preferred = "",
-    className = "entity-card-social-icons",
+    className = "data-row-links",
 }: SocialLinksProps) {
     if (!website && !instagram && !facebook && !email) return null;
 
