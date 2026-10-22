@@ -22,6 +22,7 @@ import type {
     NewContactLogEntry,
     OutreachTarget,
     OutreachTargetType,
+    TourListing,
 } from "../types/tour";
 import { todayIsoDate } from "../utils/date";
 import { sameCity } from "../utils/city";
@@ -298,6 +299,30 @@ export function useTourData() {
         setContactLog((current) => current.filter((entry) => !toDelete.some((o) => o.id === entry.outreachId)));
     }
 
+    // Every tour city a venue or promoter is listed under, across all tours, not just the active one.
+    function listingsFor(targetType: OutreachTargetType, targetId: string): TourListing[] {
+        return outreach
+            .filter((o) => sameTarget(o, { targetType, targetId }))
+            .flatMap((o) => {
+                const stop = stops.find((s) => s.id === o.stopId);
+                const tour = stop && tours.find((t) => t.id === stop.tourId);
+                if (!stop || !tour) return [];
+                return [{
+                    tourName: tour.name,
+                    city: stop.city,
+                    status: o.status,
+                    showDate: o.showDate,
+                    logCount: contactLog.filter((entry) => entry.outreachId === o.id).length,
+                }];
+            })
+            .sort((a, b) => a.tourName.localeCompare(b.tourName) || a.city.localeCompare(b.city));
+    }
+
+    // Venue bookings that name this promoter as the one they went through.
+    function bookingsViaPromoter(promoterId: string) {
+        return outreach.filter((o) => o.viaPromoterId === promoterId).length;
+    }
+
     const activeTour = tours.find((tour) => tour.id === activeTourId) ?? null;
     const activeStops = activeTour ? stops.filter((s) => s.tourId === activeTour.id) : [];
     // Outreach without a stop in the active tour (e.g. created before cities existed) is ignored.
@@ -322,5 +347,7 @@ export function useTourData() {
         deleteOutreach,
         logContact,
         deleteOutreachForTarget,
+        listingsFor,
+        bookingsViaPromoter,
     };
 }

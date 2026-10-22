@@ -1,7 +1,6 @@
 import { FaBuilding } from "react-icons/fa";
-import type { PromoterWithVenues } from "../types/venue";
+import type { PromoterWithVenues, RecordKind } from "../types/venue";
 import { hasContact } from "../utils/contact";
-import { rowId, useRowFocus, type RowFocus, type RowKind } from "../hooks/useRowFocus";
 import ListHeader from "./ListHeader";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
@@ -18,8 +17,7 @@ type PromotersTabProps = {
     onEditPromoter: (promoter: PromoterWithVenues) => void;
     onDeletePromoter: (promoter: PromoterWithVenues) => void;
     onManageVenues: (promoter: PromoterWithVenues) => void;
-    focus: RowFocus | null;
-    onGoTo: (kind: RowKind, id: string) => void;
+    onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
 const COLUMNS = [
@@ -41,11 +39,8 @@ export default function PromotersTab({
     onEditPromoter,
     onDeletePromoter,
     onManageVenues,
-    focus,
-    onGoTo,
+    onViewRecord,
 }: PromotersTabProps) {
-    useRowFocus(focus);
-
     return (
         <div>
             <ListHeader addLabel="Add Promoter" onAdd={onAddPromoter}>
@@ -84,7 +79,7 @@ export default function PromotersTab({
                                 onEdit={() => onEditPromoter(promoter)}
                                 onDelete={() => onDeletePromoter(promoter)}
                                 onManageVenues={() => onManageVenues(promoter)}
-                                onGoTo={onGoTo}
+                                onViewRecord={onViewRecord}
                             />
                         ))}
                     </tbody>
@@ -99,15 +94,15 @@ type PromoterRowProps = {
     onEdit: () => void;
     onDelete: () => void;
     onManageVenues: () => void;
-    onGoTo: (kind: RowKind, id: string) => void;
+    onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
-function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onGoTo }: PromoterRowProps) {
+function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onViewRecord }: PromoterRowProps) {
     const venues = [...promoter.venues].sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
     return (
-        <tr id={rowId("promoter", promoter.id)}>
-            <NameCell kind="promoter" name={promoter.name} onOpen={onEdit} openTitle={`Edit ${promoter.name}`} />
+        <tr>
+            <NameCell kind="promoter" name={promoter.name} onOpen={() => onViewRecord("promoter", promoter.id)} openTitle={`View ${promoter.name}`} />
             <td className="data-cell-full">
                 <div className="data-tags">
                     {venues.length === 0 && <span className="data-pill">No venues</span>}
@@ -116,8 +111,8 @@ function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onGoTo }: Pro
                             key={venue.id}
                             className="data-tag"
                             type="button"
-                            onClick={() => onGoTo("venue", venue.id)}
-                            title={`Go to ${venue.name}`}
+                            onClick={() => onViewRecord("venue", venue.id)}
+                            title={`View ${venue.name}`}
                         >
                             <FaBuilding className="data-tag-icon" aria-hidden="true" />
                             {venue.name}

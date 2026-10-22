@@ -13,7 +13,8 @@ type LinkModalProps = {
 };
 
 export type LinkModalHandle = {
-    open: (subjectId: string, options: LinkOption[], selectedIds: string[]) => void;
+    // onClose runs however the dialog closes, e.g. to go back to what opened it.
+    open: (subjectId: string, options: LinkOption[], selectedIds: string[], onClose?: () => void) => void;
 };
 
 function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
@@ -24,9 +25,11 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     const [search, setSearch] = useState("");
     const [selectedCity, setSelectedCity] = useState("All Cities");
     const [isSaving, setIsSaving] = useState(false);
+    const onCloseRef = useRef<(() => void) | undefined>(undefined);
 
     useImperativeHandle(ref, () => ({
-        open(subjectId, options, selectedIds) {
+        open(subjectId, options, selectedIds, onClose) {
+            onCloseRef.current = onClose;
             setSubjectId(subjectId);
             setOptions(options);
             setCheckedIds(new Set(selectedIds));
@@ -43,6 +46,12 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
         setSearch("");
         setSelectedCity("All Cities");
         modalRef.current?.close();
+    }
+
+    function handleDialogClose() {
+        const onClose = onCloseRef.current;
+        onCloseRef.current = undefined;
+        onClose?.();
     }
 
     function toggleOption(id: string) {
@@ -75,7 +84,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
         .filter((option) => option.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <dialog id="link-modal" ref={modalRef}>
+        <dialog id="link-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box">
                 <div className="modal-title">{title}</div>
 

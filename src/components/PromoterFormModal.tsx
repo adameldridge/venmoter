@@ -8,6 +8,7 @@ import "./Forms.css";
 
 type PromoterFormModalProps = {
     onSubmit: (promoter: NewPromoter, editingPromoterId: string | null) => Promise<void>;
+    onDelete: (promoterId: string) => void;
     ref?: Ref<PromoterFormModalHandle>;
 };
 
@@ -33,7 +34,7 @@ function toFormValues(promoter: Promoter): NewPromoter {
 
 export type PromoterFormModalHandle = EntityFormModalHandle<Promoter>;
 
-function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
+function PromoterFormModal({ onSubmit, onDelete, ref }: PromoterFormModalProps) {
     const {
         modalRef,
         formValues,
@@ -41,6 +42,8 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
         editingId: editingPromoterId,
         isSaving,
         closeModal,
+        closeWithoutReturning,
+        handleDialogClose,
         handleChange,
         handleSubmit,
     } = useEntityFormModal<Promoter, NewPromoter>(ref, {
@@ -50,7 +53,7 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
     });
 
     return (
-        <dialog id="promoter-form-modal" ref={modalRef}>
+        <dialog id="promoter-form-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
                     {editingPromoterId ? "Edit Promoter" : "Add Promoter"}
@@ -127,6 +130,20 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
                             Cancel
                         </button>
                     </div>
+
+                    {editingPromoterId && (
+                        <button
+                            className="form-remove-button"
+                            type="button"
+                            onClick={() => {
+                                closeWithoutReturning();
+                                onDelete(editingPromoterId);
+                            }}
+                            disabled={isSaving}
+                        >
+                            Delete promoter
+                        </button>
+                    )}
                 </form>
             </div>
         </dialog>

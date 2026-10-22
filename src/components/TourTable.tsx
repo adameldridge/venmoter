@@ -195,8 +195,8 @@ type TourRowProps = {
     onUpdate: () => void;
     onOpenLog: () => void;
     onRemove: () => void;
-    // Opens the venue or promoter on its own tab, to edit its details or links.
-    onGoToTarget: () => void;
+    // Shows the venue or promoter's contact details and links.
+    onViewTarget: () => void;
 };
 
 export function TourRow({
@@ -212,10 +212,9 @@ export function TourRow({
     onUpdate,
     onOpenLog,
     onRemove,
-    onGoToTarget,
+    onViewTarget,
 }: TourRowProps) {
     const overlapText = overlapMessages.join("\n");
-    const tabName = outreach.targetType === "venue" ? "Venues" : "Promoters";
     const rowClassName = clashMessages.length > 0
         ? "tour-row-clash"
         : overlapMessages.length > 0 ? "tour-row-overlap" : undefined;
@@ -226,8 +225,8 @@ export function TourRow({
             <NameCell
                 kind={outreach.targetType}
                 name={target.name}
-                onOpen={onGoToTarget}
-                openTitle={`Open ${target.name} on the ${tabName} tab`}
+                onOpen={onViewTarget}
+                openTitle={`View ${target.name}`}
                 badge={
                     overlapMessages.length > 0 && (
                         <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
@@ -286,7 +285,7 @@ export function TourRow({
                     items={[
                         { label: "Update status", onClick: onUpdate },
                         { label: "Contact log", onClick: onOpenLog },
-                        { label: `Go to ${outreach.targetType}`, onClick: onGoToTarget },
+                        { label: `View ${outreach.targetType}`, onClick: onViewTarget },
                         { label: "Remove from city", onClick: onRemove, danger: true },
                     ]}
                 />

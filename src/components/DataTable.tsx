@@ -1,7 +1,7 @@
 import "./DataTable.css";
 import type { ReactNode } from "react";
 import { FaBuilding, FaBullhorn, FaChevronDown } from "react-icons/fa";
-import type { RowKind } from "../hooks/useRowFocus";
+import type { RecordKind } from "../types/venue";
 
 export type DataColumn = {
     label: string;
@@ -71,9 +71,9 @@ export function DataGroup({ title, count, colSpan, collapsed, onToggle, confirme
 }
 
 type NameCellProps = {
-    kind: RowKind;
+    kind: RecordKind;
     name: string;
-    // Makes the name a button, e.g. to edit the record or go to it on its own tab.
+    // Makes the name a button, e.g. to edit the record or view its details.
     onOpen?: () => void;
     openTitle?: string;
     // Shown right after the name, e.g. a warning icon.
@@ -110,7 +110,7 @@ export function NameCell({ kind, name, onOpen, openTitle, badge, children }: Nam
 }
 
 // Dashed chip that adds or links something in one click, e.g. "+ Promoter".
-export function AddChip({ kind, label, title, onClick }: { kind: RowKind; label: string; title?: string; onClick: () => void }) {
+export function AddChip({ kind, label, title, onClick }: { kind: RecordKind; label: string; title?: string; onClick: () => void }) {
     return (
         <button className="data-add" type="button" onClick={onClick} title={title}>
             {kind === "venue" ? <FaBuilding aria-hidden="true" /> : <FaBullhorn aria-hidden="true" />}+ {label}

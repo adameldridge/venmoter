@@ -61,3 +61,11 @@
   margin-right: 6px;
   opacity: 0.6;
 }
+
+/* A heads-up under a field that doesn't block saving. */
+.form-warning{
+  margin: 6px 0 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #8a5a00;
+}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import type { PromoterWithVenues, VenueWithPromoters } from "./types/venue";
+import type { PromoterWithVenues, RecordKind, VenueWithPromoters } from "./types/venue";
 import VenuesTab from "./components/VenuesTab";
 import PromotersTab from "./components/PromotersTab";
 import VenueFormModal, { type VenueFormModalHandle } from "./components/VenueFormModal";
@@ -12,16 +12,16 @@ import TourFormModal, { type TourFormModalHandle } from "./components/TourFormMo
 import OutreachModal, { type OutreachModalHandle } from "./components/OutreachModal";
 import ContactLogModal, { type ContactLogModalHandle } from "./components/ContactLogModal";
 import StopFormModal, { type StopFormModalHandle } from "./components/StopFormModal";
+import RecordModal, { type RecordModalHandle } from "./components/RecordModal";
 import { toast } from "sonner";
 import Spinner from "./components/Spinner";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase/config";
 import { useVenueData } from "./hooks/useVenueData";
 import { useTourData } from "./hooks/useTourData";
-import type { NewOutreach, Outreach, OutreachTarget, Tour, TourStop } from "./types/tour";
+import { hasShowDate, statusLabel, type NewOutreach, type Outreach, type OutreachTarget, type OutreachTargetType, type Tour, type TourStop } from "./types/tour";
 import { sameCity } from "./utils/city";
 import { formatDate } from "./utils/date";
-import type { RowFocus, RowKind } from "./hooks/useRowFocus";
 
 type Tab = "venues" | "promoters" | "tour";
 
@@ -32,8 +32,6 @@ export default function App() {
     const [selectedCity, setSelectedCity] = useState(ALL_CITIES);
     const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    // The venue or promoter row another tab sent you to.
-    const [rowFocus, setRowFocus] = useState<RowFocus | null>(null);
 
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
@@ -44,6 +42,7 @@ export default function App() {
     const outreachModalRef = useRef<OutreachModalHandle>(null);
     const contactLogModalRef = useRef<ContactLogModalHandle>(null);
     const stopFormModalRef = useRef<StopFormModalHandle>(null);
+    const recordModalRef = useRef<RecordModalHandle>(null);
 
     const {
         tours,
@@ -63,6 +62,8 @@ export default function App() {
         saveOutreach,
         deleteOutreach,
         deleteOutreachForTarget,
+        listingsFor,
+        bookingsViaPromoter,
     } = useTourData();
 
     const {
@@ -98,9 +99,35 @@ export default function App() {
         });
     }
 
+    // Deleting a venue or promoter also takes it off every tour it's on, so spell that out.
+    function deleteDetails(targetType: OutreachTargetType, targetId: string, linkCount: number) {
+        const listings = listingsFor(targetType, targetId);
+        const logCount = listings.reduce((total, listing) => total + listing.logCount, 0);
+        const viaCount = targetType === "promoter" ? bookingsViaPromoter(targetId) : 0;
+        const linkNoun = targetType === "venue" ? "promoter" : "venue";
+        return [
+            ...listings.map((listing) => {
+                const date = hasShowDate(listing.status) && listing.showDate ? ` ${formatDate(listing.showDate)}` : "";
+                return `Removed from ${listing.tourName} in ${listing.city} (${statusLabel(listing.status)}${date})`;
+            }),
+            ...(logCount > 0 ? [`${logCount} contact log ${logCount === 1 ? "entry" : "entries"} deleted`] : []),
+            ...(viaCount > 0 ? [`No longer the booking promoter on ${viaCount} venue ${viaCount === 1 ? "booking" : "bookings"}`] : []),
+            ...(linkCount > 0 ? [`Unlinked from ${linkCount} ${linkNoun}${linkCount === 1 ? "" : "s"}`] : []),
+        ];
+    }
+
+    // Shown under a venue's City field when the new city doesn't match where it's listed on a tour.
+    function venueCityWarning(venueId: string, city: string) {
+        const elsewhere = listingsFor("venue", venueId).filter((listing) => !sameCity(listing.city, city));
+        if (elsewhere.length === 0) return "";
+        const places = elsewhere.map((listing) => `${listing.city} on ${listing.tourName}`).join(", ");
+        return `Listed under ${places}. Changing the city won't move it on the tour.`;
+    }
+
     function confirmDeleteVenue(venue: VenueWithPromoters) {
         confirmModalRef.current?.open({
             message: `Delete ${venue.name}? This cannot be undone.`,
+            details: deleteDetails("venue", venue.id, venue.promoters.length),
             confirmLabel: "Delete",
             danger: true,
             onConfirm: () => deleteVenue(venue.id),
@@ -110,6 +137,7 @@ export default function App() {
     function confirmDeletePromoter(promoter: PromoterWithVenues) {
         confirmModalRef.current?.open({
             message: `Delete ${promoter.name}? This cannot be undone.`,
+            details: deleteDetails("promoter", promoter.id, promoter.venues.length),
             confirmLabel: "Delete",
             danger: true,
             onConfirm: () => deletePromoter(promoter.id),
@@ -243,27 +271,33 @@ export default function App() {
         return promoter.venues.some((venue) => venue.city === city);
     }
 
-    function switchTab(tab: Tab) {
-        setActiveTab(tab);
-        setRowFocus(null);
+    function viewRecord(kind: RecordKind, id: string) {
+        recordModalRef.current?.open(kind, id);
     }
 
-    // Opens a venue or promoter on its own tab, clearing any filter that would hide its row.
-    function goTo(kind: RowKind, id: string) {
-        const venue = kind === "venue" ? venuesWithPromoters.find((v) => v.id === id) : undefined;
-        const promoter = kind === "promoter" ? promotersWithVenues.find((p) => p.id === id) : undefined;
-        const target = venue ?? promoter;
-        if (!target) return;
+    function openVenuePromoterLinks(venue: VenueWithPromoters, onClose?: () => void) {
+        venuePromotersLinkModalRef.current?.open(
+            venue.id,
+            sortedPromoters.map((promoter) => ({
+                id: promoter.id,
+                name: promoter.name,
+            })),
+            venue.promoters.map((promoter) => promoter.id),
+            onClose,
+        );
+    }
 
-        if (!matchesSearch(target.name)) {
-            setSearchInput("");
-            setSearchTerm("");
-        }
-        const inCity = venue ? venue.city === selectedCity : promoterInCity(promoter!, selectedCity);
-        if (selectedCity !== ALL_CITIES && !inCity) setSelectedCity(ALL_CITIES);
-
-        setActiveTab(kind === "venue" ? "venues" : "promoters");
-        setRowFocus({ kind, id, seq: Date.now() });
+    function openPromoterVenueLinks(promoter: PromoterWithVenues, onClose?: () => void) {
+        promoterVenuesLinkModalRef.current?.open(
+            promoter.id,
+            sortedVenues.map((venue) => ({
+                id: venue.id,
+                name: venue.name,
+                city: venue.city,
+            })),
+            promoter.venues.map((venue) => venue.id),
+            onClose,
+        );
     }
 
     const visibleVenues = venuesWithPromoters
@@ -288,21 +322,21 @@ export default function App() {
                 <button
                     className={activeTab === "tour" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => switchTab("tour")}
+                    onClick={() => setActiveTab("tour")}
                 >
                     Tour
                 </button>
                 <button
                     className={activeTab === "venues" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => switchTab("venues")}
+                    onClick={() => setActiveTab("venues")}
                 >
                     Venues
                 </button>
                 <button
                     className={activeTab === "promoters" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
-                    onClick={() => switchTab("promoters")}
+                    onClick={() => setActiveTab("promoters")}
                 >
                     Promoters
                 </button>
@@ -329,21 +363,8 @@ export default function App() {
                             onAddVenue={() => venueFormModalRef.current?.open()}
                             onEditVenue={(venue) => venueFormModalRef.current?.open(venue)}
                             onDeleteVenue={confirmDeleteVenue}
-                            onManagePromoters={(venue) =>
-                                venuePromotersLinkModalRef.current?.open(
-                                    venue.id,
-                                    sortedPromoters.map((promoter) => ({
-                                        id: promoter.id,
-                                        name: promoter.name,
-                                    })),
-                                    venue.promoters.map((promoter) => promoter.id),
-                                )
-                            }
-                            tour={activeTour ? { tour: activeTour, stops: activeStops, outreach: activeOutreach } : null}
-                            onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
-                            onAddToStop={addStopVenue}
-                            focus={rowFocus}
-                            onGoTo={goTo}
+                            onManagePromoters={(venue) => openVenuePromoterLinks(venue)}
+                            onViewRecord={viewRecord}
                         />
                     )}
 
@@ -358,19 +379,8 @@ export default function App() {
                             onAddPromoter={() => promoterFormModalRef.current?.open()}
                             onEditPromoter={(promoter) => promoterFormModalRef.current?.open(promoter)}
                             onDeletePromoter={confirmDeletePromoter}
-                            onManageVenues={(promoter) =>
-                                promoterVenuesLinkModalRef.current?.open(
-                                    promoter.id,
-                                    sortedVenues.map((venue) => ({
-                                        id: venue.id,
-                                        name: venue.name,
-                                        city: venue.city,
-                                    })),
-                                    promoter.venues.map((venue) => venue.id),
-                                )
-                            }
-                            focus={rowFocus}
-                            onGoTo={goTo}
+                            onManageVenues={(promoter) => openPromoterVenueLinks(promoter)}
+                            onViewRecord={viewRecord}
                         />
                     )}
 
@@ -393,14 +403,43 @@ export default function App() {
                             onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
                             onOpenLog={(outreach, title) => contactLogModalRef.current?.open(outreach, title)}
                             onRemoveOutreach={confirmRemoveOutreach}
-                            onGoTo={goTo}
+                            onViewRecord={viewRecord}
                         />
                     )}
                 </>
             )}
 
-            <VenueFormModal ref={venueFormModalRef} onSubmit={saveVenue} />
-            <PromoterFormModal ref={promoterFormModalRef} onSubmit={savePromoter} />
+            <RecordModal
+                ref={recordModalRef}
+                venues={venuesWithPromoters}
+                promoters={promotersWithVenues}
+                // Each hands back to this modal when the form or dialog closes.
+                onEditVenue={(venue) =>
+                    venueFormModalRef.current?.open(venue, { onClose: () => viewRecord("venue", venue.id) })
+                }
+                onEditPromoter={(promoter) =>
+                    promoterFormModalRef.current?.open(promoter, { onClose: () => viewRecord("promoter", promoter.id) })
+                }
+                onLinkPromoters={(venue) => openVenuePromoterLinks(venue, () => viewRecord("venue", venue.id))}
+                onLinkVenues={(promoter) => openPromoterVenueLinks(promoter, () => viewRecord("promoter", promoter.id))}
+            />
+            <VenueFormModal
+                ref={venueFormModalRef}
+                onSubmit={saveVenue}
+                onDelete={(venueId) => {
+                    const venue = venuesWithPromoters.find((v) => v.id === venueId);
+                    if (venue) confirmDeleteVenue(venue);
+                }}
+                cityWarning={venueCityWarning}
+            />
+            <PromoterFormModal
+                ref={promoterFormModalRef}
+                onSubmit={savePromoter}
+                onDelete={(promoterId) => {
+                    const promoter = promotersWithVenues.find((p) => p.id === promoterId);
+                    if (promoter) confirmDeletePromoter(promoter);
+                }}
+            />
 
             <LinkModal
                 ref={venuePromotersLinkModalRef}

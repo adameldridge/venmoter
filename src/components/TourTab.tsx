@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaPen } from "react-icons/fa";
-import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
+import type { PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import {
     OUTREACH_STATUSES,
     hasShowDate,
@@ -16,7 +16,6 @@ import { sameCity } from "../utils/city";
 import TourCalendar, { type CalendarEntry } from "./TourCalendar";
 import NeedsAttention from "./NeedsAttention";
 import { useCollapsedGroups } from "../hooks/useCollapsedGroups";
-import type { RowKind } from "../hooks/useRowFocus";
 import "./TourTab.css";
 
 type TourTabProps = {
@@ -37,7 +36,7 @@ type TourTabProps = {
     onOpenOutreach: (outreach: Outreach, title: string) => void;
     onOpenLog: (outreach: Outreach, title: string) => void;
     onRemoveOutreach: (outreach: Outreach) => void;
-    onGoTo: (kind: RowKind, id: string) => void;
+    onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
 const NEW_TOUR_OPTION = "__new-tour";
@@ -65,7 +64,7 @@ export default function TourTab({
     onOpenOutreach,
     onOpenLog,
     onRemoveOutreach,
-    onGoTo,
+    onViewRecord,
 }: TourTabProps) {
     const [cityFilter, setCityFilter] = useState("");
     const { collapsedIds, setCollapsed } = useCollapsedGroups("venmoter.collapsedCities");
@@ -263,7 +262,7 @@ export default function TourTab({
                                                 onUpdate={() => openCard(o)}
                                                 onOpenLog={() => onOpenLog(o, cardTitle(o))}
                                                 onRemove={() => onRemoveOutreach(o)}
-                                                onGoToTarget={() => onGoTo(o.targetType, o.targetId)}
+                                                onViewTarget={() => onViewRecord(o.targetType, o.targetId)}
                                             />
                                         ))}
                                     </TourGroup>

@@ -54,3 +54,4 @@ export type LinkOption = {
   city?: string;
   detail?: string;
 };
+export type RecordKind = "venue" | "promoter";

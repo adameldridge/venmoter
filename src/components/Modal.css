@@ -37,3 +37,10 @@ dialog{
     font-size: 14px;
     line-height: 1.5;
 }
+
+.modal-details{
+    margin: -8px 0 20px;
+    padding-left: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+}

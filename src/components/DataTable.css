@@ -291,16 +291,6 @@
     gap: 4px 8px;
 }
 
-/* A status that opens its record. */
-.data-row-status-link{
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    color: inherit;
-    font: inherit;
-}
-
 .data-row-muted{
     font-size: 12px;
     opacity: 0.8;

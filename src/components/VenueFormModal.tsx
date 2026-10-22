@@ -8,6 +8,9 @@ import "./Forms.css";
 
 type VenueFormModalProps = {
     onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
+    onDelete: (venueId: string) => void;
+    // A note for when the city no longer matches where the venue is listed on a tour.
+    cityWarning: (venueId: string, city: string) => string;
     ref?: Ref<VenueFormModalHandle>;
 };
 
@@ -37,7 +40,7 @@ function toFormValues(venue: Venue): NewVenue {
 
 export type VenueFormModalHandle = EntityFormModalHandle<Venue>;
 
-function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
+function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModalProps) {
     const {
         modalRef,
         formValues,
@@ -45,6 +48,8 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
         editingId: editingVenueId,
         isSaving,
         closeModal,
+        closeWithoutReturning,
+        handleDialogClose,
         handleChange,
         handleSubmit,
     } = useEntityFormModal<Venue, NewVenue>(ref, {
@@ -53,8 +58,10 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
         onSubmit,
     });
 
+    const cityNote = editingVenueId && formValues.city ? cityWarning(editingVenueId, formValues.city) : "";
+
     return (
-        <dialog id="venue-form-modal" ref={modalRef}>
+        <dialog id="venue-form-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
                     {editingVenueId ? "Edit Venue" : "Add Venue"}
@@ -81,6 +88,7 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                             value={formValues.city}
                             onChange={handleChange}
                         />
+                        {cityNote && <div className="form-warning">{cityNote}</div>}
                     </div>
 
                     <div>
@@ -155,6 +163,20 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                             Cancel
                         </button>
                     </div>
+
+                    {editingVenueId && (
+                        <button
+                            className="form-remove-button"
+                            type="button"
+                            onClick={() => {
+                                closeWithoutReturning();
+                                onDelete(editingVenueId);
+                            }}
+                            disabled={isSaving}
+                        >
+                            Delete venue
+                        </button>
+                    )}
                 </form>
             </div>
         </dialog>
