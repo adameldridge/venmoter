@@ -1,6 +1,31 @@
+/* The palette: neutral greys, with green as the one accent (actions, confirmed) and amber and red
+   kept for warnings and problems. Everything else is white at some opacity over these. */
+:root{
+  color-scheme: dark;
+  --bg: #131313;
+  /* The page plus the table wrap's faint tint, for things that must be opaque (sticky headers). */
+  --surface: #1a1a1a;
+  --surface-raised: #222222;
+  --field: #1c1c1c;
+  --text: #ececec;
+  --accent: #029742;
+  --accent-text: #5fd18b;
+  --accent-soft: rgba(2, 151, 66, 0.16);
+  --accent-line: rgba(2, 151, 66, 0.6);
+  --warn: #f2a900;
+  --warn-text: #f5c451;
+  --warn-soft: rgba(242, 169, 0, 0.1);
+  --warn-line: rgba(242, 169, 0, 0.5);
+  --on-warn: #1a1a1a;
+  --danger: #e5484d;
+  --danger-text: #ff8a8d;
+  --danger-soft: rgba(229, 72, 77, 0.14);
+  --danger-line: rgba(229, 72, 77, 0.45);
+}
+
 body {
-  background-color: #011e29;
-  color: #FFF;
+  background-color: var(--bg);
+  color: var(--text);
   font-family: "Public Sans", sans-serif;
   margin: 0;
   padding-left: env(safe-area-inset-left);
@@ -12,7 +37,7 @@ body {
 }
 
 a{
-    color: #FFF;
+    color: var(--text);
 }
 
 .tabs{
@@ -34,7 +59,7 @@ a{
 
 .tab-button{
   background: none;
-  color: #fff;
+  color: var(--text);
   border: none;
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -48,7 +73,7 @@ a{
 
 .tab-button-active{
   opacity: 1;
-  border-bottom: 2px solid #029742;
+  border-bottom: 2px solid var(--accent);
 }
 
 .list-header{
@@ -69,12 +94,38 @@ a{
     gap: 10px;
 }
 
+/* Dark fields with a thin border, in filters and forms alike, rather than the browser's white. */
+input:not([type="checkbox"], [type="radio"]),
+select,
+textarea{
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 5px;
+    background: var(--field);
+    color: var(--text);
+}
+
+input:not([type="checkbox"], [type="radio"]):hover,
+select:hover,
+textarea:hover{
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+input:not([type="checkbox"], [type="radio"]):focus,
+select:focus,
+textarea:focus{
+    outline: none;
+    border-color: var(--accent-line);
+}
+
+input::placeholder,
+textarea::placeholder{
+    color: rgba(255, 255, 255, 0.4);
+}
+
 .search-input,
 .cities-select{
     box-sizing: border-box;
     padding: 10px;
-    border: none;
-    border-radius: 5px;
     font-family: inherit;
     font-size: 14px;
 }
@@ -85,7 +136,6 @@ a{
 
 .cities-select:hover{
     cursor: pointer;
-    opacity: 0.8;
 }
 
 
@@ -93,31 +143,31 @@ button{
   padding: 10px 40px;
   margin-top: 5px;
   font-size: 14px;
-  background: #029742;
-  color: #fff;
+  background: var(--accent);
+  color: var(--text);
   border: none;
   border-radius: 5px;
 }
 
 .create-button{
-  background: #029742;
-  color: #fff;
+  background: var(--accent);
+  color: var(--text);
 }
 
 .cancel-button{
   background: transparent;
-  color: #fff;
+  color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .danger-button{
-  background: #e5484d;
-  color: #fff;
+  background: var(--danger);
+  color: var(--text);
 }
 
 .ghost-button{
   background: transparent;
-  color: #fff;
+  color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 

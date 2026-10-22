@@ -5,9 +5,30 @@ dialog{
     max-height: calc(100vh - 32px);
     padding: 28px;
     border: 1px solid rgba(255, 255, 255, 0.18);
+    /* A thin edge of the accent, so dialogs carry the app's one colour. */
+    border-top: 3px solid var(--accent);
     border-radius: 8px;
-    background: #0a2732;
-    color: #fff;
+    background: var(--surface-raised);
+    color: var(--text);
+}
+
+/* In a dialog there's little to click, so what can be clicked takes the accent. */
+dialog a,
+dialog .data-edit-link{
+    color: var(--accent-text);
+    text-decoration-color: var(--accent-line);
+    text-underline-offset: 3px;
+}
+
+dialog a:hover,
+dialog .data-edit-link:hover{
+    color: var(--accent-text);
+    text-decoration-color: currentColor;
+}
+
+dialog .data-tag:hover{
+    border-color: var(--accent-line);
+    color: var(--accent-text);
 }
 
 dialog::backdrop{
@@ -70,7 +91,7 @@ dialog::backdrop{
 
 .modal-close:hover{
     opacity: 1;
-    color: #fff;
+    color: var(--text);
 }
 
 .modal-subtitle{

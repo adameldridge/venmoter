@@ -14,7 +14,7 @@
 .record-modal-kind{
     padding-top: 5px;
     font-size: 16px;
-    opacity: 0.55;
+    color: var(--accent-text);
 }
 
 .record-modal-section{
@@ -83,7 +83,7 @@
 }
 
 .record-modal-line-preferred .record-modal-line-icon{
-    color: #5fd18b;
+    color: var(--accent-text);
     opacity: 1;
 }
 

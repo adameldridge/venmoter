@@ -1,6 +1,6 @@
 import "./TourTable.css";
 import type { ReactNode } from "react";
-import { FaBuilding, FaExclamationTriangle } from "react-icons/fa";
+import { FaBuilding, FaChevronDown, FaExclamationTriangle, FaPlus, FaRegClock } from "react-icons/fa";
 import type { Promoter, Venue } from "../types/venue";
 import { channelLabel, statusLabel, type ContactLogEntry, type Outreach, type OutreachStatus } from "../types/tour";
 import { formatDate, formatDayMonth } from "../utils/date";
@@ -181,11 +181,14 @@ type TourRowProps = {
     // A venue booked through the promoter row above it: indented, and without Last contact,
     // since it's the promoter that gets contacted.
     nested?: boolean;
-    inHouse: boolean;
+    // How the venue is booked ("In-house", "No promoters", …), if worth saying.
+    bookingNote?: string;
+    // A promoter's venues nested below it, which it can fold away.
+    venueCount?: number;
+    venuesCollapsed?: boolean;
+    onToggleVenues?: () => void;
     // A venue booked through its promoters, whose statuses read differently.
     promoterBooked: boolean;
-    // A venue with no promoters linked on the Venues tab.
-    noPromoters: boolean;
     overlapMessages: string[];
     latestContact?: ContactLogEntry;
     viaPromoterName?: string;
@@ -200,9 +203,11 @@ export function TourRow({
     outreach,
     target,
     nested = false,
-    inHouse,
+    bookingNote,
+    venueCount = 0,
+    venuesCollapsed = false,
+    onToggleVenues,
     promoterBooked,
-    noPromoters,
     overlapMessages,
     latestContact,
     viaPromoterName,
@@ -227,11 +232,30 @@ export function TourRow({
                 name={target.name}
                 onOpen={onViewTarget}
                 openTitle={`View ${target.name}`}
+                // Top-level rows keep the chevron's slot even without one, so names line up.
+                leading={nested ? undefined : venueCount > 0 && onToggleVenues ? (
+                    <button
+                        className="tour-row-venues-toggle"
+                        type="button"
+                        onClick={onToggleVenues}
+                        aria-expanded={!venuesCollapsed}
+                        aria-label={venuesCollapsed ? "Show venues" : "Hide venues"}
+                        title={venuesCollapsed ? "Show venues" : "Hide venues"}
+                    >
+                        <FaChevronDown className="tour-row-venues-chevron" aria-hidden="true" />
+                    </button>
+                ) : (
+                    <span className="tour-row-venues-toggle-slot" />
+                )}
                 badge={
                     <>
                         {/* How the venue is booked, as a quiet note on the name's line. */}
-                        {(inHouse || noPromoters) && (
-                            <span className="tour-row-name-note">{inHouse ? "In-house" : "No promoters"}</span>
+                        {bookingNote && <span className="tour-row-name-note">{bookingNote}</span>}
+                        {/* What's folded away, only while it is. */}
+                        {venueCount > 0 && venuesCollapsed && (
+                            <span className="tour-row-name-count">
+                                {venueCount} {venueCount === 1 ? "venue" : "venues"}
+                            </span>
                         )}
                         {overlapMessages.length > 0 && (
                             <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
@@ -270,20 +294,40 @@ export function TourRow({
             {nested ? (
                 <td />
             ) : (
-                <td className="data-cell-full" data-label="Last contact">
-                    {latestContact ? (
-                        <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
-                            {formatDate(latestContact.date)}
-                            {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
-                            {latestContact.note && (
-                                <span className="tour-row-latest-note">“{latestContact.note}”</span>
-                            )}
+                <td
+                    className={`data-cell-full tour-cell-contact${latestContact ? "" : " tour-cell-contact-empty"}`}
+                    data-label="Last contact"
+                >
+                    {/* Both open the log, which takes a new entry above the history. */}
+                    <div className="tour-row-contact">
+                        {latestContact && (
+                            <button
+                                className="tour-row-latest-contact"
+                                type="button"
+                                onClick={onOpenLog}
+                                title="View contact history"
+                            >
+                                {/* Stands in for the column heading on phones, where there's none. */}
+                                <FaRegClock className="tour-row-latest-icon" aria-label="Last contact" />
+                                <span className="tour-row-latest-when">
+                                    {formatDate(latestContact.date)}
+                                    {latestContact.channel && ` · ${channelLabel(latestContact.channel)}`}
+                                </span>
+                                {latestContact.note && (
+                                    <span className="tour-row-latest-note">“{latestContact.note}”</span>
+                                )}
+                            </button>
+                        )}
+                        <button
+                            className="tour-row-log-button"
+                            type="button"
+                            onClick={onOpenLog}
+                            aria-label="Log contact"
+                            title="Log contact"
+                        >
+                            <FaPlus />
                         </button>
-                    ) : (
-                        <button className="data-row-action" type="button" onClick={onOpenLog}>
-                            Log contact
-                        </button>
-                    )}
+                    </div>
                 </td>
             )}
         </tr>

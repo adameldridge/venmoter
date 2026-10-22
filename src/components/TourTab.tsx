@@ -66,6 +66,9 @@ export default function TourTab({
 }: TourTabProps) {
     const [cityFilter, setCityFilter] = useState("");
     const { collapsedIds, setCollapsed } = useCollapsedGroups("venmoter.collapsedCities");
+    // Keyed by the promoter's outreach, so it's per city.
+    const { collapsedIds: collapsedPromoterIds, setCollapsed: setPromoterCollapsed } =
+        useCollapsedGroups("venmoter.collapsedPromoters");
     const sortedTours = [...tours].sort((a, b) => a.name.localeCompare(b.name));
     const sortedStops = sortStops(stops, outreach);
     // Falls back to all cities if the selected one was deleted or belongs to another tour.
@@ -114,15 +117,17 @@ export default function TourTab({
         onOpenOutreach(o, cardTitle(o));
     }
 
-    function renderRow({ outreach: o, target }: TourEntry, { nested = false, noPromoters = false } = {}) {
+    function renderRow({ outreach: o, target }: TourEntry, { nested = false, noPromoters = false, venueCount = 0 } = {}) {
         return (
             <TourRow
                 outreach={o}
                 target={target}
                 nested={nested}
-                inHouse={isInHouse(target)}
+                bookingNote={bookingNote(target, { nested, noPromoters, booked: hasShowDate(o.status) })}
+                venueCount={venueCount}
+                venuesCollapsed={collapsedPromoterIds.has(o.id)}
+                onToggleVenues={() => setPromoterCollapsed(o.id, !collapsedPromoterIds.has(o.id))}
                 promoterBooked={"promoters" in target && isPromoterBooked(target)}
-                noPromoters={noPromoters}
                 overlapMessages={overlaps
                     .filter((overlap) => overlap.outreachId === o.id)
                     .map((overlap) => overlap.message)}
@@ -271,8 +276,11 @@ export default function TourTab({
                                         {/* Each promoter is followed by the venues it books, nested under it. */}
                                         {contacts.map((contact) => (
                                             <Fragment key={contact.outreach.id}>
-                                                {renderRow(contact, { noPromoters: contact.noPromoters })}
-                                                {contact.venues.map((venue) => (
+                                                {renderRow(contact, {
+                                                    noPromoters: contact.noPromoters,
+                                                    venueCount: contact.venues.length,
+                                                })}
+                                                {!collapsedPromoterIds.has(contact.outreach.id) && contact.venues.map((venue) => (
                                                     <Fragment key={venue.outreach.id}>
                                                         {renderRow(venue, { nested: true })}
                                                     </Fragment>
@@ -296,6 +304,19 @@ function isInHouse(target: TourEntry["target"]) {
     return "managesInHouse" in target && !!target.managesInHouse;
 }
 
+// How a venue gets booked, noted on its row. A venue that's in-house and has promoters says so on
+// both its own row and the rows nested under its promoters, until it's held or confirmed (then a
+// nested row is under the promoter that booked it, so needs no note).
+function bookingNote(target: TourEntry["target"], { nested = false, noPromoters = false, booked = false }) {
+    const hasPromoters = "promoters" in target && target.promoters.length > 0;
+    if (isInHouse(target)) {
+        if (!hasPromoters) return "In-house";
+        if (nested) return booked ? undefined : "Also in-house";
+        return booked ? "In-house" : "In-house or via promoter";
+    }
+    return noPromoters ? "No promoters" : undefined;
+}
+
 type Contact = TourEntry & {
     venues: TourEntry[];
     noPromoters: boolean;
@@ -305,8 +326,10 @@ type Contact = TourEntry & {
 // none of whose promoters are on the list, since then the venue itself is the way in.
 // Promoters carry the listed venues they book, shown as rows nested under them: only under the
 // promoter the booking went through, once that's recorded and that promoter is listed here;
-// otherwise under each listed promoter that could book it. In-house venues have their own row
-// instead (a promoter overlap is flagged there).
+// otherwise under each listed promoter that could book it. In-house venues keep their own row too,
+// since they can be booked directly; one that also works with promoters is nested under them as
+// well until it's held or confirmed, then sits only where it was booked (a promoter overlap is
+// flagged on both).
 function buildContacts(entries: TourEntry[]): Contact[] {
     const worksWith = (venue: TourEntry, promoterId: string) =>
         "promoters" in venue.target && venue.target.promoters.some((p) => p.id === promoterId);
@@ -315,16 +338,21 @@ function buildContacts(entries: TourEntry[]): Contact[] {
     // The promoter a booking went through, if one is recorded and it's on this city's list.
     const listedVia = (venue: TourEntry) =>
         listedPromoterIds.includes(venue.outreach.viaPromoterId) ? venue.outreach.viaPromoterId : "";
+    // A held or confirmed in-house venue with no listed promoter recorded was booked directly.
+    const bookedInHouse = (venue: TourEntry) =>
+        isInHouse(venue.target) && hasShowDate(venue.outreach.status) && !listedVia(venue);
     const booksVia = (venue: TourEntry, promoterId: string) =>
-        listedVia(venue) ? listedVia(venue) === promoterId : worksWith(venue, promoterId);
+        !bookedInHouse(venue) && (listedVia(venue) ? listedVia(venue) === promoterId : worksWith(venue, promoterId));
     const reachedByPromoter = (venue: TourEntry) => listedPromoterIds.some((id) => booksVia(venue, id));
-    const tagOnly = venueEntries.filter((venue) => !isInHouse(venue.target) && reachedByPromoter(venue));
+    const tagOnly = venueEntries.filter((venue) =>
+        isInHouse(venue.target) ? !!listedVia(venue) : reachedByPromoter(venue),
+    );
 
     return entries
         .filter((e) => !tagOnly.includes(e))
         .map((e) => {
             if (e.outreach.targetType === "promoter") {
-                const venues = venueEntries.filter((venue) => !isInHouse(venue.target) && booksVia(venue, e.target.id));
+                const venues = venueEntries.filter((venue) => booksVia(venue, e.target.id));
                 return { ...e, venues, noPromoters: false };
             }
             // A venue whose promoters exist but aren't added says nothing extra; the city header

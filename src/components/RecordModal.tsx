@@ -1,5 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
-import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaMapMarkerAlt, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaTimes } from "react-icons/fa";
+import { FiFacebook, FiInstagram, FiLink, FiMail, FiMapPin } from "react-icons/fi";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import "./Modal.css";
@@ -110,14 +111,14 @@ export default function RecordModal({
                         <ul className="record-modal-lines">
                             {venue && (
                                 <li className="record-modal-line">
-                                    <span className="record-modal-line-icon" aria-hidden="true"><FaMapMarkerAlt /></span>
+                                    <span className="record-modal-line-icon" aria-hidden="true"><FiMapPin /></span>
                                     {venue.city}
                                 </li>
                             )}
-                            <ContactLine channel="email" value={record.email} href={record.email && `mailto:${record.email}`} preferred={record.preferredContact} icon={<FaEnvelope />} />
-                            <ContactLine channel="website" value={record.website} href={record.website} preferred={record.preferredContact} icon={<FaLink />} />
-                            <ContactLine channel="instagram" value={record.instagram} href={record.instagram} preferred={record.preferredContact} icon={<FaInstagram />} />
-                            <ContactLine channel="facebook" value={record.facebook} href={record.facebook} preferred={record.preferredContact} icon={<FaFacebook />} />
+                            <ContactLine channel="email" value={record.email} href={record.email && `mailto:${record.email}`} preferred={record.preferredContact} icon={<FiMail />} />
+                            <ContactLine channel="website" value={record.website} href={record.website} preferred={record.preferredContact} icon={<FiLink />} />
+                            <ContactLine channel="instagram" value={record.instagram} href={record.instagram} preferred={record.preferredContact} icon={<FiInstagram />} />
+                            <ContactLine channel="facebook" value={record.facebook} href={record.facebook} preferred={record.preferredContact} icon={<FiFacebook />} />
                             {!hasContact(record) && (
                                 <li className="record-modal-line record-modal-empty">No contact details yet.</li>
                             )}

@@ -1,52 +1,66 @@
-/* Tinted rather than solid so a table full of badges stays calm on the dark background. */
+/* Only the statuses that need you get colour and a box: on hold (amber) and confirmed (green).
+   The rest are grey text whose leading dot brightens as a contact moves along; declined is red
+   text, and no response a hollow dot. All share the same padding so their text lines up. */
 .status-badge{
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
-    border: 1px solid transparent;
+}
+
+.status-badge::before{
+    content: "";
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: currentColor;
 }
 
 .status-badge-to-contact{
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.status-badge-to-contact::before{
+    opacity: 0.5;
 }
 
 .status-badge-contacted{
-    background: rgba(31, 111, 235, 0.2);
-    border-color: rgba(31, 111, 235, 0.45);
-    color: #8ab4ff;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .status-badge-in-discussion{
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.45);
-    color: #c0a8ff;
+    color: var(--text);
 }
 
 .status-badge-on-hold{
-    background: rgba(242, 169, 0, 0.16);
-    border-color: rgba(242, 169, 0, 0.45);
-    color: #f5c451;
+    background: var(--warn-soft);
+    border-color: var(--warn-line);
+    color: var(--warn-text);
 }
 
 .status-badge-confirmed{
-    background: rgba(2, 151, 66, 0.2);
-    border-color: rgba(2, 151, 66, 0.55);
-    color: #5fd18b;
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    color: var(--accent-text);
 }
 
 .status-badge-declined{
-    background: rgba(229, 72, 77, 0.16);
-    border-color: rgba(229, 72, 77, 0.45);
-    color: #ff8a8d;
+    color: var(--danger-text);
+    opacity: 0.85;
 }
 
 .status-badge-no-response{
-    background: rgba(107, 114, 128, 0.22);
-    border-color: rgba(107, 114, 128, 0.5);
-    color: #c4c8cf;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.status-badge-no-response::before{
+    border: 1px solid currentColor;
+    background: none;
 }

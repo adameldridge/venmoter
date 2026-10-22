@@ -2,12 +2,12 @@
 
 /* Inset shadow rather than a border so clash rows don't shift the columns. */
 .tour-row-clash{
-    box-shadow: inset 3px 0 0 #e5484d;
+    box-shadow: inset 3px 0 0 var(--danger);
 }
 
 /* Same inset bar as clashes, in amber: a venue and its promoter are both being approached. */
 .tour-row-overlap{
-    box-shadow: inset 3px 0 0 #f2a900;
+    box-shadow: inset 3px 0 0 var(--warn);
 }
 
 .tour-row-overlap-icon{
@@ -15,7 +15,7 @@
     margin-left: 6px;
     font-size: 12px;
     vertical-align: -1px;
-    color: #f5c451;
+    color: var(--warn-text);
     cursor: help;
 }
 
@@ -37,6 +37,76 @@
 
 .data-table .tour-row-nested td{
     padding-top: 6px;
+}
+
+/* A darker band and lighter names set the venues apart from the contacts they hang off. */
+.data-table tbody .tour-row-nested{
+    background: rgba(0, 0, 0, 0.22);
+}
+
+/* Outranks the table's own row hover. */
+.data-table tbody tr.tour-row-nested:not(.data-group-row):hover{
+    background: rgba(0, 0, 0, 0.12);
+}
+
+.tour-row-nested .data-row-name{
+    font-weight: normal;
+    opacity: 0.85;
+}
+
+/* A chevron before a promoter's icon folds away its venues, like a city's does; rows without one
+   keep the slot so names line up. */
+.tour-row-venues-toggle,
+.tour-row-venues-toggle-slot{
+    flex: 0 0 18px;
+    height: 20px;
+}
+
+.tour-row-venues-toggle{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 -4px 0 -6px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: inherit;
+}
+
+.tour-row-venues-toggle:hover{
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.tour-row-venues-chevron{
+    font-size: 10px;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+}
+
+.tour-row-venues-toggle:hover .tour-row-venues-chevron{
+    opacity: 1;
+}
+
+.tour-row-venues-toggle[aria-expanded="false"] .tour-row-venues-chevron{
+    transform: rotate(-90deg);
+}
+
+.tour-row-venues-toggle-slot{
+    margin: 0 -4px 0 -6px;
+}
+
+/* "· 2 venues" after a collapsed promoter's name. */
+.tour-row-name-count{
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: normal;
+    opacity: 0.6;
+}
+
+.tour-row-name-count::before{
+    content: "· ";
 }
 
 /* "· In-house" / "· No promoters" after a venue's name. */
@@ -71,9 +141,9 @@
 }
 
 .tour-venue-tag-confirmed{
-    border-color: rgba(2, 151, 66, 0.7);
-    background: rgba(2, 151, 66, 0.18);
-    color: #5fd18b;
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent-text);
 }
 
 .tour-venue-tag-declined{
@@ -85,13 +155,13 @@
 }
 
 .tour-venue-tag-clash{
-    box-shadow: 0 0 0 1px #e5484d;
+    box-shadow: 0 0 0 1px var(--danger);
 }
 
 .tour-row-clash-note{
     margin-top: 6px;
     font-size: 12px;
-    color: #ff8a8d;
+    color: var(--danger-text);
 }
 
 .tour-row-latest-contact{
@@ -99,9 +169,15 @@
     margin: 0;
     padding: 0;
     background: none;
-    color: #fff;
+    /* Grey like the statuses, so the name leads the row. */
+    color: rgba(255, 255, 255, 0.7);
     font-size: 12px;
     text-align: left;
+}
+
+.tour-row-latest-contact:hover{
+    opacity: 1;
+    color: var(--text);
 }
 
 .tour-row-latest-note{
@@ -111,7 +187,99 @@
     font-style: italic;
 }
 
+.tour-row-latest-icon{
+    display: none;
+}
+
+/* The latest entry, with a small round button beside it for logging another. */
+.tour-row-contact{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.tour-row-log-button{
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 11px;
+}
+
+.tour-row-log-button:hover{
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
 @media (max-width: 640px){
+    /* With nothing logged yet, the "+" ends the status line instead of taking a labelled line. */
+    .data-table td.tour-cell-contact-empty{
+        flex-basis: auto;
+        margin-left: auto;
+        padding-left: 0;
+    }
+
+    .data-table td.tour-cell-contact[data-label]::before{
+        content: none;
+    }
+
+    /* The latest contact on one quiet line, its clock in line with the status dot above, and the
+       "+" at the line's end as on rows with nothing logged. A long note is cut short. */
+    .data-table td.tour-cell-contact:not(.tour-cell-contact-empty){
+        min-width: 0;
+        padding-left: 29px;
+    }
+
+    .tour-row-contact{
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+    }
+
+    .tour-row-latest-contact{
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .tour-row-latest-icon{
+        display: block;
+        flex-shrink: 0;
+        font-size: 10px;
+        opacity: 0.7;
+    }
+
+    .tour-row-latest-when{
+        flex-shrink: 0;
+    }
+
+    .tour-row-latest-note{
+        margin-top: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tour-row-latest-note::before{
+        content: "· ";
+        font-style: normal;
+    }
+
+    .tour-row-log-button{
+        margin-left: auto;
+    }
+
     .data-table .tour-row-nested{
         padding-top: 6px;
         padding-left: 30px;
