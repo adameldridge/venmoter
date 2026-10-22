@@ -67,93 +67,101 @@ function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModal
                     {editingVenueId ? "Edit venue" : "Add venue"}
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="venueName">Name *</label>
-                        <input
-                            id="venueName"
-                            name="name"
-                            type="text"
-                            required
-                            value={formValues.name}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    <fieldset className="form-section">
+                        <legend>Venue</legend>
 
-                    <div>
-                        <label htmlFor="venueCity">City *</label>
-                        <input
-                            id="venueCity"
-                            name="city"
-                            type="text"
-                            value={formValues.city}
-                            onChange={handleChange}
-                        />
-                        {cityNote && <div className="form-warning">{cityNote}</div>}
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueWebsite">Website</label>
-                        <input
-                            id="venueWebsite"
-                            name="website"
-                            type="text"
-                            value={formValues.website}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueInstagram">Instagram</label>
-                        <input
-                            id="venueInstagram"
-                            name="instagram"
-                            type="text"
-                            value={formValues.instagram}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueFacebook">Facebook</label>
-                        <input
-                            id="venueFacebook"
-                            name="facebook"
-                            type="text"
-                            value={formValues.facebook}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueEmail">Email</label>
-                        <input
-                            id="venueEmail"
-                            name="email"
-                            type="email"
-                            value={formValues.email}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <PreferredContactField
-                        id="venuePreferredContact"
-                        value={formValues.preferredContact ?? ""}
-                        details={formValues}
-                        onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
-                    />
-
-                    <div className="entity-form-checkbox">
-                        <label htmlFor="venueManagesInHouse">
+                        <div>
+                            <label htmlFor="venueName">Name *</label>
                             <input
-                                id="venueManagesInHouse"
-                                name="managesInHouse"
-                                type="checkbox"
-                                checked={formValues.managesInHouse ?? false}
+                                id="venueName"
+                                name="name"
+                                type="text"
+                                required
+                                value={formValues.name}
                                 onChange={handleChange}
                             />
-                            Manages some promotions in-house
-                        </label>
-                    </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueCity">City *</label>
+                            <input
+                                id="venueCity"
+                                name="city"
+                                type="text"
+                                value={formValues.city}
+                                onChange={handleChange}
+                            />
+                            {cityNote && <div className="form-warning">{cityNote}</div>}
+                        </div>
+
+                        <div className="entity-form-checkbox">
+                            <label htmlFor="venueManagesInHouse">
+                                <input
+                                    id="venueManagesInHouse"
+                                    name="managesInHouse"
+                                    type="checkbox"
+                                    checked={formValues.managesInHouse ?? false}
+                                    onChange={handleChange}
+                                />
+                                Manages some promotions in-house
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="form-section">
+                        <legend>Contact</legend>
+
+                        <div>
+                            <label htmlFor="venueEmail">Email</label>
+                            <input
+                                id="venueEmail"
+                                name="email"
+                                type="email"
+                                value={formValues.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueWebsite">Website</label>
+                            <input
+                                id="venueWebsite"
+                                name="website"
+                                type="text"
+                                value={formValues.website}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueInstagram">Instagram</label>
+                            <input
+                                id="venueInstagram"
+                                name="instagram"
+                                type="text"
+                                value={formValues.instagram}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueFacebook">Facebook</label>
+                            <input
+                                id="venueFacebook"
+                                name="facebook"
+                                type="text"
+                                value={formValues.facebook}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <PreferredContactField
+                            id="venuePreferredContact"
+                            value={formValues.preferredContact ?? ""}
+                            details={formValues}
+                            onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
+                        />
+                    </fieldset>
 
                     <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>

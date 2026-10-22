@@ -59,68 +59,76 @@ function PromoterFormModal({ onSubmit, onDelete, ref }: PromoterFormModalProps) 
                     {editingPromoterId ? "Edit promoter" : "Add promoter"}
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="promoterName">Name *</label>
-                        <input
-                            id="promoterName"
-                            name="name"
-                            type="text"
-                            required
-                            value={formValues.name}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    <fieldset className="form-section">
+                        <legend>Promoter</legend>
 
-                    <div>
-                        <label htmlFor="promoterWebsite">Website</label>
-                        <input
-                            id="promoterWebsite"
-                            name="website"
-                            type="text"
-                            value={formValues.website}
-                            onChange={handleChange}
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="promoterName">Name *</label>
+                            <input
+                                id="promoterName"
+                                name="name"
+                                type="text"
+                                required
+                                value={formValues.name}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </fieldset>
 
-                    <div>
-                        <label htmlFor="promoterInstagram">Instagram</label>
-                        <input
-                            id="promoterInstagram"
-                            name="instagram"
-                            type="text"
-                            value={formValues.instagram}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    <fieldset className="form-section">
+                        <legend>Contact</legend>
 
-                    <div>
-                        <label htmlFor="promoterFacebook">Facebook</label>
-                        <input
-                            id="promoterFacebook"
-                            name="facebook"
-                            type="text"
-                            value={formValues.facebook}
-                            onChange={handleChange}
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="promoterEmail">Email</label>
+                            <input
+                                id="promoterEmail"
+                                name="email"
+                                type="email"
+                                value={formValues.email}
+                                onChange={handleChange}
+                            />
+                        </div>
 
-                    <div>
-                        <label htmlFor="promoterEmail">Email</label>
-                        <input
-                            id="promoterEmail"
-                            name="email"
-                            type="email"
-                            value={formValues.email}
-                            onChange={handleChange}
-                        />
-                    </div>
+                        <div>
+                            <label htmlFor="promoterWebsite">Website</label>
+                            <input
+                                id="promoterWebsite"
+                                name="website"
+                                type="text"
+                                value={formValues.website}
+                                onChange={handleChange}
+                            />
+                        </div>
 
-                    <PreferredContactField
-                        id="promoterPreferredContact"
-                        value={formValues.preferredContact ?? ""}
-                        details={formValues}
-                        onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
-                    />
+                        <div>
+                            <label htmlFor="promoterInstagram">Instagram</label>
+                            <input
+                                id="promoterInstagram"
+                                name="instagram"
+                                type="text"
+                                value={formValues.instagram}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="promoterFacebook">Facebook</label>
+                            <input
+                                id="promoterFacebook"
+                                name="facebook"
+                                type="text"
+                                value={formValues.facebook}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <PreferredContactField
+                            id="promoterPreferredContact"
+                            value={formValues.preferredContact ?? ""}
+                            details={formValues}
+                            onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
+                        />
+                    </fieldset>
 
                     <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>

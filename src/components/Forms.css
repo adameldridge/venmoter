@@ -4,11 +4,13 @@
   font-size: 14px;
 }
 
+/* Full width with padding included, so text fields and dropdowns line up. */
 .entity-form input{
   display : block;
+  box-sizing: border-box;
   margin-bottom: 10px;
   padding: 10px;
-  width: 95%;
+  width: 100%;
 }
 
 .entity-form-checkbox {
@@ -31,15 +33,46 @@
 .entity-form select,
 .entity-form textarea{
   display: block;
+  box-sizing: border-box;
   margin-bottom: 10px;
   padding: 10px;
-  width: 95%;
+  width: 100%;
   font-family: inherit;
   font-size: 14px;
 }
 
 .entity-form textarea{
   resize: vertical;
+}
+
+/* A titled group of fields, e.g. a record's own fields and its contact details. */
+.form-section{
+  min-width: 0;
+  margin: 0 0 16px;
+  padding: 0;
+  border: none;
+}
+
+.form-section + .form-section{
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Floated so it sits below the divider rather than on top of it, as legends do by default. */
+.form-section legend{
+  float: left;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.form-section legend + *{
+  clear: both;
 }
 
 .form-remove-button{
