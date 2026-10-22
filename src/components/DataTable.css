@@ -274,7 +274,7 @@
     white-space: nowrap;
 }
 
-/* Green "Edit" link, in table rows and the record modal. */
+/* Green lowercase "edit" link, in table rows and the record modal. */
 .data-edit-link{
     display: inline-flex;
     align-items: center;
