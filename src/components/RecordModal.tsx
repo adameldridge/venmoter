@@ -1,7 +1,8 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
-import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaTimes } from "react-icons/fa";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
+import { AddChip } from "./DataTable";
 import "./Modal.css";
 import "./DataTable.css";
 import "./RecordModal.css";
@@ -21,7 +22,8 @@ type RecordModalProps = {
 };
 
 // A read-only look at a venue or promoter: contact details and who it's linked to. Linked
-// chips swap the modal to that record; Edit hands over to the usual form.
+// chips swap the modal to that record; "+ Promoter…" / "+ Venue…" link more, as in the table
+// rows; Edit details hands over to the usual form.
 export default function RecordModal({
     venues,
     promoters,
@@ -72,6 +74,9 @@ export default function RecordModal({
         <dialog id="record-modal" ref={modalRef} onClose={() => setShown(null)}>
             {record && (
                 <div className="modal-box record-modal">
+                    <button className="modal-close" type="button" onClick={close} aria-label="Close" title="Close">
+                        <FaTimes />
+                    </button>
                     <div className="record-modal-header">
                         <span className="record-modal-kind" aria-hidden="true">
                             {venue ? <FaBuilding /> : <FaBullhorn />}
@@ -118,10 +123,23 @@ export default function RecordModal({
                                     </button>
                                 ))}
                             {venue && !venue.managesInHouse && venue.promoters.length === 0 && (
-                                <span className="record-modal-empty">No promoters linked.</span>
+                                <span className="data-pill">No promoters</span>
                             )}
-                            {promoter && promoter.venues.length === 0 && (
-                                <span className="record-modal-empty">No venues linked.</span>
+                            {promoter && promoter.venues.length === 0 && <span className="data-pill">No venues</span>}
+                            {venue ? (
+                                <AddChip
+                                    kind="promoter"
+                                    label="Promoter…"
+                                    title={`Link promoters to ${venue.name}`}
+                                    onClick={() => handOver(() => onLinkPromoters(venue))}
+                                />
+                            ) : (
+                                <AddChip
+                                    kind="venue"
+                                    label="Venue…"
+                                    title={`Link venues to ${promoter!.name}`}
+                                    onClick={() => handOver(() => onLinkVenues(promoter!))}
+                                />
                             )}
                         </div>
                     </section>
@@ -132,17 +150,7 @@ export default function RecordModal({
                             type="button"
                             onClick={() => handOver(() => (venue ? onEditVenue(venue) : onEditPromoter(promoter!)))}
                         >
-                            Edit
-                        </button>
-                        <button
-                            className="cancel-button"
-                            type="button"
-                            onClick={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
-                        >
-                            {venue ? "Edit promoters" : "Edit venues"}
-                        </button>
-                        <button className="cancel-button" type="button" onClick={close}>
-                            Close
+                            Edit details
                         </button>
                     </div>
                 </div>

@@ -1,11 +1,14 @@
 .record-modal{
+    position: relative;
     width: 400px;
 }
 
+/* Clear of the close button in the corner. */
 .record-modal-header{
     display: flex;
     align-items: flex-start;
     gap: 10px;
+    padding-right: 28px;
 }
 
 .record-modal-kind{
