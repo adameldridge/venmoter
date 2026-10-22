@@ -87,6 +87,8 @@
     flex: 0 0 auto;
     align-self: center;
     padding: 0 6px 0 0;
+    /* A snap point too, or the strip snaps past it to the first day on load. */
+    scroll-snap-align: start;
     font-size: 12px;
     font-weight: bold;
     text-transform: uppercase;
@@ -148,7 +150,22 @@
         gap: 6px;
     }
 
+    /* No scrollbar; the cut-off cell at the edge shows the strip scrolls. */
+    .tour-calendar{
+        padding-bottom: 0;
+        scrollbar-width: none;
+    }
+
+    .tour-calendar::-webkit-scrollbar{
+        display: none;
+    }
+
     .tour-calendar-cell{
         flex-basis: 72px;
+    }
+
+    /* Days with nothing on only need room for the weekday and date. */
+    .tour-calendar-cell-empty{
+        flex-basis: 48px;
     }
 }
