@@ -3,7 +3,7 @@ import type { PromoterWithVenues, RecordKind } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import ListHeader from "./ListHeader";
 import SocialLinks from "./SocialLinks";
-import { AddChip, DataTable, NameCell } from "./DataTable";
+import { DataTable, EditChip, NameCell } from "./DataTable";
 
 type PromotersTabProps = {
     promoters: PromoterWithVenues[];
@@ -110,7 +110,7 @@ function PromoterRow({ promoter, onManageVenues, onViewRecord }: PromoterRowProp
                             <span className="data-tag-meta">{venue.city}</span>
                         </button>
                     ))}
-                    <AddChip kind="venue" label="Venue…" title={`Link venues to ${promoter.name}`} onClick={onManageVenues} />
+                    <EditChip title={`Edit venues for ${promoter.name}`} onClick={onManageVenues} />
                 </div>
             </td>
             <td className="data-cell-links">

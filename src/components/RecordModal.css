@@ -30,6 +30,34 @@
     opacity: 0.6;
 }
 
+/* Heading with its action on the right, e.g. "Promoters ... Edit". */
+.record-modal-heading-row{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.record-modal-heading-row .record-modal-heading{
+    margin: 0;
+}
+
+.record-modal-heading-action{
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #5fd18b;
+    font-size: 13px;
+}
+
+.record-modal-heading-action:hover{
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .record-modal-contacts{
     display: flex;
     flex-direction: column;

@@ -1,6 +1,6 @@
 import "./DataTable.css";
 import type { ReactNode } from "react";
-import { FaBuilding, FaBullhorn, FaChevronDown } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaChevronDown, FaPen } from "react-icons/fa";
 import type { RecordKind } from "../types/venue";
 
 export type DataColumn = {
@@ -109,11 +109,21 @@ export function NameCell({ kind, name, onOpen, openTitle, badge, children }: Nam
     );
 }
 
-// Dashed chip that adds or links something in one click, e.g. "+ Promoter".
+// Dashed chip that adds something in one click, e.g. a suggested venue for a tour city.
 export function AddChip({ kind, label, title, onClick }: { kind: RecordKind; label: string; title?: string; onClick: () => void }) {
     return (
         <button className="data-add" type="button" onClick={onClick} title={title}>
             {kind === "venue" ? <FaBuilding aria-hidden="true" /> : <FaBullhorn aria-hidden="true" />}+ {label}
+        </button>
+    );
+}
+
+// Chip at the end of a row's linked chips that opens the dialog for changing that whole list.
+export function EditChip({ title, onClick }: { title: string; onClick: () => void }) {
+    return (
+        <button className="data-add" type="button" onClick={onClick} title={title} aria-label={title}>
+            <FaPen aria-hidden="true" />
+            Edit
         </button>
     );
 }

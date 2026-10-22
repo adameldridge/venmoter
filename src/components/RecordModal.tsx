@@ -2,7 +2,6 @@ import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type 
 import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaTimes } from "react-icons/fa";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
-import { AddChip } from "./DataTable";
 import "./Modal.css";
 import "./DataTable.css";
 import "./RecordModal.css";
@@ -22,8 +21,8 @@ type RecordModalProps = {
 };
 
 // A read-only look at a venue or promoter: contact details and who it's linked to. Linked
-// chips swap the modal to that record; "+ Promoter…" / "+ Venue…" link more, as in the table
-// rows; Edit details hands over to the usual form.
+// chips swap the modal to that record; Edit by the list heading changes the links; Edit details
+// hands over to the usual form.
 export default function RecordModal({
     venues,
     promoters,
@@ -102,7 +101,17 @@ export default function RecordModal({
                     </section>
 
                     <section className="record-modal-section">
-                        <h3 className="record-modal-heading">{venue ? "Promoters" : "Venues"}</h3>
+                        <div className="record-modal-heading-row">
+                            <h3 className="record-modal-heading">{venue ? "Promoters" : "Venues"}</h3>
+                            <button
+                                className="record-modal-heading-action"
+                                type="button"
+                                onClick={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
+                                aria-label={venue ? "Edit promoters" : "Edit venues"}
+                            >
+                                Edit
+                            </button>
+                        </div>
                         <div className="data-tags">
                             {venue?.managesInHouse && <span className="data-pill">In-house</span>}
                             {venue && [...venue.promoters]
@@ -126,21 +135,6 @@ export default function RecordModal({
                                 <span className="data-pill">No promoters</span>
                             )}
                             {promoter && promoter.venues.length === 0 && <span className="data-pill">No venues</span>}
-                            {venue ? (
-                                <AddChip
-                                    kind="promoter"
-                                    label="Promoter…"
-                                    title={`Link promoters to ${venue.name}`}
-                                    onClick={() => handOver(() => onLinkPromoters(venue))}
-                                />
-                            ) : (
-                                <AddChip
-                                    kind="venue"
-                                    label="Venue…"
-                                    title={`Link venues to ${promoter!.name}`}
-                                    onClick={() => handOver(() => onLinkVenues(promoter!))}
-                                />
-                            )}
                         </div>
                     </section>
 

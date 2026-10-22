@@ -4,7 +4,7 @@ import { hasContact } from "../utils/contact";
 import { useCollapsedGroups } from "../hooks/useCollapsedGroups";
 import ListHeader from "./ListHeader";
 import SocialLinks from "./SocialLinks";
-import { AddChip, DataGroup, DataTable, NameCell } from "./DataTable";
+import { DataGroup, DataTable, EditChip, NameCell } from "./DataTable";
 
 const COLUMNS = [
     { label: "Name", className: "data-col-name" },
@@ -121,7 +121,7 @@ function VenueRow({ venue, onManagePromoters, onViewRecord }: VenueRowProps) {
                         </button>
                     ))}
                     {!venue.managesInHouse && promoters.length === 0 && <span className="data-pill">No promoters</span>}
-                    <AddChip kind="promoter" label="Promoter…" title={`Link promoters to ${venue.name}`} onClick={onManagePromoters} />
+                    <EditChip title={`Edit promoters for ${venue.name}`} onClick={onManagePromoters} />
                 </div>
             </td>
             <td className="data-cell-links">
