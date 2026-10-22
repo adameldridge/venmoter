@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { FaLink, FaFacebook, FaInstagram, FaEnvelope } from "react-icons/fa";
+// One outline set, so no icon looks heavier than its neighbours.
+import { FiFacebook, FiInstagram, FiLink, FiMail } from "react-icons/fi";
 import type { ContactChannel } from "../types/venue";
 import "./SocialLinks.css";
 
@@ -24,10 +25,10 @@ export default function SocialLinks({
     if (!website && !instagram && !facebook && !email) return null;
 
     const links: { channel: ContactChannel; href?: string; label: string; icon: ReactNode; external: boolean }[] = [
-        { channel: "website", href: website, label: "Website", icon: <FaLink />, external: true },
-        { channel: "instagram", href: instagram, label: "Instagram", icon: <FaInstagram />, external: true },
-        { channel: "facebook", href: facebook, label: "Facebook", icon: <FaFacebook />, external: true },
-        { channel: "email", href: email && `mailto:${email}`, label: "Email", icon: <FaEnvelope />, external: false },
+        { channel: "website", href: website, label: "Website", icon: <FiLink />, external: true },
+        { channel: "instagram", href: instagram, label: "Instagram", icon: <FiInstagram />, external: true },
+        { channel: "facebook", href: facebook, label: "Facebook", icon: <FiFacebook />, external: true },
+        { channel: "email", href: email && `mailto:${email}`, label: "Email", icon: <FiMail />, external: false },
     ];
     const hasPreferred = links.some((link) => link.href && link.channel === preferred);
 

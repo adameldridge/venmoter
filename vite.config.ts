@@ -15,8 +15,8 @@ export default defineConfig({
         name: 'Venmoter',
         short_name: 'Venmoter',
         description: 'Manage venues, promoters, and their relationships.',
-        theme_color: '#011e29',
-        background_color: '#011e29',
+        theme_color: '#131313',
+        background_color: '#131313',
         display: 'standalone',
         start_url: '/',
         icons: [

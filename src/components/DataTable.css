@@ -57,13 +57,13 @@
     padding: 12px 12px 12px 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.18);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.045);
     font-weight: normal;
     text-align: left;
 }
 
 .data-group-row-confirmed th{
-    background: rgba(2, 151, 66, 0.14);
+    background: var(--accent-soft);
 }
 
 .data-group-toggle{
@@ -90,7 +90,7 @@
 }
 
 .data-group-row-confirmed .data-group-city{
-    color: #5fd18b;
+    color: var(--accent-text);
 }
 
 .data-group:first-of-type .data-group-row th{
@@ -129,7 +129,7 @@
     margin: 0;
     padding: 2px 9px;
     border: 1px dashed rgba(255, 255, 255, 0.35);
-    border-radius: 999px;
+    border-radius: 4px;
     background: transparent;
     color: rgba(255, 255, 255, 0.8);
     font-size: 11px;
@@ -165,19 +165,21 @@
     gap: 8px;
 }
 
-/* Venue/promoter icon, in a fixed-width slot so names line up. */
+/* Venue/promoter icon, in a fixed-width slot so names line up. The glyph's shape tells them apart. */
 .data-row-kind{
-    flex: 0 0 14px;
+    flex: 0 0 16px;
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding-top: 3px;
+    height: 20px;
     font-size: 12px;
-    opacity: 0.55;
+    opacity: 0.5;
 }
 
+/* Semi-bold, so city headers stay the heaviest thing and nested venues can step down from here. */
 .data-row-name{
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 /* A name that opens the record (or goes to it on its own tab). */
@@ -194,7 +196,7 @@
 /* Names are the way into a record now there's no row menu, so they react clearly to hover. */
 .data-row-name-link:hover{
     opacity: 1;
-    color: #5fd18b;
+    color: var(--accent-text);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -204,7 +206,7 @@
     display: inline-block;
     padding: 2px 9px;
     border: 1px dashed rgba(255, 255, 255, 0.35);
-    border-radius: 999px;
+    border-radius: 4px;
     color: rgba(255, 255, 255, 0.75);
     font-size: 11px;
     font-style: italic;
@@ -231,7 +233,7 @@
     margin: 0;
     padding: 2px 9px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.85);
     font-size: 11px;
@@ -268,22 +270,24 @@
     gap: 4px 8px;
 }
 
-/* On wider screens the Status column is centred: pills share a centre line and the date sits
-   centred underneath, rather than beside the pill or wrapping to the left. */
+/* On wider screens the date sits under the status rather than beside it. Left-aligned, so the
+   statuses' dots form a column; the date is inset to line up with them. */
 @media (min-width: 641px){
-    .data-table th.data-col-status,
-    .data-table td.data-cell-status{
-        text-align: center;
+    /* In line with the dots, which sit inside the badge's padding. */
+    .data-table th.data-col-status{
+        padding-left: 21px;
     }
 
     .data-row-status{
         display: inline-flex;
         flex-direction: column;
+        align-items: flex-start;
         flex-wrap: nowrap;
         gap: 3px;
     }
 
     .data-row-status .data-row-muted{
+        padding-left: 9px;
         white-space: normal;
     }
 }
@@ -314,7 +318,7 @@
 
 .data-edit-link:hover{
     opacity: 1;
-    color: #fff;
+    color: var(--text);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -326,7 +330,7 @@
     padding: 0;
     background: none;
     border: none;
-    border-radius: 999px;
+    border-radius: 4px;
 }
 
 .data-badge-button:hover{
@@ -349,7 +353,7 @@
 
 .data-row-action:hover{
     opacity: 1;
-    color: #fff;
+    color: var(--text);
 }
 
 /* Nothing to go on, e.g. no contact details yet. */
@@ -360,7 +364,7 @@
     white-space: nowrap;
 }
 
-/* Every icon sits in the same box, so the preferred one's ring doesn't shift the row. */
+/* Every icon sits in the same box, with room under it for the preferred one's dot. */
 .data-row-links{
     display: flex;
     gap: 4px;
@@ -374,6 +378,12 @@
     width: 24px;
     height: 24px;
     font-size: 15px;
+    opacity: 0.7;
+}
+
+/* Dimmed so names lead the row; full strength on hover, and for the preferred one. */
+.data-row-links a:hover{
+    opacity: 1;
 }
 
 /* Shown instead of the table when filters leave nothing. */
@@ -413,7 +423,7 @@
         top: 0;
         z-index: 2;
         padding: 0;
-        background: #09252f;
+        background: var(--surface);
     }
 
     .data-group-row th{

@@ -63,7 +63,7 @@
   margin-top: 15px;
   padding: 0;
   background: none;
-  color: #e5484d;
+  color: var(--danger);
   text-decoration: underline;
 }
 
@@ -83,5 +83,5 @@
   margin: 6px 0 10px;
   font-size: 13px;
   line-height: 1.4;
-  color: #f5c451;
+  color: var(--warn-text);
 }

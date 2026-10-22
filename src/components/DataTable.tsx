@@ -58,7 +58,8 @@ export function DataGroup({ title, count, colSpan, collapsed, onToggle, confirme
                         >
                             <FaChevronDown className="data-group-chevron" aria-hidden="true" />
                             <span className="data-group-city">{title}</span>
-                            <span className="data-group-count">{count}</span>
+                            {/* Only while collapsed; open, the rows speak for themselves. */}
+                            {collapsed && <span className="data-group-count">{count}</span>}
                         </button>
                         {extras}
                         {actions && <div className="data-group-actions">{actions}</div>}
@@ -80,15 +81,18 @@ type NameCellProps = {
     badge?: ReactNode;
     // Shown under the name, e.g. tags.
     children?: ReactNode;
+    // Shown before the icon, e.g. a collapse toggle.
+    leading?: ReactNode;
 };
 
 // The first cell of every row: building for venues, megaphone for promoters, then the name.
-export function NameCell({ kind, name, onOpen, openTitle, badge, children }: NameCellProps) {
+export function NameCell({ kind, name, onOpen, openTitle, badge, children, leading }: NameCellProps) {
     const kindLabel = kind === "venue" ? "Venue" : "Promoter";
     return (
         <td className="data-cell-name">
             <div className="data-row-identity">
-                <span className="data-row-kind" role="img" aria-label={kindLabel} title={kindLabel}>
+                {leading}
+                <span className={`data-row-kind data-row-kind-${kind}`} role="img" aria-label={kindLabel} title={kindLabel}>
                     {kind === "venue" ? <FaBuilding /> : <FaBullhorn />}
                 </span>
                 <div>

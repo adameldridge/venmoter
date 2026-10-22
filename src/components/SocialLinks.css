@@ -1,19 +1,17 @@
-/* The preferred contact channel gets a green ring; the others step back. */
-.social-links-has-preferred a{
-    opacity: 0.45;
+/* The preferred contact channel is marked by a small green dot under it, and the icons keep one
+   strength so none jumps out. (::after is taken by the bigger tap area on phones.) */
+.social-links-has-preferred a.social-link-preferred{
+    position: relative;
 }
 
-.social-links-has-preferred a.social-link-preferred{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    min-height: 24px;
-    box-sizing: border-box;
+.social-links-has-preferred a.social-link-preferred::before{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
     border-radius: 50%;
-    background: rgba(2, 151, 66, 0.2);
-    box-shadow: 0 0 0 1px rgba(2, 151, 66, 0.75);
-    color: #5fd18b;
-    opacity: 1;
-    vertical-align: middle;
+    background: var(--accent-text);
 }

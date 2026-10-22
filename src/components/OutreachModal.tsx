@@ -104,9 +104,10 @@ export default function OutreachModal({
         : viaOptions.length === 0
             ? "Direct (no linked promoters)"
             : bookedByRequired ? "Choose a promoter…" : "Not decided yet";
+    const viaNames = viaOptions.map((p) => p.name).join(", ");
     const bookingMethod = inHouse
-        ? "In-house"
-        : promoterBooked ? `Via promoter: ${viaOptions.map((p) => p.name).join(", ")}` : "Direct (no promoter linked)";
+        ? viaOptions.length > 0 ? `In-house, or via promoter: ${viaNames}` : "In-house"
+        : promoterBooked ? `Via promoter: ${viaNames}` : "Direct (no promoter linked)";
 
     return (
         <dialog id="outreach-modal" ref={modalRef}>
