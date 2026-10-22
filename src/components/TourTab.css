@@ -59,6 +59,28 @@
     opacity: 0.7;
 }
 
+/* Folds or unfolds every promoter's venues at once; quiet, like the row chevrons it drives. */
+.tour-fold-venues{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: none;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.tour-fold-venues:hover{
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--text);
+}
+
+.tour-fold-venues-icon{
+    display: none;
+    font-size: 16px;
+}
+
 /* Title, city filter and Add City share one row on phones. */
 @media (max-width: 640px){
     .tour-section-header{
@@ -79,6 +101,25 @@
         flex: 1;
         min-width: 0;
         width: auto;
+    }
+
+    .tour-fold-venues{
+        flex-shrink: 0;
+        align-self: stretch;
+        padding: 0 10px;
+    }
+
+    .tour-fold-venues-icon{
+        display: block;
+    }
+
+    .tour-fold-venues-label{
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 
     .tour-section-header .create-button{

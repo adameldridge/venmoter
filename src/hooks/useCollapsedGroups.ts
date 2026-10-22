@@ -22,15 +22,22 @@ export function useCollapsedGroups(storageKey: string) {
     const [collapsedIds, setCollapsedIds] = useState(() => load(storageKey));
 
     function setCollapsed(groupId: string, collapsed: boolean) {
+        setManyCollapsed([groupId], collapsed);
+    }
+
+    function setManyCollapsed(groupIds: string[], collapsed: boolean) {
         setCollapsedIds((current) => {
-            if (current.has(groupId) === collapsed) return current;
+            const changed = groupIds.filter((id) => current.has(id) !== collapsed);
+            if (changed.length === 0) return current;
             const next = new Set(current);
-            if (collapsed) next.add(groupId);
-            else next.delete(groupId);
+            for (const id of changed) {
+                if (collapsed) next.add(id);
+                else next.delete(id);
+            }
             save(storageKey, next);
             return next;
         });
     }
 
-    return { collapsedIds, setCollapsed };
+    return { collapsedIds, setCollapsed, setManyCollapsed };
 }

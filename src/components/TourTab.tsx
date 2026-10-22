@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import { FaPen } from "react-icons/fa";
+import { FiChevronsDown, FiChevronsUp } from "react-icons/fi";
 import { isPromoterBooked, type PromoterWithVenues, type RecordKind, type VenueWithPromoters } from "../types/venue";
 import {
     OUTREACH_STATUSES,
@@ -67,8 +68,11 @@ export default function TourTab({
     const [cityFilter, setCityFilter] = useState("");
     const { collapsedIds, setCollapsed } = useCollapsedGroups("venmoter.collapsedCities");
     // Keyed by the promoter's outreach, so it's per city.
-    const { collapsedIds: collapsedPromoterIds, setCollapsed: setPromoterCollapsed } =
-        useCollapsedGroups("venmoter.collapsedPromoters");
+    const {
+        collapsedIds: collapsedPromoterIds,
+        setCollapsed: setPromoterCollapsed,
+        setManyCollapsed: setPromotersCollapsed,
+    } = useCollapsedGroups("venmoter.collapsedPromoters");
     const sortedTours = [...tours].sort((a, b) => a.name.localeCompare(b.name));
     const sortedStops = sortStops(stops, outreach);
     // Falls back to all cities if the selected one was deleted or belongs to another tour.
@@ -90,6 +94,11 @@ export default function TourTab({
     const visibleStopEntries = stopEntries
         .filter(({ stop }) => !filterStop || stop.id === filterStop.id)
         .map((stopEntry) => ({ ...stopEntry, contacts: buildContacts(stopEntry.entries) }));
+    // Promoters in view with venues to fold, for the Collapse/Expand venues toggle.
+    const foldablePromoterIds = visibleStopEntries.flatMap(({ contacts }) =>
+        contacts.filter((contact) => contact.venues.length > 0).map((contact) => contact.outreach.id),
+    );
+    const anyVenuesShown = foldablePromoterIds.some((id) => !collapsedPromoterIds.has(id));
 
     function cityOf(stopId: string) {
         return stops.find((stop) => stop.id === stopId)?.city ?? "";
@@ -243,6 +252,25 @@ export default function TourTab({
                         <button className="create-button" type="button" onClick={onAddStop}>
                             Add city
                         </button>
+                        {foldablePromoterIds.length > 0 && (
+                            <button
+                                className="tour-fold-venues"
+                                type="button"
+                                onClick={() => setPromotersCollapsed(foldablePromoterIds, anyVenuesShown)}
+                                aria-expanded={anyVenuesShown}
+                                title={anyVenuesShown ? "Collapse every promoter's venues" : "Expand every promoter's venues"}
+                            >
+                                {/* Text on wider screens; on phones, where the row is full, just the icon. */}
+                                {anyVenuesShown ? (
+                                    <FiChevronsUp className="tour-fold-venues-icon" aria-hidden="true" />
+                                ) : (
+                                    <FiChevronsDown className="tour-fold-venues-icon" aria-hidden="true" />
+                                )}
+                                <span className="tour-fold-venues-label">
+                                    {anyVenuesShown ? "Collapse venues" : "Expand venues"}
+                                </span>
+                            </button>
+                        )}
                     </div>
 
                     {stops.length === 0 && (
