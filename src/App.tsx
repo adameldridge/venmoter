@@ -413,6 +413,7 @@ export default function App() {
             <VenueFormModal
                 ref={venueFormModalRef}
                 onSubmit={saveVenue}
+                cities={cities}
                 onDelete={(venueId) => {
                     const venue = venuesWithPromoters.find((v) => v.id === venueId);
                     if (venue) confirmDeleteVenue(venue);

@@ -1,13 +1,16 @@
-import type { Ref } from "react";
+import { useState, type Ref } from "react";
 import type { NewVenue, Venue } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
 import PreferredContactField from "./PreferredContactField";
+import CityField from "./CityField";
 import "./Modal.css";
 import "./Forms.css";
 
 type VenueFormModalProps = {
     onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
+    // Cities venues are already in, to pick from; a new one can be typed in instead.
+    cities: string[];
     onDelete: (venueId: string) => void;
     // A note for when the city no longer matches where the venue is listed on a tour.
     cityWarning: (venueId: string, city: string) => string;
@@ -40,7 +43,9 @@ function toFormValues(venue: Venue): NewVenue {
 
 export type VenueFormModalHandle = EntityFormModalHandle<Venue>;
 
-function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModalProps) {
+function VenueFormModal({ onSubmit, cities, onDelete, cityWarning, ref }: VenueFormModalProps) {
+    const [isOtherCity, setIsOtherCity] = useState(false);
+
     const {
         modalRef,
         formValues,
@@ -55,7 +60,9 @@ function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModal
     } = useEntityFormModal<Venue, NewVenue>(ref, {
         emptyValues: emptyVenue,
         toFormValues,
-        onSubmit,
+        onSubmit: (values, editingId) => onSubmit({ ...values, city: values.city.trim() }, editingId),
+        // A saved city that isn't in the list (there shouldn't be one, but just in case) shows in the text box.
+        onOpen: (venue) => setIsOtherCity(!!venue && !cities.includes(venue.city)),
     });
 
     const cityNote = editingVenueId && formValues.city ? cityWarning(editingVenueId, formValues.city) : "";
@@ -82,17 +89,17 @@ function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModal
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="venueCity">City *</label>
-                            <input
-                                id="venueCity"
-                                name="city"
-                                type="text"
-                                value={formValues.city}
-                                onChange={handleChange}
-                            />
-                            {cityNote && <div className="form-warning">{cityNote}</div>}
-                        </div>
+                        <CityField
+                            id="venueCity"
+                            cities={cities}
+                            value={formValues.city}
+                            isOther={isOtherCity}
+                            onChange={(city, isOther) => {
+                                setIsOtherCity(isOther);
+                                setFormValues((current) => ({ ...current, city }));
+                            }}
+                        />
+                        {cityNote && <div className="form-warning">{cityNote}</div>}
                     </fieldset>
 
                     <fieldset className="form-section">

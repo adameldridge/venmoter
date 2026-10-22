@@ -2,6 +2,7 @@ import { useState, type Ref } from "react";
 import type { NewTourStop, TourStop } from "../types/tour";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
+import CityField from "./CityField";
 import "./Modal.css";
 import "./Forms.css";
 
@@ -25,8 +26,6 @@ function toFormValues(stop: TourStop): StopFormValues {
 
 export type StopFormModalHandle = EntityFormModalHandle<TourStop>;
 
-const OTHER_CITY = "__other__";
-
 function StopFormModal({ cities, onSubmit, ref }: StopFormModalProps) {
     const [isOtherCity, setIsOtherCity] = useState(false);
 
@@ -36,7 +35,6 @@ function StopFormModal({ cities, onSubmit, ref }: StopFormModalProps) {
         setFormValues,
         isSaving,
         closeModal,
-        handleChange,
         handleSubmit,
     } = useEntityFormModal<TourStop, StopFormValues>(ref, {
         emptyValues: emptyStop,
@@ -45,48 +43,21 @@ function StopFormModal({ cities, onSubmit, ref }: StopFormModalProps) {
         onOpen: () => setIsOtherCity(false),
     });
 
-    function handleCitySelect(e: React.ChangeEvent<HTMLSelectElement>) {
-        const value = e.target.value;
-        setIsOtherCity(value === OTHER_CITY);
-        setFormValues((current) => ({ ...current, city: value === OTHER_CITY ? "" : value }));
-    }
-
     return (
         <dialog id="stop-form-modal" ref={modalRef}>
             <div className="modal-box entity-form">
                 <div className="modal-title">Add city</div>
                 <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="stopCity">City *</label>
-                        <select
-                            id="stopCity"
-                            required
-                            value={isOtherCity ? OTHER_CITY : formValues.city}
-                            onChange={handleCitySelect}
-                        >
-                            <option value="" disabled>Choose a city…</option>
-                            {cities.map((city) => (
-                                <option value={city} key={city}>{city}</option>
-                            ))}
-                            <option value={OTHER_CITY}>Other city…</option>
-                        </select>
-                    </div>
-
-                    {isOtherCity && (
-                        <div>
-                            <label htmlFor="stopOtherCity">City name *</label>
-                            <input
-                                id="stopOtherCity"
-                                name="city"
-                                type="text"
-                                required
-                                autoFocus
-                                autoComplete="off"
-                                value={formValues.city}
-                                onChange={handleChange}
-                            />
-                        </div>
-                    )}
+                    <CityField
+                        id="stopCity"
+                        cities={cities}
+                        value={formValues.city}
+                        isOther={isOtherCity}
+                        onChange={(city, isOther) => {
+                            setIsOtherCity(isOther);
+                            setFormValues((current) => ({ ...current, city }));
+                        }}
+                    />
 
                     <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>
