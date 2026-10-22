@@ -1,0 +1,520 @@
+/* The table shared by the Tour, Venues and Promoters tabs. */
+.data-table-wrap{
+    max-width: 1100px;
+    margin: 0 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.data-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table thead th{
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+/* Name gets room for its tags; Status and Links are compact; the remaining column takes what's left. */
+.data-col-name{
+    width: 32%;
+    min-width: 200px;
+}
+
+.data-col-status{
+    width: 16%;
+}
+
+.data-col-links{
+    width: 110px;
+}
+
+.data-table td{
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: top;
+}
+
+.data-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.data-table tbody tr:not(.data-group-row, .data-group-empty):hover{
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.data-group-row th{
+    padding: 12px 12px 12px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    font-weight: normal;
+    text-align: left;
+}
+
+.data-group-row-confirmed th{
+    background: rgba(2, 151, 66, 0.14);
+}
+
+.data-group-toggle{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    text-align: left;
+}
+
+.data-group-chevron{
+    flex-shrink: 0;
+    font-size: 11px;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+}
+
+.data-group-toggle[aria-expanded="false"] .data-group-chevron{
+    transform: rotate(-90deg);
+}
+
+.data-group-row-confirmed .data-group-city{
+    color: #5fd18b;
+}
+
+.data-group:first-of-type .data-group-row th{
+    border-top: none;
+}
+
+.data-group-header{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+}
+
+.data-group-city{
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.data-group-header .data-tags{
+    margin-top: 0;
+}
+
+.data-group-count{
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Dashed "+ Something" chip: one click adds or links it. */
+.data-add{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 2px 9px;
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.data-add svg{
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+.data-add:hover{
+    opacity: 1;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.data-group-actions{
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.data-group-empty td{
+    font-size: 13px;
+    opacity: 0.6;
+}
+
+.data-row-identity{
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* Venue/promoter icon, in a fixed-width slot so names line up. */
+.data-row-kind{
+    flex: 0 0 14px;
+    display: flex;
+    justify-content: center;
+    padding-top: 3px;
+    font-size: 12px;
+    opacity: 0.55;
+}
+
+.data-row-name{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* A name that opens the record (or goes to it on its own tab). */
+.data-row-name-link{
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+/* Names are the way into a record now there's no row menu, so they react clearly to hover. */
+.data-row-name-link:hover{
+    opacity: 1;
+    color: #5fd18b;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* In-house / No promoters / No venues: a note in pill form, not something to click. */
+.data-pill{
+    display: inline-block;
+    padding: 2px 9px;
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* Linked venues or promoters; clicking one goes to it. */
+.data-tags{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.data-table td > .data-tags{
+    margin-top: 0;
+}
+
+.data-tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 2px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.data-tag:hover{
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.data-tag-icon{
+    flex-shrink: 0;
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* e.g. the "· Brighton" after a venue's name. */
+.data-tag-meta{
+    opacity: 0.6;
+}
+
+.data-tag-meta::before{
+    content: "·";
+    margin-right: 5px;
+}
+
+.data-row-status{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+}
+
+/* On wider screens the Status column is centred: pills share a centre line and the date sits
+   centred underneath, rather than beside the pill or wrapping to the left. */
+@media (min-width: 641px){
+    .data-table th.data-col-status,
+    .data-table td.data-cell-status{
+        text-align: center;
+    }
+
+    .data-row-status{
+        display: inline-flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 3px;
+    }
+
+    .data-row-status .data-row-muted{
+        white-space: normal;
+    }
+}
+
+.data-row-muted{
+    font-size: 12px;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+/* Quiet "Edit" link, in table rows and the record modal: muted until hovered, like "Log contact". */
+.data-edit-link{
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* A little apart from the chips it follows. */
+.data-tags .data-edit-link{
+    margin-left: 6px;
+}
+
+.data-edit-link:hover{
+    opacity: 1;
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* A status badge that opens its record when clicked. */
+.data-badge-button{
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 999px;
+}
+
+.data-badge-button:hover{
+    opacity: 1;
+    filter: brightness(1.25);
+}
+
+/* A quiet text action in a cell, e.g. "Log contact" where there's nothing yet. */
+.data-row-action{
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.25);
+    text-underline-offset: 3px;
+}
+
+.data-row-action:hover{
+    opacity: 1;
+    color: #fff;
+}
+
+/* Nothing to go on, e.g. no contact details yet. */
+.data-row-none{
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.55;
+    white-space: nowrap;
+}
+
+/* Every icon sits in the same box, so the preferred one's ring doesn't shift the row. */
+.data-row-links{
+    display: flex;
+    gap: 4px;
+    margin-top: -3px;
+}
+
+.data-row-links a{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+}
+
+/* Shown instead of the table when filters leave nothing. */
+.data-empty{
+    margin: 0 10px 20px;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+/* Rows stack into compact blocks on narrow screens. */
+@media (max-width: 640px){
+    /* Edge to edge, to win back the width the page gutter and border take. */
+    .data-table-wrap{
+        margin-left: 0;
+        margin-right: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    .data-table thead{
+        display: none;
+    }
+
+    .data-table,
+    .data-table tbody,
+    .data-table tr,
+    .data-table td,
+    .data-group-row th{
+        display: block;
+    }
+
+    /* Group headers stick while their rows scroll past. The opaque base is the page colour
+       plus the wrap's tint, under the header's own translucent shade. */
+    .data-table .data-group-row{
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 0;
+        background: #09252f;
+    }
+
+    .data-group-row th{
+        padding: 6px 48px 6px 12px;
+    }
+
+    .data-group-toggle{
+        min-height: 36px;
+    }
+
+    /* Pinned top-right where row menus sit, so it never wraps onto a row of its own. */
+    .data-group-actions{
+        position: absolute;
+        top: 8px;
+        right: 2px;
+    }
+
+    /* Bigger hit areas without bigger icons. */
+    .data-row-links a::after{
+        content: "";
+        position: absolute;
+        inset: -6px;
+    }
+
+    .data-table tr{
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .data-table tbody tr:last-child{
+        border-bottom: none;
+    }
+
+    .data-table td{
+        display: flex;
+        gap: 10px;
+        padding: 3px 0;
+        border-bottom: none;
+    }
+
+    .data-table td[data-label]::before{
+        content: attr(data-label);
+        flex: 0 0 auto;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+    }
+
+    .data-table td:empty{
+        display: none;
+    }
+
+    /* Name on top; status and links share the next line, indented to sit under the name. */
+    .data-table tbody tr:not(.data-group-row, .data-group-empty){
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 16px;
+    }
+
+    .data-table .data-cell-name{
+        display: block;
+        flex-basis: 100%;
+        box-sizing: border-box;
+        margin-bottom: 4px;
+    }
+
+    .data-table .data-cell-status{
+        flex-direction: column;
+        gap: 0;
+        padding-left: 22px;
+    }
+
+    /* A cell that gets a line of its own under the name, e.g. tags or last contact. */
+    .data-table .data-cell-full{
+        flex-basis: 100%;
+        box-sizing: border-box;
+        padding-left: 22px;
+    }
+
+    .data-table .data-cell-full:not(:last-child){
+        margin-bottom: 4px;
+    }
+
+    /* Links starting their own line (no status before them) line up under the name too. */
+    .data-table .data-cell-full + .data-cell-links{
+        padding-left: 22px;
+    }
+
+    .data-row-links{
+        gap: 12px;
+        margin-top: 0;
+    }
+
+    .data-row-links a{
+        position: relative;
+    }
+
+    .data-table .card-menu-trigger{
+        padding: 10px 12px;
+    }
+}

@@ -1,0 +1,95 @@
+.record-modal{
+    position: relative;
+    width: 480px;
+}
+
+/* Clear of the close button in the corner. */
+.record-modal-header{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding-right: 28px;
+}
+
+.record-modal-kind{
+    padding-top: 5px;
+    font-size: 16px;
+    opacity: 0.55;
+}
+
+.record-modal-section{
+    margin-bottom: 24px;
+}
+
+.record-modal .data-tags{
+    gap: 6px;
+}
+
+.record-modal-section:last-child{
+    margin-bottom: 0;
+}
+
+.record-modal-heading{
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+}
+
+/* Heading with its action on the right, e.g. "Promoters ... Edit". */
+.record-modal-heading-row{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.record-modal-heading-row .record-modal-heading{
+    margin: 0;
+}
+
+
+.record-modal-lines{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.record-modal-line{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    font-size: 14px;
+}
+
+.record-modal-line a{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.record-modal-line-icon{
+    flex: 0 0 16px;
+    display: flex;
+    justify-content: center;
+    opacity: 0.7;
+}
+
+.record-modal-line-preferred .record-modal-line-icon{
+    color: #5fd18b;
+    opacity: 1;
+}
+
+
+.record-modal-empty{
+    font-size: 13px;
+    opacity: 0.6;
+}
+

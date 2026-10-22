@@ -67,8 +67,6 @@ a{
 .filter-group{
     display: flex;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
 }
 
 .search-input,
@@ -90,43 +88,6 @@ a{
     opacity: 0.8;
 }
 
-.city-heading{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 20px 10px 10px;
-  padding-bottom: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 2px solid #029742;
-  cursor: pointer;
-  list-style: none;
-}
-
-.city-heading::-webkit-details-marker{
-  display: none;
-}
-
-.city-heading::before{
-  content: "";
-  flex-shrink: 0;
-  border-style: solid;
-  border-width: 4px 0 4px 6px;
-  border-color: transparent transparent transparent #fff;
-  transition: transform 0.15s ease;
-}
-
-details[open] > .city-heading::before{
-  transform: rotate(90deg);
-}
-
-.card-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 300px));
-  gap: 15px;
-  padding: 0 10px;
-  margin-bottom: 20px;
-}
 
 button{
   padding: 10px 40px;
@@ -144,9 +105,9 @@ button{
 }
 
 .cancel-button{
-  background: #fffefe;
-  color: #454545;
-  border: 1px solid #454545;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .danger-button{
@@ -189,14 +150,14 @@ button:hover{
     font-size: 14px;
   }
 
+  /* Filters and the Add button share one row, as on the Tour tab. */
   .list-header{
-    flex-wrap: wrap;
     padding: 10px 8px;
   }
 
   .filter-group{
-    flex-wrap: wrap;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   .search-input,
@@ -205,17 +166,24 @@ button:hover{
     box-sizing: border-box;
   }
 
-  .list-header button{
-    width: 100%;
+  .list-header .create-button{
+    flex-shrink: 0;
+    padding: 10px 14px;
+    white-space: nowrap;
   }
 
-  .card-grid{
-    grid-template-columns: 1fr;
-    padding: 0 8px;
+  /* City filter and search share a row on the Venues and Promoters tabs. */
+  /* Never narrower than "All cities", so a long Add button squeezes the search box instead. */
+  .entity-filters .cities-select{
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 108px;
+    max-width: 45%;
   }
 
-  .city-heading{
-    margin-left: 8px;
-    margin-right: 8px;
+  .entity-filters .search-input{
+    flex: 1;
+    min-width: 0;
+    width: auto;
   }
 }

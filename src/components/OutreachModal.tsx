@@ -90,12 +90,20 @@ export default function OutreachModal({
     const showDateFields = !!formValues && hasShowDate(formValues.status);
     const viaOptions = isVenue && formValues ? linkedPromoters(formValues.targetId) : [];
     const inHouse = isVenue && !!formValues && isInHouse(formValues.targetId);
+    // Same rule as isPromoterBooked, from the props this modal is given.
     const promoterBooked = isVenue && !inHouse && viaOptions.length > 0;
     // Keep a status that no longer fits the booking method selectable, so saving doesn't silently change it.
     const statusOptions = formValues ? statusesFor(formValues.targetType, promoterBooked) : [];
     if (formValues && !statusOptions.some((s) => s.value === formValues.status)) {
         statusOptions.push(...statusesFor(formValues.targetType).filter((s) => s.value === formValues.status));
     }
+    // Confirming a promoter-booked venue needs to say which promoter booked it (holds can wait).
+    const bookedByRequired = promoterBooked && formValues?.status === "confirmed";
+    const bookedByEmptyLabel = inHouse
+        ? "In-house"
+        : viaOptions.length === 0
+            ? "Direct (no linked promoters)"
+            : bookedByRequired ? "Choose a promoter…" : "Not decided yet";
     const bookingMethod = inHouse
         ? "In-house"
         : promoterBooked ? `Via promoter: ${viaOptions.map((p) => p.name).join(", ")}` : "Direct (no promoter linked)";
@@ -103,7 +111,10 @@ export default function OutreachModal({
     return (
         <dialog id="outreach-modal" ref={modalRef}>
             <div className="modal-box entity-form">
-                <div className="modal-title">{title}</div>
+                <div className="modal-title">
+                    Update status
+                    <div className="modal-subtitle">{title}</div>
+                </div>
                 {formValues && (
                     <>
                         <form onSubmit={handleSubmit}>
@@ -145,15 +156,16 @@ export default function OutreachModal({
                                     </div>
 
                                     <div>
-                                        <label htmlFor="outreachVia">Via promoter</label>
+                                        <label htmlFor="outreachVia">Booked by{bookedByRequired && " *"}</label>
                                         <select
                                             id="outreachVia"
                                             name="viaPromoterId"
+                                            required={bookedByRequired}
                                             value={formValues.viaPromoterId}
                                             onChange={handleChange}
                                         >
-                                            <option value="">
-                                                {viaOptions.length === 0 ? "No linked promoters" : "— None (direct)"}
+                                            <option value="" disabled={bookedByRequired}>
+                                                {bookedByEmptyLabel}
                                             </option>
                                             {viaOptions.map((promoter) => (
                                                 <option key={promoter.id} value={promoter.id}>

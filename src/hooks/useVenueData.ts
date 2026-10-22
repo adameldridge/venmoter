@@ -100,11 +100,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
                     ...doc.data(),
                 })) as VenuePromoter[];
 
-            setCities(
-                ["All Cities", ...new Set(venuesData.map(venue => venue.city))].sort((a, b) =>
-                    a === "All Cities" ? -1 : b === "All Cities" ? 1 : a.localeCompare(b),
-                )
-            );
+            setCities([...new Set(venuesData.map((venue) => venue.city))].sort((a, b) => a.localeCompare(b)));
 
             setVenues(venuesData);
             setPromoters(promotersData);
@@ -150,6 +146,18 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
         } catch (error) {
             console.error("Error saving promoter:", error);
             toast.error("Failed to save promoter");
+            throw error;
+        }
+    }
+
+    // Just the in-house flag, saved alongside the venue's promoter links from the Booked by dialog.
+    // No reload or toast here: saveLinks does both straight after.
+    async function saveVenueInHouse(venueId: string, managesInHouse: boolean) {
+        try {
+            await updateDoc(doc(db, "venues", venueId), { managesInHouse });
+        } catch (error) {
+            console.error("Error saving venue:", error);
+            toast.error("Failed to save venue");
             throw error;
         }
     }
@@ -209,7 +217,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
             ]);
 
             await loadAll();
-            toast.success(fixedField === "venueId" ? "Promoters updated" : "Venues updated");
+            toast.success(fixedField === "venueId" ? "Booking updated" : "Venues updated");
         } catch (error) {
             console.error("Error saving links:", error);
             toast.error("Failed to save links");
@@ -228,6 +236,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
         venuesWithPromoters,
         promotersWithVenues,
         saveVenue,
+        saveVenueInHouse,
         savePromoter,
         deleteVenue,
         deletePromoter,

@@ -1,13 +1,19 @@
-import type { Ref } from "react";
+import { useState, type Ref } from "react";
 import type { NewVenue, Venue } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
 import PreferredContactField from "./PreferredContactField";
+import CityField from "./CityField";
 import "./Modal.css";
 import "./Forms.css";
 
 type VenueFormModalProps = {
     onSubmit: (venue: NewVenue, editingVenueId: string | null) => Promise<void>;
+    // Cities venues are already in, to pick from; a new one can be typed in instead.
+    cities: string[];
+    onDelete: (venueId: string) => void;
+    // A note for when the city no longer matches where the venue is listed on a tour.
+    cityWarning: (venueId: string, city: string) => string;
     ref?: Ref<VenueFormModalHandle>;
 };
 
@@ -37,7 +43,9 @@ function toFormValues(venue: Venue): NewVenue {
 
 export type VenueFormModalHandle = EntityFormModalHandle<Venue>;
 
-function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
+function VenueFormModal({ onSubmit, cities, onDelete, cityWarning, ref }: VenueFormModalProps) {
+    const [isOtherCity, setIsOtherCity] = useState(false);
+
     const {
         modalRef,
         formValues,
@@ -45,107 +53,109 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
         editingId: editingVenueId,
         isSaving,
         closeModal,
+        closeWithoutReturning,
+        handleDialogClose,
         handleChange,
         handleSubmit,
     } = useEntityFormModal<Venue, NewVenue>(ref, {
         emptyValues: emptyVenue,
         toFormValues,
-        onSubmit,
+        onSubmit: (values, editingId) => onSubmit({ ...values, city: values.city.trim() }, editingId),
+        // A saved city that isn't in the list (there shouldn't be one, but just in case) shows in the text box.
+        onOpen: (venue) => setIsOtherCity(!!venue && !cities.includes(venue.city)),
     });
 
+    const cityNote = editingVenueId && formValues.city ? cityWarning(editingVenueId, formValues.city) : "";
+
     return (
-        <dialog id="venue-form-modal" ref={modalRef}>
+        <dialog id="venue-form-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
-                    {editingVenueId ? "Edit Venue" : "Add Venue"}
+                    {editingVenueId ? "Edit venue" : "Add venue"}
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="venueName">Name *</label>
-                        <input
-                            id="venueName"
-                            name="name"
-                            type="text"
-                            required
-                            value={formValues.name}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    <fieldset className="form-section">
+                        <legend>Venue</legend>
 
-                    <div>
-                        <label htmlFor="venueCity">City *</label>
-                        <input
-                            id="venueCity"
-                            name="city"
-                            type="text"
-                            value={formValues.city}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueWebsite">Website</label>
-                        <input
-                            id="venueWebsite"
-                            name="website"
-                            type="text"
-                            value={formValues.website}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueInstagram">Instagram</label>
-                        <input
-                            id="venueInstagram"
-                            name="instagram"
-                            type="text"
-                            value={formValues.instagram}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueFacebook">Facebook</label>
-                        <input
-                            id="venueFacebook"
-                            name="facebook"
-                            type="text"
-                            value={formValues.facebook}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="venueEmail">Email</label>
-                        <input
-                            id="venueEmail"
-                            name="email"
-                            type="email"
-                            value={formValues.email}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <PreferredContactField
-                        id="venuePreferredContact"
-                        value={formValues.preferredContact ?? ""}
-                        details={formValues}
-                        onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
-                    />
-
-                    <div className="entity-form-checkbox">
-                        <label htmlFor="venueManagesInHouse">
+                        <div>
+                            <label htmlFor="venueName">Name *</label>
                             <input
-                                id="venueManagesInHouse"
-                                name="managesInHouse"
-                                type="checkbox"
-                                checked={formValues.managesInHouse ?? false}
+                                id="venueName"
+                                name="name"
+                                type="text"
+                                required
+                                value={formValues.name}
                                 onChange={handleChange}
                             />
-                            Manages some promotions in-house
-                        </label>
-                    </div>
+                        </div>
+
+                        <CityField
+                            id="venueCity"
+                            cities={cities}
+                            value={formValues.city}
+                            isOther={isOtherCity}
+                            onChange={(city, isOther) => {
+                                setIsOtherCity(isOther);
+                                setFormValues((current) => ({ ...current, city }));
+                            }}
+                        />
+                        {cityNote && <div className="form-warning">{cityNote}</div>}
+                    </fieldset>
+
+                    <fieldset className="form-section">
+                        <legend>Contact</legend>
+
+                        <div>
+                            <label htmlFor="venueEmail">Email</label>
+                            <input
+                                id="venueEmail"
+                                name="email"
+                                type="email"
+                                value={formValues.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueWebsite">Website</label>
+                            <input
+                                id="venueWebsite"
+                                name="website"
+                                type="text"
+                                value={formValues.website}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueInstagram">Instagram</label>
+                            <input
+                                id="venueInstagram"
+                                name="instagram"
+                                type="text"
+                                value={formValues.instagram}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="venueFacebook">Facebook</label>
+                            <input
+                                id="venueFacebook"
+                                name="facebook"
+                                type="text"
+                                value={formValues.facebook}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <PreferredContactField
+                            id="venuePreferredContact"
+                            value={formValues.preferredContact ?? ""}
+                            details={formValues}
+                            onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
+                        />
+                    </fieldset>
 
                     <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>
@@ -155,6 +165,20 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                             Cancel
                         </button>
                     </div>
+
+                    {editingVenueId && (
+                        <button
+                            className="form-remove-button"
+                            type="button"
+                            onClick={() => {
+                                closeWithoutReturning();
+                                onDelete(editingVenueId);
+                            }}
+                            disabled={isSaving}
+                        >
+                            Delete venue
+                        </button>
+                    )}
                 </form>
             </div>
         </dialog>

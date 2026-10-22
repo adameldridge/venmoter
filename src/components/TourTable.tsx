@@ -1,33 +1,23 @@
-import "./Cards.css";
 import "./TourTable.css";
 import type { ReactNode } from "react";
-import { FaBuilding, FaBullhorn, FaChevronDown, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
+import { FaBuilding, FaExclamationTriangle } from "react-icons/fa";
 import type { Promoter, Venue } from "../types/venue";
 import { channelLabel, statusLabel, type ContactLogEntry, type Outreach, type OutreachStatus } from "../types/tour";
 import { formatDate, formatDayMonth } from "../utils/date";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
 import StatusBadge from "./StatusBadge";
+import { AddChip, DataGroup, DataTable, NameCell } from "./DataTable";
 
-const COLUMN_COUNT = 5;
+const COLUMNS = [
+    { label: "Name", className: "data-col-name" },
+    { label: "Status", className: "data-col-status" },
+    { label: "Links", className: "data-col-links" },
+    { label: "Last contact" },
+];
 
 export function TourTable({ children }: { children: ReactNode }) {
-    return (
-        <div className="tour-table-wrap">
-            <table className="tour-table">
-                <thead>
-                    <tr>
-                        <th className="tour-col-name">Name</th>
-                        <th className="tour-col-status">Status</th>
-                        <th className="tour-col-links">Links</th>
-                        <th>Last contact</th>
-                        <th className="tour-col-fit" aria-label="Actions" />
-                    </tr>
-                </thead>
-                {children}
-            </table>
-        </div>
-    );
+    return <DataTable columns={COLUMNS}>{children}</DataTable>;
 }
 
 // A promoter linked to a venue on the city's list but not yet added itself.
@@ -57,6 +47,7 @@ type TourGroupProps = {
     onToggle: () => void;
     onAddPromoter: (promoterId: string) => void;
     onAddVenue: (venueId: string) => void;
+    onShowOnly: () => void;
     onRemove: () => void;
     children: ReactNode;
 };
@@ -73,65 +64,53 @@ export function TourGroup({
     onToggle,
     onAddPromoter,
     onAddVenue,
+    onShowOnly,
     onRemove,
     children,
 }: TourGroupProps) {
     return (
-        <tbody className="tour-group">
-            <tr className={confirmed ? "tour-group-row tour-group-row-confirmed" : "tour-group-row"}>
-                <th colSpan={COLUMN_COUNT} scope="rowgroup">
-                    <div className="tour-group-header">
-                        <button
-                            className="tour-group-toggle"
-                            type="button"
-                            onClick={onToggle}
-                            aria-expanded={!collapsed}
-                            title={collapsed ? `Show ${city}` : `Hide ${city}`}
-                        >
-                            <FaChevronDown className="tour-group-chevron" aria-hidden="true" />
-                            <span className="tour-group-city">{city}</span>
-                            <span className="tour-group-count">{count}</span>
-                        </button>
-                        {confirmedVenues.length > 0 && <VenueTags venues={confirmedVenues} />}
-                        {availableVenues.map((venue) => (
-                            <button
-                                key={venue.id}
-                                className="tour-group-available"
-                                type="button"
-                                onClick={() => onAddVenue(venue.id)}
-                                title={`Add ${venue.name} to ${city}${venue.detail ? ` (${venue.detail})` : ""}`}
-                            >
-                                <FaBuilding aria-hidden="true" />+ {venue.name}
-                            </button>
-                        ))}
-                        {availablePromoters.map((promoter) => (
-                            <button
-                                key={promoter.id}
-                                className="tour-group-available"
-                                type="button"
-                                onClick={() => onAddPromoter(promoter.id)}
-                                title={`Add ${promoter.name} to ${city}: works with ${promoter.venueNames.join(", ")}`}
-                            >
-                                <FaBullhorn aria-hidden="true" />+ {promoter.name}
-                            </button>
-                        ))}
-                        <div className="tour-group-actions">
-                            <button
-                                className="ghost-button tour-group-remove"
-                                type="button"
-                                onClick={onRemove}
-                                aria-label={`Remove ${city}`}
-                                title="Remove city"
-                            >
-                                <FaTrashAlt />
-                            </button>
-                        </div>
-                    </div>
-                </th>
-            </tr>
-            {collapsed ? null : count === 0 ? (
-                <tr className="tour-group-empty">
-                    <td colSpan={COLUMN_COUNT}>
+        <DataGroup
+            title={city}
+            count={count}
+            colSpan={COLUMNS.length}
+            collapsed={collapsed}
+            onToggle={onToggle}
+            confirmed={confirmed}
+            extras={
+                <>
+                    {confirmedVenues.length > 0 && <VenueTags venues={confirmedVenues} />}
+                    {availableVenues.map((venue) => (
+                        <AddChip
+                            key={venue.id}
+                            kind="venue"
+                            label={venue.name}
+                            onClick={() => onAddVenue(venue.id)}
+                            title={`Add ${venue.name} to ${city}${venue.detail ? ` (${venue.detail})` : ""}`}
+                        />
+                    ))}
+                    {availablePromoters.map((promoter) => (
+                        <AddChip
+                            key={promoter.id}
+                            kind="promoter"
+                            label={promoter.name}
+                            onClick={() => onAddPromoter(promoter.id)}
+                            title={`Add ${promoter.name} to ${city}: works with ${promoter.venueNames.join(", ")}`}
+                        />
+                    ))}
+                </>
+            }
+            actions={
+                <CardMenu
+                    items={[
+                        { label: `Show only ${city}`, onClick: onShowOnly },
+                        { label: "Remove city", onClick: onRemove, danger: true },
+                    ]}
+                />
+            }
+        >
+            {count === 0 ? (
+                <tr className="data-group-empty">
+                    <td colSpan={COLUMNS.length}>
                         {availableVenues.length > 0
                             ? "Nothing added yet. Pick from the venues above."
                             : `No ${city} venues on the Venues tab yet.`}
@@ -140,28 +119,25 @@ export function TourGroup({
             ) : (
                 children
             )}
-        </tbody>
+        </DataGroup>
     );
 }
 
-// A venue reached through a promoter, shown as a tag; clicking opens the venue's own record
-// (hold, show date, via promoter).
+// A confirmed venue in the city header, shown with its date; clicking opens its booking.
 export type VenueTag = {
     key: string;
     name: string;
     status: OutreachStatus;
     showDate: string;
-    // Whether this tag shows the venue's status; otherwise it's a plain link to the venue.
-    showOutcome: boolean;
     clashMessages: string[];
     onClick: () => void;
 };
 
 function VenueTags({ venues }: { venues: VenueTag[] }) {
     return (
-        <div className="tour-venue-tags">
+        <div className="data-tags">
             {venues.map((venue) => {
-                const outcome = !venue.showOutcome || venue.status === "to-contact"
+                const outcome = venue.status === "to-contact"
                     ? ""
                     : `${statusLabel(venue.status)}${venue.showDate ? ` ${formatDate(venue.showDate)}` : ""}`;
                 // Phones show just "15 Apr"; the tag's colour already says confirmed or on hold.
@@ -169,7 +145,7 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
                 // Declined venues stay as greyed-out tags so they can still be opened and reopened.
                 const declined = venue.status === "declined";
                 const className = [
-                    "tour-venue-tag",
+                    "data-tag",
                     outcome && `tour-venue-tag-${venue.status}`,
                     declined && "tour-venue-tag-declined",
                     venue.clashMessages.length > 0 && "tour-venue-tag-clash",
@@ -184,7 +160,7 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
                         onClick={venue.onClick}
                         title={[declined ? `${venue.name} declined` : `Update ${venue.name}`, ...venue.clashMessages].join("\n")}
                     >
-                        <FaBuilding className="tour-venue-tag-icon" aria-hidden="true" />
+                        <FaBuilding className="data-tag-icon" aria-hidden="true" />
                         {venue.name}
                         {outcome && (
                             <span className="tour-venue-tag-outcome">
@@ -202,9 +178,12 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
 type TourRowProps = {
     outreach: Outreach;
     target: Venue | Promoter;
-    // For a promoter, the listed venues it can put shows on at.
-    venues: VenueTag[];
+    // A venue booked through the promoter row above it: indented, and without Last contact,
+    // since it's the promoter that gets contacted.
+    nested?: boolean;
     inHouse: boolean;
+    // A venue booked through its promoters, whose statuses read differently.
+    promoterBooked: boolean;
     // A venue with no promoters linked on the Venues tab.
     noPromoters: boolean;
     overlapMessages: string[];
@@ -213,14 +192,16 @@ type TourRowProps = {
     clashMessages: string[];
     onUpdate: () => void;
     onOpenLog: () => void;
-    onRemove: () => void;
+    // Shows the venue or promoter's contact details and links.
+    onViewTarget: () => void;
 };
 
 export function TourRow({
     outreach,
     target,
-    venues,
+    nested = false,
     inHouse,
+    promoterBooked,
     noPromoters,
     overlapMessages,
     latestContact,
@@ -228,47 +209,46 @@ export function TourRow({
     clashMessages,
     onUpdate,
     onOpenLog,
-    onRemove,
+    onViewTarget,
 }: TourRowProps) {
     const overlapText = overlapMessages.join("\n");
-    const kindLabel = outreach.targetType === "venue" ? "Venue" : "Promoter";
-    const rowClassName = clashMessages.length > 0
-        ? "tour-row-clash"
-        : overlapMessages.length > 0 ? "tour-row-overlap" : undefined;
+    const rowClassName = [
+        nested && "tour-row-nested",
+        clashMessages.length > 0 ? "tour-row-clash" : overlapMessages.length > 0 && "tour-row-overlap",
+    ]
+        .filter(Boolean)
+        .join(" ") || undefined;
 
     return (
         <tr className={rowClassName}>
-            <td className="tour-cell-name">
-                {/* Building for venues, megaphone for promoters; venue tags use the same building. */}
-                <div className="tour-row-identity">
-                    <span className="tour-row-kind" role="img" aria-label={kindLabel} title={kindLabel}>
-                        {outreach.targetType === "venue" ? <FaBuilding /> : <FaBullhorn />}
-                    </span>
-                    <div>
-                        <div className="tour-row-name">
-                            {target.name}
-                            {overlapMessages.length > 0 && (
-                                <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
-                                    <FaExclamationTriangle />
-                                </span>
-                            )}
-                        </div>
-                        {/* Same pills as the Venues tab. */}
+            {/* Venue tags use the same building icon as venue rows. */}
+            <NameCell
+                kind={outreach.targetType}
+                name={target.name}
+                onOpen={onViewTarget}
+                openTitle={`View ${target.name}`}
+                badge={
+                    <>
+                        {/* How the venue is booked, as a quiet note on the name's line. */}
                         {(inHouse || noPromoters) && (
-                            <div className="tour-row-inhouse">
-                                <span className="entity-card-chip-inhouse">{inHouse ? "In-house" : "No promoters"}</span>
-                            </div>
+                            <span className="tour-row-name-note">{inHouse ? "In-house" : "No promoters"}</span>
                         )}
-                        {venues.length > 0 && <VenueTags venues={venues} />}
-                    </div>
-                </div>
-            </td>
+                        {overlapMessages.length > 0 && (
+                            <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
+                                <FaExclamationTriangle />
+                            </span>
+                        )}
+                    </>
+                }
+            />
             {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
-            <td className="tour-cell-status">
-                <div className="tour-row-status">
-                    <StatusBadge status={outreach.status} />
+            <td className="data-cell-status">
+                <div className="data-row-status">
+                    <button className="data-badge-button" type="button" onClick={onUpdate} title="Update status">
+                        <StatusBadge status={outreach.status} promoterBooked={promoterBooked} />
+                    </button>
                     {outreach.showDate && (
-                        <span className="tour-row-muted">
+                        <span className="data-row-muted">
                             {formatDate(outreach.showDate)}
                             {viaPromoterName && ` · via ${viaPromoterName}`}
                         </span>
@@ -278,38 +258,34 @@ export function TourRow({
                     <div key={message} className="tour-row-clash-note">{message}</div>
                 ))}
             </td>
-            <td className="tour-cell-links">
+            <td className="data-cell-links">
                 <SocialLinks
                     website={target.website}
                     instagram={target.instagram}
                     facebook={target.facebook}
                     email={target.email}
                     preferred={target.preferredContact}
-                    className="tour-row-links"
                 />
             </td>
-            <td className="tour-cell-contact" data-label="Last contact">
-                {latestContact ? (
-                    <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
-                        {formatDate(latestContact.date)}
-                        {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
-                        {latestContact.note && (
-                            <span className="tour-row-latest-note">“{latestContact.note}”</span>
-                        )}
-                    </button>
-                ) : (
-                    <span className="tour-row-empty">–</span>
-                )}
-            </td>
-            <td className="tour-cell-menu">
-                <CardMenu
-                    items={[
-                        { label: "Update status", onClick: onUpdate },
-                        { label: "Contact log", onClick: onOpenLog },
-                        { label: "Remove from city", onClick: onRemove, danger: true },
-                    ]}
-                />
-            </td>
+            {nested ? (
+                <td />
+            ) : (
+                <td className="data-cell-full" data-label="Last contact">
+                    {latestContact ? (
+                        <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
+                            {formatDate(latestContact.date)}
+                            {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
+                            {latestContact.note && (
+                                <span className="tour-row-latest-note">“{latestContact.note}”</span>
+                            )}
+                        </button>
+                    ) : (
+                        <button className="data-row-action" type="button" onClick={onOpenLog}>
+                            Log contact
+                        </button>
+                    )}
+                </td>
+            )}
         </tr>
     );
 }

@@ -68,6 +68,15 @@ export type OutreachTarget = {
   targetId: string;
 };
 
+// Where a venue or promoter appears across all tours, for warnings before it's changed or deleted.
+export type TourListing = {
+  tourName: string;
+  city: string;
+  status: OutreachStatus;
+  showDate: string;
+  logCount: number;
+};
+
 // How a venue is booked (in-house, or through its promoters) is a property of the venue, not
 // a status. Promoter-booked venues aren't contacted directly, so their status only tracks the
 // booking itself, and the starting status reads "Not booked" rather than "To contact".

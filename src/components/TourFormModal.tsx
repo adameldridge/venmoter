@@ -46,7 +46,7 @@ function TourFormModal({ onSubmit, onDelete, ref }: TourFormModalProps) {
         <dialog id="tour-form-modal" ref={modalRef}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
-                    {editingTourId ? "Edit Tour" : "New Tour"}
+                    {editingTourId ? "Edit tour" : "New tour"}
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div>
