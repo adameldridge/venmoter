@@ -15,7 +15,7 @@ export function DataTable({ columns, children }: { columns: DataColumn[]; childr
                 <thead>
                     <tr>
                         {columns.map((column, index) => (
-                            <th key={index} className={column.className} aria-label={column.label ? undefined : "Actions"}>
+                            <th key={index} className={column.className}>
                                 {column.label}
                             </th>
                         ))}

@@ -39,10 +39,6 @@
     width: 110px;
 }
 
-.data-table .data-col-fit{
-    width: 1%;
-}
-
 .data-table td{
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -195,8 +191,10 @@
     text-align: left;
 }
 
+/* Names are the way into a record now there's no row menu, so they react clearly to hover. */
 .data-row-name-link:hover{
     opacity: 1;
+    color: #5fd18b;
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -333,11 +331,6 @@
     font-size: 15px;
 }
 
-.data-cell-menu{
-    width: 1%;
-    text-align: right;
-}
-
 /* Shown instead of the table when filters leave nothing. */
 .data-empty{
     margin: 0 10px 20px;
@@ -442,7 +435,6 @@
         display: block;
         flex-basis: 100%;
         box-sizing: border-box;
-        padding-right: 36px;
         margin-bottom: 4px;
     }
 
@@ -475,13 +467,6 @@
 
     .data-row-links a{
         position: relative;
-    }
-
-    .data-table .data-cell-menu{
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        width: auto;
     }
 
     .data-table .card-menu-trigger{

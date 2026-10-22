@@ -351,8 +351,6 @@ export default function App() {
                             searchInput={venueFilters.searchInput}
                             onSearchChange={venueFilters.setSearchInput}
                             onAddVenue={() => venueFormModalRef.current?.open()}
-                            onEditVenue={(venue) => venueFormModalRef.current?.open(venue)}
-                            onDeleteVenue={confirmDeleteVenue}
                             onManagePromoters={(venue) => openVenuePromoterLinks(venue)}
                             onViewRecord={viewRecord}
                         />
@@ -367,8 +365,6 @@ export default function App() {
                             searchInput={promoterFilters.searchInput}
                             onSearchChange={promoterFilters.setSearchInput}
                             onAddPromoter={() => promoterFormModalRef.current?.open()}
-                            onEditPromoter={(promoter) => promoterFormModalRef.current?.open(promoter)}
-                            onDeletePromoter={confirmDeletePromoter}
                             onManageVenues={(promoter) => openPromoterVenueLinks(promoter)}
                             onViewRecord={viewRecord}
                         />
@@ -392,7 +388,6 @@ export default function App() {
                             onAddVenue={addStopVenue}
                             onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
                             onOpenLog={(outreach, title) => contactLogModalRef.current?.open(outreach, title)}
-                            onRemoveOutreach={confirmRemoveOutreach}
                             onViewRecord={viewRecord}
                         />
                     )}

@@ -3,7 +3,6 @@ import type { PromoterWithVenues, RecordKind } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import ListHeader from "./ListHeader";
 import SocialLinks from "./SocialLinks";
-import CardMenu from "./CardMenu";
 import { AddChip, DataTable, NameCell } from "./DataTable";
 
 type PromotersTabProps = {
@@ -14,8 +13,6 @@ type PromotersTabProps = {
     searchInput: string;
     onSearchChange: (search: string) => void;
     onAddPromoter: () => void;
-    onEditPromoter: (promoter: PromoterWithVenues) => void;
-    onDeletePromoter: (promoter: PromoterWithVenues) => void;
     onManageVenues: (promoter: PromoterWithVenues) => void;
     onViewRecord: (kind: RecordKind, id: string) => void;
 };
@@ -24,7 +21,6 @@ const COLUMNS = [
     { label: "Name", className: "data-col-name" },
     { label: "Venues" },
     { label: "Links", className: "data-col-links" },
-    { label: "", className: "data-col-fit" },
 ];
 
 // Promoters often work in several cities, so this is one list by name rather than city groups.
@@ -36,8 +32,6 @@ export default function PromotersTab({
     searchInput,
     onSearchChange,
     onAddPromoter,
-    onEditPromoter,
-    onDeletePromoter,
     onManageVenues,
     onViewRecord,
 }: PromotersTabProps) {
@@ -77,8 +71,6 @@ export default function PromotersTab({
                             <PromoterRow
                                 key={promoter.id}
                                 promoter={promoter}
-                                onEdit={() => onEditPromoter(promoter)}
-                                onDelete={() => onDeletePromoter(promoter)}
                                 onManageVenues={() => onManageVenues(promoter)}
                                 onViewRecord={onViewRecord}
                             />
@@ -92,13 +84,11 @@ export default function PromotersTab({
 
 type PromoterRowProps = {
     promoter: PromoterWithVenues;
-    onEdit: () => void;
-    onDelete: () => void;
     onManageVenues: () => void;
     onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
-function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onViewRecord }: PromoterRowProps) {
+function PromoterRow({ promoter, onManageVenues, onViewRecord }: PromoterRowProps) {
     const venues = [...promoter.venues].sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
     return (
@@ -135,16 +125,6 @@ function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onViewRecord 
                 ) : (
                     <span className="data-row-none">No contact</span>
                 )}
-            </td>
-            <td className="data-cell-menu">
-                <CardMenu
-                    items={[
-                        { label: "View promoter", onClick: () => onViewRecord("promoter", promoter.id) },
-                        { label: "Edit promoter", onClick: onEdit },
-                        { label: "Edit venues", onClick: onManageVenues },
-                        { label: "Delete promoter", onClick: onDelete, danger: true },
-                    ]}
-                />
             </td>
         </tr>
     );

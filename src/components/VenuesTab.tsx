@@ -4,14 +4,12 @@ import { hasContact } from "../utils/contact";
 import { useCollapsedGroups } from "../hooks/useCollapsedGroups";
 import ListHeader from "./ListHeader";
 import SocialLinks from "./SocialLinks";
-import CardMenu from "./CardMenu";
 import { AddChip, DataGroup, DataTable, NameCell } from "./DataTable";
 
 const COLUMNS = [
     { label: "Name", className: "data-col-name" },
     { label: "Booked by" },
     { label: "Links", className: "data-col-links" },
-    { label: "", className: "data-col-fit" },
 ];
 
 type VenuesTabProps = {
@@ -22,8 +20,6 @@ type VenuesTabProps = {
     searchInput: string;
     onSearchChange: (search: string) => void;
     onAddVenue: () => void;
-    onEditVenue: (venue: VenueWithPromoters) => void;
-    onDeleteVenue: (venue: VenueWithPromoters) => void;
     onManagePromoters: (venue: VenueWithPromoters) => void;
     onViewRecord: (kind: RecordKind, id: string) => void;
 };
@@ -36,8 +32,6 @@ export default function VenuesTab({
     searchInput,
     onSearchChange,
     onAddVenue,
-    onEditVenue,
-    onDeleteVenue,
     onManagePromoters,
     onViewRecord,
 }: VenuesTabProps) {
@@ -87,8 +81,6 @@ export default function VenuesTab({
                                 <VenueRow
                                     key={venue.id}
                                     venue={venue}
-                                    onEdit={() => onEditVenue(venue)}
-                                    onDelete={() => onDeleteVenue(venue)}
                                     onManagePromoters={() => onManagePromoters(venue)}
                                     onViewRecord={onViewRecord}
                                 />
@@ -103,13 +95,11 @@ export default function VenuesTab({
 
 type VenueRowProps = {
     venue: VenueWithPromoters;
-    onEdit: () => void;
-    onDelete: () => void;
     onManagePromoters: () => void;
     onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
-function VenueRow({ venue, onEdit, onDelete, onManagePromoters, onViewRecord }: VenueRowProps) {
+function VenueRow({ venue, onManagePromoters, onViewRecord }: VenueRowProps) {
     const promoters = [...venue.promoters].sort((a, b) => a.name.localeCompare(b.name));
 
     return (
@@ -146,16 +136,6 @@ function VenueRow({ venue, onEdit, onDelete, onManagePromoters, onViewRecord }: 
                 ) : (
                     <span className="data-row-none">No contact</span>
                 )}
-            </td>
-            <td className="data-cell-menu">
-                <CardMenu
-                    items={[
-                        { label: "View venue", onClick: () => onViewRecord("venue", venue.id) },
-                        { label: "Edit venue", onClick: onEdit },
-                        { label: "Edit promoters", onClick: onManagePromoters },
-                        { label: "Delete venue", onClick: onDelete, danger: true },
-                    ]}
-                />
             </td>
         </tr>
     );

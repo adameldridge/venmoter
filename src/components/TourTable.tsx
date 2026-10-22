@@ -14,7 +14,6 @@ const COLUMNS = [
     { label: "Status", className: "data-col-status" },
     { label: "Links", className: "data-col-links" },
     { label: "Last contact" },
-    { label: "", className: "data-col-fit" },
 ];
 
 export function TourTable({ children }: { children: ReactNode }) {
@@ -195,7 +194,6 @@ type TourRowProps = {
     clashMessages: string[];
     onUpdate: () => void;
     onOpenLog: () => void;
-    onRemove: () => void;
     // Shows the venue or promoter's contact details and links.
     onViewTarget: () => void;
 };
@@ -213,7 +211,6 @@ export function TourRow({
     clashMessages,
     onUpdate,
     onOpenLog,
-    onRemove,
     onViewTarget,
 }: TourRowProps) {
     const overlapText = overlapMessages.join("\n");
@@ -285,16 +282,6 @@ export function TourRow({
                         Log contact
                     </button>
                 )}
-            </td>
-            <td className="data-cell-menu">
-                <CardMenu
-                    items={[
-                        { label: `View ${outreach.targetType}`, onClick: onViewTarget },
-                        { label: "Update status", onClick: onUpdate },
-                        { label: "Contact log", onClick: onOpenLog },
-                        { label: "Remove from city", onClick: onRemove, danger: true },
-                    ]}
-                />
             </td>
         </tr>
     );

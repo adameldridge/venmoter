@@ -35,7 +35,6 @@ type TourTabProps = {
     onAddVenue: (stop: TourStop, venueId: string) => void;
     onOpenOutreach: (outreach: Outreach, title: string) => void;
     onOpenLog: (outreach: Outreach, title: string) => void;
-    onRemoveOutreach: (outreach: Outreach) => void;
     onViewRecord: (kind: RecordKind, id: string) => void;
 };
 
@@ -63,7 +62,6 @@ export default function TourTab({
     onAddVenue,
     onOpenOutreach,
     onOpenLog,
-    onRemoveOutreach,
     onViewRecord,
 }: TourTabProps) {
     const [cityFilter, setCityFilter] = useState("");
@@ -266,7 +264,6 @@ export default function TourTab({
                                                     .map((clash) => clash.message)}
                                                 onUpdate={() => openCard(o)}
                                                 onOpenLog={() => onOpenLog(o, cardTitle(o))}
-                                                onRemove={() => onRemoveOutreach(o)}
                                                 onViewTarget={() => onViewRecord(o.targetType, o.targetId)}
                                             />
                                         ))}
