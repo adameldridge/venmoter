@@ -59,7 +59,14 @@ export type ContactLogEntry = {
   date: string;
   channel: OutreachChannel | "";
   note: string;
+  // "HH:MM", matching <input type="time">; orders entries on the same date. Missing on older entries.
+  time?: string;
 };
+
+// Newest first: by the contact's date, then its time (entries without one sort last on their day).
+export function newestLogFirst(a: ContactLogEntry, b: ContactLogEntry) {
+  return b.date.localeCompare(a.date) || (b.time ?? "").localeCompare(a.time ?? "");
+}
 
 export type NewContactLogEntry = Omit<ContactLogEntry, "id">;
 

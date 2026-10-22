@@ -1,5 +1,6 @@
-/* The palette: neutral greys, with green as the one accent (actions, confirmed) and amber and red
-   kept for warnings and problems. Everything else is white at some opacity over these. */
+/* The palette: neutral greys, with green as the one accent (actions, confirmed), a muted blue for
+   conversations under way, and amber and red kept for holds, warnings and problems. Everything
+   else is white at some opacity over these. */
 :root{
   color-scheme: dark;
   --bg: #131313;
@@ -17,6 +18,10 @@
   --warn-soft: rgba(242, 169, 0, 0.1);
   --warn-line: rgba(242, 169, 0, 0.5);
   --on-warn: #1a1a1a;
+  /* Muted blue for being in conversation with someone (contacted, in discussion). */
+  --info-text: #8fb4f0;
+  --info-soft: rgba(110, 150, 230, 0.16);
+  --info-line: rgba(110, 150, 230, 0.5);
   --danger: #e5484d;
   --danger-text: #ff8a8d;
   --danger-soft: rgba(229, 72, 77, 0.14);

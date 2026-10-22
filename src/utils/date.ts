@@ -4,6 +4,12 @@ export function todayIsoDate() {
     return toIsoDate(new Date());
 }
 
+// Now as "HH:MM", matching <input type="time">.
+export function nowTime() {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
 export function formatDate(isoDate: string) {
     if (!isoDate) return "";
     return parseIsoDate(isoDate).toLocaleDateString(undefined, {

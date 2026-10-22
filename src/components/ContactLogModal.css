@@ -4,7 +4,7 @@
 
 .contact-log-add{
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto auto 1fr;
     gap: 6px;
     margin-bottom: 15px;
 }
@@ -24,6 +24,17 @@
 .contact-log-add button{
     grid-column: 1 / -1;
     margin: 0;
+}
+
+/* Date and time share a row on phones; the channel gets its own. */
+@media (max-width: 480px){
+    .contact-log-add{
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .contact-log-add select{
+        grid-column: 1 / -1;
+    }
 }
 
 .contact-log-empty{
@@ -53,6 +64,7 @@
     font-weight: bold;
 }
 
+.contact-log-time,
 .contact-log-channel{
     opacity: 0.7;
 }

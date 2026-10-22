@@ -24,7 +24,7 @@ import type {
     OutreachTargetType,
     TourListing,
 } from "../types/tour";
-import { todayIsoDate } from "../utils/date";
+import { nowTime, todayIsoDate } from "../utils/date";
 import { sameCity } from "../utils/city";
 
 const settingsDoc = doc(db, "settings", "app");
@@ -234,6 +234,7 @@ export function useTourData() {
                         date: todayIsoDate(),
                         channel: "",
                         note: "Hold released (another venue confirmed)",
+                        time: nowTime(),
                     };
                     return addDoc(collection(db, "contact-log"), entry);
                 }),
