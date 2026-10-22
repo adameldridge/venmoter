@@ -90,6 +90,7 @@ export default function OutreachModal({
     const showDateFields = !!formValues && hasShowDate(formValues.status);
     const viaOptions = isVenue && formValues ? linkedPromoters(formValues.targetId) : [];
     const inHouse = isVenue && !!formValues && isInHouse(formValues.targetId);
+    // Same rule as isPromoterBooked, from the props this modal is given.
     const promoterBooked = isVenue && !inHouse && viaOptions.length > 0;
     // Keep a status that no longer fits the booking method selectable, so saving doesn't silently change it.
     const statusOptions = formValues ? statusesFor(formValues.targetType, promoterBooked) : [];

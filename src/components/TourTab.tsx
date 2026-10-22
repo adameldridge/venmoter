@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaPen } from "react-icons/fa";
-import type { PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
+import { isPromoterBooked, type PromoterWithVenues, type RecordKind, type VenueWithPromoters } from "../types/venue";
 import {
     OUTREACH_STATUSES,
     hasShowDate,
@@ -250,6 +250,7 @@ export default function TourTab({
                                                 target={target}
                                                 venues={venueEntries.map((venue) => toVenueTag(venue, false))}
                                                 inHouse={isInHouse(target)}
+                                                promoterBooked={"promoters" in target && isPromoterBooked(target)}
                                                 noPromoters={noPromoters}
                                                 overlapMessages={overlaps
                                                     .filter((overlap) => overlap.outreachId === o.id)

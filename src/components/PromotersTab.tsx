@@ -51,6 +51,7 @@ export default function PromotersTab({
                         onChange={(e) => onCityChange(e.target.value)}
                         aria-label="Filter by city"
                     >
+                        <option value="">All cities</option>
                         {cities.map((city) => (
                             <option value={city} key={city}>{city}</option>
                         ))}
@@ -61,7 +62,7 @@ export default function PromotersTab({
                         type="search"
                         value={searchInput}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search promoters..."
+                        placeholder="Search promoters…"
                         aria-label="Search promoters"
                     />
                 </div>

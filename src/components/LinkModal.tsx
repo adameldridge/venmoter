@@ -23,7 +23,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     const [options, setOptions] = useState<LinkOption[]>([]);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState("");
-    const [selectedCity, setSelectedCity] = useState("All Cities");
+    const [selectedCity, setSelectedCity] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const onCloseRef = useRef<(() => void) | undefined>(undefined);
 
@@ -34,7 +34,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
             setOptions(options);
             setCheckedIds(new Set(selectedIds));
             setSearch("");
-            setSelectedCity("All Cities");
+            setSelectedCity("");
             modalRef.current?.showModal();
         },
     }));
@@ -44,7 +44,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
         setOptions([]);
         setCheckedIds(new Set());
         setSearch("");
-        setSelectedCity("All Cities");
+        setSelectedCity("");
         modalRef.current?.close();
     }
 
@@ -80,7 +80,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     }
 
     const visibleOptions = options
-        .filter((option) => selectedCity === "All Cities" || option.city === selectedCity)
+        .filter((option) => !selectedCity || option.city === selectedCity)
         .filter((option) => option.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -95,6 +95,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
                             value={selectedCity}
                             onChange={(e) => setSelectedCity(e.target.value)}
                         >
+                            <option value="">All cities</option>
                             {cities.map((city) => (
                                 <option value={city} key={city}>{city}</option>
                             ))}
@@ -104,7 +105,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
                     <input
                         className="search-input link-modal-search"
                         type="text"
-                        placeholder={`Search ${itemLabel}...`}
+                        placeholder={`Search ${itemLabel}…`}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />

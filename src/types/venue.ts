@@ -40,6 +40,12 @@ export type VenueWithPromoters = Venue & {
   promoters: Promoter[];
 };
 
+// Booked through its promoters: not in-house, and has at least one promoter linked. Its tour
+// status reads "Not booked" rather than "To contact", since the venue isn't contacted directly.
+export function isPromoterBooked(venue: VenueWithPromoters) {
+  return !venue.managesInHouse && venue.promoters.length > 0;
+}
+
 export type PromoterWithVenues = Promoter & {
   venues: Venue[];
 };

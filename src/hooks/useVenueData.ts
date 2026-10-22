@@ -100,11 +100,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
                     ...doc.data(),
                 })) as VenuePromoter[];
 
-            setCities(
-                ["All Cities", ...new Set(venuesData.map(venue => venue.city))].sort((a, b) =>
-                    a === "All Cities" ? -1 : b === "All Cities" ? 1 : a.localeCompare(b),
-                )
-            );
+            setCities([...new Set(venuesData.map((venue) => venue.city))].sort((a, b) => a.localeCompare(b)));
 
             setVenues(venuesData);
             setPromoters(promotersData);

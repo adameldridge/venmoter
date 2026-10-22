@@ -186,6 +186,8 @@ type TourRowProps = {
     // For a promoter, the listed venues it can put shows on at.
     venues: VenueTag[];
     inHouse: boolean;
+    // A venue booked through its promoters, whose statuses read differently.
+    promoterBooked: boolean;
     // A venue with no promoters linked on the Venues tab.
     noPromoters: boolean;
     overlapMessages: string[];
@@ -204,6 +206,7 @@ export function TourRow({
     target,
     venues,
     inHouse,
+    promoterBooked,
     noPromoters,
     overlapMessages,
     latestContact,
@@ -246,7 +249,7 @@ export function TourRow({
             {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
             <td className="data-cell-status">
                 <div className="data-row-status">
-                    <StatusBadge status={outreach.status} />
+                    <StatusBadge status={outreach.status} promoterBooked={promoterBooked} />
                     {outreach.showDate && (
                         <span className="data-row-muted">
                             {formatDate(outreach.showDate)}

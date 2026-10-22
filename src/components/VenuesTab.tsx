@@ -53,6 +53,7 @@ export default function VenuesTab({
                         onChange={(e) => onCityChange(e.target.value)}
                         aria-label="Filter by city"
                     >
+                        <option value="">All cities</option>
                         {cities.map((city) => (
                             <option value={city} key={city}>{city}</option>
                         ))}
@@ -63,7 +64,7 @@ export default function VenuesTab({
                         type="search"
                         value={searchInput}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search venues..."
+                        placeholder="Search venues…"
                         aria-label="Search venues"
                     />
                 </div>

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
-import type { PromoterWithVenues, RecordKind, VenueWithPromoters } from "./types/venue";
+import { isPromoterBooked, type PromoterWithVenues, type RecordKind, type VenueWithPromoters } from "./types/venue";
 import VenuesTab from "./components/VenuesTab";
 import PromotersTab from "./components/PromotersTab";
 import VenueFormModal, { type VenueFormModalHandle } from "./components/VenueFormModal";
@@ -19,19 +19,18 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase/config";
 import { useVenueData } from "./hooks/useVenueData";
 import { useTourData } from "./hooks/useTourData";
+import { useListFilters } from "./hooks/useListFilters";
 import { hasShowDate, statusLabel, type NewOutreach, type Outreach, type OutreachTarget, type OutreachTargetType, type Tour, type TourStop } from "./types/tour";
 import { sameCity } from "./utils/city";
 import { formatDate } from "./utils/date";
 
 type Tab = "venues" | "promoters" | "tour";
 
-const ALL_CITIES = "All Cities";
-
 export default function App() {
     const [activeTab, setActiveTab] = useState<Tab>("tour");
-    const [selectedCity, setSelectedCity] = useState(ALL_CITIES);
-    const [searchInput, setSearchInput] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
+    // Each list keeps its own filters, so a search on one tab doesn't hide rows on the other.
+    const venueFilters = useListFilters();
+    const promoterFilters = useListFilters();
 
     const venueFormModalRef = useRef<VenueFormModalHandle>(null);
     const promoterFormModalRef = useRef<PromoterFormModalHandle>(null);
@@ -82,11 +81,6 @@ export default function App() {
 
     const isInitialLoading = isVenuesLoading || isToursLoading;
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => setSearchTerm(searchInput), 300);
-        return () => clearTimeout(timeoutId);
-    }, [searchInput]);
-
     function confirmSignOut() {
         confirmModalRef.current?.open({
             message: "Are you sure you want to sign out?",
@@ -100,7 +94,7 @@ export default function App() {
     }
 
     // Deleting a venue or promoter also takes it off every tour it's on, so spell that out.
-    function deleteDetails(targetType: OutreachTargetType, targetId: string, linkCount: number) {
+    function deleteDetails(targetType: OutreachTargetType, targetId: string, linkCount: number, promoterBooked = false) {
         const listings = listingsFor(targetType, targetId);
         const logCount = listings.reduce((total, listing) => total + listing.logCount, 0);
         const viaCount = targetType === "promoter" ? bookingsViaPromoter(targetId) : 0;
@@ -108,7 +102,7 @@ export default function App() {
         return [
             ...listings.map((listing) => {
                 const date = hasShowDate(listing.status) && listing.showDate ? ` ${formatDate(listing.showDate)}` : "";
-                return `Removed from ${listing.tourName} in ${listing.city} (${statusLabel(listing.status)}${date})`;
+                return `Removed from ${listing.tourName} in ${listing.city} (${statusLabel(listing.status, promoterBooked)}${date})`;
             }),
             ...(logCount > 0 ? [`${logCount} contact log ${logCount === 1 ? "entry" : "entries"} deleted`] : []),
             ...(viaCount > 0 ? [`No longer the booking promoter on ${viaCount} venue ${viaCount === 1 ? "booking" : "bookings"}`] : []),
@@ -127,7 +121,7 @@ export default function App() {
     function confirmDeleteVenue(venue: VenueWithPromoters) {
         confirmModalRef.current?.open({
             message: `Delete ${venue.name}? This cannot be undone.`,
-            details: deleteDetails("venue", venue.id, venue.promoters.length),
+            details: deleteDetails("venue", venue.id, venue.promoters.length, isPromoterBooked(venue)),
             confirmLabel: "Delete",
             danger: true,
             onConfirm: () => deleteVenue(venue.id),
@@ -263,10 +257,6 @@ export default function App() {
         return saveStopTargetIds(stop.id, [...listedVenueIds, venueId]);
     }
 
-    function matchesSearch(name: string) {
-        return name.toLowerCase().includes(searchTerm.trim().toLowerCase());
-    }
-
     function promoterInCity(promoter: PromoterWithVenues, city: string) {
         return promoter.venues.some((venue) => venue.city === city);
     }
@@ -301,8 +291,8 @@ export default function App() {
     }
 
     const visibleVenues = venuesWithPromoters
-        .filter((venue) => selectedCity === ALL_CITIES || venue.city === selectedCity)
-        .filter((venue) => matchesSearch(venue.name))
+        .filter((venue) => !venueFilters.city || venue.city === venueFilters.city)
+        .filter((venue) => venueFilters.matchesSearch(venue.name))
         .sort((a, b) => a.city.localeCompare(b.city) || a.name.localeCompare(b.name));
 
     const sortedVenues = [...venues].sort(
@@ -312,8 +302,8 @@ export default function App() {
     const sortedPromoters = [...promoters].sort((a, b) => a.name.localeCompare(b.name));
 
     const visiblePromoters = promotersWithVenues
-        .filter((promoter) => selectedCity === ALL_CITIES || promoterInCity(promoter, selectedCity))
-        .filter((promoter) => matchesSearch(promoter.name))
+        .filter((promoter) => !promoterFilters.city || promoterInCity(promoter, promoterFilters.city))
+        .filter((promoter) => promoterFilters.matchesSearch(promoter.name))
         .sort((a, b) => a.name.localeCompare(b.name));
 
     return (
@@ -356,10 +346,10 @@ export default function App() {
                         <VenuesTab
                             venues={visibleVenues}
                             cities={cities}
-                            selectedCity={selectedCity}
-                            onCityChange={setSelectedCity}
-                            searchInput={searchInput}
-                            onSearchChange={setSearchInput}
+                            selectedCity={venueFilters.city}
+                            onCityChange={venueFilters.setCity}
+                            searchInput={venueFilters.searchInput}
+                            onSearchChange={venueFilters.setSearchInput}
                             onAddVenue={() => venueFormModalRef.current?.open()}
                             onEditVenue={(venue) => venueFormModalRef.current?.open(venue)}
                             onDeleteVenue={confirmDeleteVenue}
@@ -372,10 +362,10 @@ export default function App() {
                         <PromotersTab
                             promoters={visiblePromoters}
                             cities={cities}
-                            selectedCity={selectedCity}
-                            onCityChange={setSelectedCity}
-                            searchInput={searchInput}
-                            onSearchChange={setSearchInput}
+                            selectedCity={promoterFilters.city}
+                            onCityChange={promoterFilters.setCity}
+                            searchInput={promoterFilters.searchInput}
+                            onSearchChange={promoterFilters.setSearchInput}
                             onAddPromoter={() => promoterFormModalRef.current?.open()}
                             onEditPromoter={(promoter) => promoterFormModalRef.current?.open(promoter)}
                             onDeletePromoter={confirmDeletePromoter}
@@ -469,16 +459,8 @@ export default function App() {
             />
             <StopFormModal
                 ref={stopFormModalRef}
-                onDelete={(stopId) => {
-                    const stop = activeStops.find((s) => s.id === stopId);
-                    if (stop) confirmDeleteStop(stop);
-                }}
-                cities={cities.filter(
-                    (city) => city !== ALL_CITIES && !activeStops.some((stop) => sameCity(stop.city, city)),
-                )}
-                onSubmit={(stop, editingStopId) =>
-                    activeTour ? saveStop({ ...stop, tourId: activeTour.id }, editingStopId) : Promise.resolve()
-                }
+                cities={cities.filter((city) => !activeStops.some((stop) => sameCity(stop.city, city)))}
+                onSubmit={(stop) => (activeTour ? saveStop({ ...stop, tourId: activeTour.id }, null) : Promise.resolve())}
             />
             <OutreachModal
                 ref={outreachModalRef}

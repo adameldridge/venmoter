@@ -9,8 +9,7 @@ type StopFormValues = Omit<NewTourStop, "tourId">;
 
 type StopFormModalProps = {
     cities: string[];
-    onSubmit: (stop: StopFormValues, editingStopId: string | null) => Promise<void>;
-    onDelete: (stopId: string) => void;
+    onSubmit: (stop: StopFormValues) => Promise<void>;
     ref?: Ref<StopFormModalHandle>;
 };
 
@@ -28,14 +27,13 @@ export type StopFormModalHandle = EntityFormModalHandle<TourStop>;
 
 const OTHER_CITY = "__other__";
 
-function StopFormModal({ cities, onSubmit, onDelete, ref }: StopFormModalProps) {
+function StopFormModal({ cities, onSubmit, ref }: StopFormModalProps) {
     const [isOtherCity, setIsOtherCity] = useState(false);
 
     const {
         modalRef,
         formValues,
         setFormValues,
-        editingId: editingStopId,
         isSaving,
         closeModal,
         handleChange,
@@ -43,9 +41,8 @@ function StopFormModal({ cities, onSubmit, onDelete, ref }: StopFormModalProps) 
     } = useEntityFormModal<TourStop, StopFormValues>(ref, {
         emptyValues: emptyStop,
         toFormValues,
-        onSubmit: (values, editingId) => onSubmit({ ...values, city: values.city.trim() }, editingId),
-        // A saved city that isn't one of the venue cities is shown in the "Other" text box.
-        onOpen: (stop) => setIsOtherCity(!!stop && !cities.includes(stop.city)),
+        onSubmit: (values) => onSubmit({ ...values, city: values.city.trim() }),
+        onOpen: () => setIsOtherCity(false),
     });
 
     function handleCitySelect(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -57,9 +54,7 @@ function StopFormModal({ cities, onSubmit, onDelete, ref }: StopFormModalProps) 
     return (
         <dialog id="stop-form-modal" ref={modalRef}>
             <div className="modal-box entity-form">
-                <div className="modal-title">
-                    {editingStopId ? "Edit City" : "Add City"}
-                </div>
+                <div className="modal-title">Add City</div>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="stopCity">City *</label>
@@ -102,19 +97,6 @@ function StopFormModal({ cities, onSubmit, onDelete, ref }: StopFormModalProps) 
                         </button>
                     </div>
 
-                    {editingStopId && (
-                        <button
-                            className="form-remove-button"
-                            type="button"
-                            onClick={() => {
-                                closeModal();
-                                onDelete(editingStopId);
-                            }}
-                            disabled={isSaving}
-                        >
-                            Remove city
-                        </button>
-                    )}
                 </form>
             </div>
         </dialog>
