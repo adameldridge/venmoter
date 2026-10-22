@@ -70,6 +70,36 @@
     opacity: 0.7;
 }
 
+/* Title, city filter and Add City share one row on phones. */
+@media (max-width: 640px){
+    .tour-section-header{
+        flex-wrap: nowrap;
+        gap: 10px;
+        margin: 16px 8px 10px;
+    }
+
+    .tour-section-title{
+        flex-shrink: 0;
+    }
+
+    .tour-section-subtitle{
+        display: none;
+    }
+
+    .tour-section-header .cities-select{
+        flex: 1;
+        min-width: 0;
+        width: auto;
+    }
+
+    .tour-section-header .create-button{
+        flex-shrink: 0;
+        margin-left: auto;
+        padding: 10px 16px;
+        white-space: nowrap;
+    }
+}
+
 .tour-empty{
     max-width: 600px;
     box-sizing: border-box;
@@ -83,11 +113,6 @@
 }
 
 @media (max-width: 640px){
-    .tour-section-header button{
-        width: 100%;
-    }
-
-    .tour-section-header,
     .tour-empty{
         margin-left: 8px;
         margin-right: 8px;

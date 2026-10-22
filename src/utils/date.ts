@@ -13,6 +13,15 @@ export function formatDate(isoDate: string) {
     });
 }
 
+// e.g. "15 Apr", for places where the year is already obvious.
+export function formatDayMonth(isoDate: string) {
+    if (!isoDate) return "";
+    return parseIsoDate(isoDate).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+    });
+}
+
 export function parseIsoDate(isoDate: string) {
     const [year, month, day] = isoDate.split("-").map(Number);
     return new Date(year, month - 1, day);

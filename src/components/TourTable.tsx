@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { FaBuilding, FaBullhorn, FaChevronDown, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
 import type { Promoter, Venue } from "../types/venue";
 import { channelLabel, statusLabel, type ContactLogEntry, type Outreach, type OutreachStatus } from "../types/tour";
-import { formatDate } from "../utils/date";
+import { formatDate, formatDayMonth } from "../utils/date";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
 import StatusBadge from "./StatusBadge";
@@ -164,6 +164,8 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
                 const outcome = !venue.showOutcome || venue.status === "to-contact"
                     ? ""
                     : `${statusLabel(venue.status)}${venue.showDate ? ` ${formatDate(venue.showDate)}` : ""}`;
+                // Phones show just "15 Apr"; the tag's colour already says confirmed or on hold.
+                const shortOutcome = venue.showDate ? formatDayMonth(venue.showDate) : statusLabel(venue.status);
                 // Declined venues stay as greyed-out tags so they can still be opened and reopened.
                 const declined = venue.status === "declined";
                 const className = [
@@ -184,7 +186,12 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
                     >
                         <FaBuilding className="tour-venue-tag-icon" aria-hidden="true" />
                         {venue.name}
-                        {outcome && <span className="tour-venue-tag-outcome">{outcome}</span>}
+                        {outcome && (
+                            <span className="tour-venue-tag-outcome">
+                                <span className="tour-venue-tag-outcome-full">{outcome}</span>
+                                <span className="tour-venue-tag-outcome-short">{shortOutcome}</span>
+                            </span>
+                        )}
                     </button>
                 );
             })}
@@ -256,7 +263,8 @@ export function TourRow({
                     </div>
                 </div>
             </td>
-            <td data-label="Status">
+            {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
+            <td className="tour-cell-status">
                 <div className="tour-row-status">
                     <StatusBadge status={outreach.status} />
                     {outreach.showDate && (
@@ -270,7 +278,7 @@ export function TourRow({
                     <div key={message} className="tour-row-clash-note">{message}</div>
                 ))}
             </td>
-            <td data-label="Links">
+            <td className="tour-cell-links">
                 <SocialLinks
                     website={target.website}
                     instagram={target.instagram}
@@ -280,7 +288,7 @@ export function TourRow({
                     className="tour-row-links"
                 />
             </td>
-            <td data-label="Last contact">
+            <td className="tour-cell-contact" data-label="Last contact">
                 {latestContact ? (
                     <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
                         {formatDate(latestContact.date)}

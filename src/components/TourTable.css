@@ -270,6 +270,10 @@
     opacity: 0.6;
 }
 
+.tour-venue-tag-outcome-short{
+    display: none;
+}
+
 .tour-venue-tag-confirmed{
     border-color: rgba(2, 151, 66, 0.7);
     background: rgba(2, 151, 66, 0.18);
@@ -363,11 +367,15 @@
     text-align: right;
 }
 
-/* Rows stack into labelled blocks on narrow screens. */
+/* Rows stack into compact blocks on narrow screens. */
 @media (max-width: 640px){
+    /* Edge to edge, to win back the width the page gutter and border take. */
     .tour-table-wrap{
-        margin-left: 8px;
-        margin-right: 8px;
+        margin-left: 0;
+        margin-right: 0;
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
     }
 
     .tour-table thead{
@@ -382,8 +390,49 @@
         display: block;
     }
 
+    /* City headers stick while their rows scroll past. The opaque base is the page colour
+       plus the wrap's tint, under the header's own translucent shade. */
     .tour-table .tour-group-row{
+        position: sticky;
+        top: 0;
+        z-index: 2;
         padding: 0;
+        background: #09252f;
+    }
+
+    .tour-group-row th{
+        padding: 6px 48px 6px 12px;
+    }
+
+    .tour-group-toggle{
+        min-height: 36px;
+    }
+
+    /* Pinned top-right, so it never wraps onto a row of its own. */
+    .tour-group-actions{
+        position: absolute;
+        top: 10px;
+        right: 12px;
+    }
+
+    .tour-group-actions .tour-group-remove{
+        position: relative;
+    }
+
+    /* Bigger hit areas without bigger icons. */
+    .tour-group-actions .tour-group-remove::after,
+    .tour-row-links a::after{
+        content: "";
+        position: absolute;
+        inset: -6px;
+    }
+
+    .tour-venue-tag-outcome-full{
+        display: none;
+    }
+
+    .tour-venue-tag-outcome-short{
+        display: inline;
     }
 
     .tour-table tr{
@@ -417,16 +466,55 @@
         display: none;
     }
 
+    /* Name on top; status and links share the next line, indented to sit under the name. */
+    .tour-table tbody tr:not(.tour-group-row, .tour-group-empty){
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 16px;
+    }
+
     .tour-table .tour-cell-name{
         display: block;
-        padding-right: 30px;
+        flex-basis: 100%;
+        box-sizing: border-box;
+        padding-right: 36px;
         margin-bottom: 4px;
+    }
+
+    .tour-table .tour-cell-status{
+        flex-direction: column;
+        gap: 0;
+        padding-left: 22px;
+    }
+
+    .tour-row-links{
+        gap: 12px;
+        margin-top: 0;
+    }
+
+    .tour-row-links a{
+        position: relative;
+    }
+
+    .tour-table .tour-cell-contact{
+        flex-basis: 100%;
+        box-sizing: border-box;
+        padding-left: 22px;
+    }
+
+    .tour-table .tour-cell-contact::before{
+        flex-basis: auto;
     }
 
     .tour-table .tour-cell-menu{
         position: absolute;
-        top: 8px;
-        right: 8px;
+        top: 2px;
+        right: 2px;
         width: auto;
+    }
+
+    .tour-table .card-menu-trigger{
+        padding: 10px 12px;
     }
 }

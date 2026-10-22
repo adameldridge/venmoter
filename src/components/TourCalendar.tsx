@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { Tour } from "../types/tour";
 import { dateRange, parseIsoDate, todayIsoDate } from "../utils/date";
 import "./TourCalendar.css";
@@ -23,6 +24,21 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
     const knownDates = entries.map((entry) => entry.date).sort();
     const start = tour.startDate || knownDates[0];
     const end = tour.endDate || knownDates[knownDates.length - 1];
+    const firstEntryDate = knownDates[0];
+    const stripRef = useRef<HTMLDivElement>(null);
+
+    // If the first booked or held day starts off-screen (a long run of empty days, or a
+    // narrow phone), open the strip on it.
+    useEffect(() => {
+        const strip = stripRef.current;
+        const cell = firstEntryDate ? strip?.querySelector<HTMLElement>(`[data-date="${firstEntryDate}"]`) : null;
+        if (!strip || !cell) return;
+        const stripBox = strip.getBoundingClientRect();
+        const cellBox = cell.getBoundingClientRect();
+        if (cellBox.right > stripBox.right) {
+            strip.scrollLeft += cellBox.left - stripBox.left;
+        }
+    }, [tour.id, firstEntryDate]);
 
     if (!start || !end || start > end) {
         return (
@@ -39,7 +55,7 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
     return (
         <>
             <div className="tour-calendar-wrapper">
-                <div className="tour-calendar" role="list" aria-label="Tour calendar">
+                <div className="tour-calendar" role="list" aria-label="Tour calendar" ref={stripRef}>
                     <div className="tour-calendar-start-month" aria-hidden="true">
                         {parseIsoDate(start).toLocaleDateString(undefined, { month: "short" })}
                     </div>
@@ -87,7 +103,12 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
                         );
 
                         return (
-                            <div key={date} role="listitem" className="tour-calendar-cell">
+                            <div
+                                key={date}
+                                role="listitem"
+                                className={dayEntries.length > 0 ? "tour-calendar-cell" : "tour-calendar-cell tour-calendar-cell-empty"}
+                                data-date={date}
+                            >
                                 {stopId ? (
                                     <button
                                         className={className}
