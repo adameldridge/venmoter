@@ -39,8 +39,19 @@
     padding-top: 6px;
 }
 
-.tour-row-inhouse{
-    margin-top: 5px;
+/* "· In-house" / "· No promoters" after a venue's name. */
+.tour-row-name-note{
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: normal;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.tour-row-name-note::before{
+    content: "·";
+    margin-right: 6px;
+    font-style: normal;
 }
 
 /* Status after the venue name, e.g. "Chalk · Confirmed 15 Apr 2027". */

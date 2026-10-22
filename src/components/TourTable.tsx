@@ -228,20 +228,19 @@ export function TourRow({
                 onOpen={onViewTarget}
                 openTitle={`View ${target.name}`}
                 badge={
-                    overlapMessages.length > 0 && (
-                        <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
-                            <FaExclamationTriangle />
-                        </span>
-                    )
+                    <>
+                        {/* How the venue is booked, as a quiet note on the name's line. */}
+                        {(inHouse || noPromoters) && (
+                            <span className="tour-row-name-note">{inHouse ? "In-house" : "No promoters"}</span>
+                        )}
+                        {overlapMessages.length > 0 && (
+                            <span className="tour-row-overlap-icon" role="img" aria-label={overlapText} title={overlapText}>
+                                <FaExclamationTriangle />
+                            </span>
+                        )}
+                    </>
                 }
-            >
-                {/* Same pills as the Venues tab. */}
-                {(inHouse || noPromoters) && (
-                    <div className="tour-row-inhouse">
-                        <span className="data-pill">{inHouse ? "In-house" : "No promoters"}</span>
-                    </div>
-                )}
-            </NameCell>
+            />
             {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
             <td className="data-cell-status">
                 <div className="data-row-status">
