@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
-import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaMapMarkerAlt, FaPen, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaMapMarkerAlt, FaTimes } from "react-icons/fa";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import "./Modal.css";
@@ -168,7 +168,6 @@ function SectionHeading({ title, editLabel, onEdit }: { title: string; editLabel
         <div className="record-modal-heading-row">
             <h3 className="record-modal-heading">{title}</h3>
             <button className="data-edit-link" type="button" onClick={onEdit} aria-label={editLabel} title={editLabel}>
-                <FaPen aria-hidden="true" />
                 Edit
             </button>
         </div>

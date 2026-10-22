@@ -1,6 +1,6 @@
 import "./DataTable.css";
 import type { ReactNode } from "react";
-import { FaBuilding, FaBullhorn, FaChevronDown, FaPen } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaChevronDown } from "react-icons/fa";
 import type { RecordKind } from "../types/venue";
 
 export type DataColumn = {
@@ -118,12 +118,11 @@ export function AddChip({ kind, label, title, onClick }: { kind: RecordKind; lab
     );
 }
 
-// "✎ Edit" link after a row's linked chips, opening the dialog for changing that whole list.
+// "Edit" link after a row's linked chips, opening the dialog for changing that whole list.
 // Same look as the Edit links in the record modal.
 export function EditLink({ title, onClick }: { title: string; onClick: () => void }) {
     return (
         <button className="data-edit-link" type="button" onClick={onClick} title={title} aria-label={title}>
-            <FaPen aria-hidden="true" />
             Edit
         </button>
     );
