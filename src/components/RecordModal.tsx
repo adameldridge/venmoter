@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
-import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaHome, FaInstagram, FaLink, FaMapMarkerAlt, FaPen, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaMapMarkerAlt, FaPen, FaTimes } from "react-icons/fa";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import "./Modal.css";
@@ -21,8 +21,9 @@ type RecordModalProps = {
 };
 
 // A read-only look at a venue or promoter in two sections, each with its own Edit: Details (the
-// record's own fields, edited in the usual form) and its linked promoters or venues (edited in
-// the link dialog). Linked chips swap the modal to that record.
+// record's own fields, edited in the usual form) and its links, titled like the table column
+// ("Booked by" for a venue, "Venues" for a promoter) and edited in the link dialog. Linked chips
+// swap the modal to that record.
 export default function RecordModal({
     venues,
     promoters,
@@ -94,12 +95,6 @@ export default function RecordModal({
                                     {venue.city}
                                 </li>
                             )}
-                            {venue?.managesInHouse && (
-                                <li className="record-modal-line">
-                                    <span className="record-modal-line-icon" aria-hidden="true"><FaHome /></span>
-                                    Books some shows in-house
-                                </li>
-                            )}
                             <ContactLine channel="email" value={record.email} href={record.email && `mailto:${record.email}`} preferred={record.preferredContact} icon={<FaEnvelope />} />
                             <ContactLine channel="website" value={record.website} href={record.website} preferred={record.preferredContact} icon={<FaLink />} />
                             <ContactLine channel="instagram" value={record.instagram} href={record.instagram} preferred={record.preferredContact} icon={<FaInstagram />} />
@@ -112,11 +107,13 @@ export default function RecordModal({
 
                     <section className="record-modal-section">
                         <SectionHeading
-                            title={venue ? "Promoters" : "Venues"}
+                            title={venue ? "Booked by" : "Venues"}
                             editLabel={venue ? `Edit ${record.name}'s promoters` : `Edit ${record.name}'s venues`}
                             onEdit={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
                         />
+                        {/* Same chips as the table's Booked by / Venues column. */}
                         <div className="data-tags">
+                            {venue?.managesInHouse && <span className="data-pill">In-house</span>}
                             {venue && [...venue.promoters]
                                 .sort((a, b) => a.name.localeCompare(b.name))
                                 .map((p) => (
@@ -134,7 +131,9 @@ export default function RecordModal({
                                         <span className="data-tag-meta">{v.city}</span>
                                     </button>
                                 ))}
-                            {venue && venue.promoters.length === 0 && <span className="data-pill">No promoters</span>}
+                            {venue && !venue.managesInHouse && venue.promoters.length === 0 && (
+                                <span className="data-pill">No promoters</span>
+                            )}
                             {promoter && promoter.venues.length === 0 && <span className="data-pill">No venues</span>}
                         </div>
                     </section>
