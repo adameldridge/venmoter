@@ -112,6 +112,14 @@
     opacity: 0.8;
 }
 
+.tour-empty p{
+    margin: 0 0 12px;
+}
+
+.tour-empty button{
+    margin: 0;
+}
+
 @media (max-width: 640px){
     .tour-empty{
         margin-left: 8px;

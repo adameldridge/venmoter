@@ -158,27 +158,6 @@
     margin-left: auto;
 }
 
-/* A fixed square, neutral until hovered, so a column of bins doesn't shout. */
-.data-group-actions .data-group-remove{
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin: 0;
-    padding: 0;
-    border-color: rgba(255, 255, 255, 0.2);
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.data-group-actions .data-group-remove:hover{
-    opacity: 1;
-    color: #ff8a8d;
-    border-color: rgba(229, 72, 77, 0.6);
-}
-
 .data-group-empty td{
     font-size: 13px;
     opacity: 0.6;
@@ -297,8 +276,37 @@
     white-space: nowrap;
 }
 
-.data-row-empty{
-    opacity: 0.4;
+/* A status badge that opens its record when clicked. */
+.data-badge-button{
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 999px;
+}
+
+.data-badge-button:hover{
+    opacity: 1;
+    filter: brightness(1.25);
+}
+
+/* A quiet text action in a cell, e.g. "Log contact" where there's nothing yet. */
+.data-row-action{
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.25);
+    text-underline-offset: 3px;
+}
+
+.data-row-action:hover{
+    opacity: 1;
+    color: #fff;
 }
 
 /* Nothing to go on, e.g. no contact details yet. */
@@ -378,19 +386,14 @@
         min-height: 36px;
     }
 
-    /* Pinned top-right, so it never wraps onto a row of its own. */
+    /* Pinned top-right where row menus sit, so it never wraps onto a row of its own. */
     .data-group-actions{
         position: absolute;
-        top: 10px;
-        right: 12px;
-    }
-
-    .data-group-actions .data-group-remove{
-        position: relative;
+        top: 8px;
+        right: 2px;
     }
 
     /* Bigger hit areas without bigger icons. */
-    .data-group-actions .data-group-remove::after,
     .data-row-links a::after{
         content: "";
         position: absolute;
@@ -423,8 +426,7 @@
         opacity: 0.6;
     }
 
-    .data-table td:empty,
-    .data-table td:has(.data-row-empty){
+    .data-table td:empty{
         display: none;
     }
 
@@ -459,6 +461,11 @@
 
     .data-table .data-cell-full:not(:last-child){
         margin-bottom: 4px;
+    }
+
+    /* Links starting their own line (no status before them) line up under the name too. */
+    .data-table .data-cell-full + .data-cell-links{
+        padding-left: 22px;
     }
 
     .data-row-links{

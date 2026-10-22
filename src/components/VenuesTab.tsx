@@ -131,7 +131,7 @@ function VenueRow({ venue, onEdit, onDelete, onManagePromoters, onViewRecord }: 
                         </button>
                     ))}
                     {!venue.managesInHouse && promoters.length === 0 && <span className="data-pill">No promoters</span>}
-                    <AddChip kind="promoter" label="Promoter" title={`Link promoters to ${venue.name}`} onClick={onManagePromoters} />
+                    <AddChip kind="promoter" label="Promoter…" title={`Link promoters to ${venue.name}`} onClick={onManagePromoters} />
                 </div>
             </td>
             <td className="data-cell-links">
@@ -150,6 +150,7 @@ function VenueRow({ venue, onEdit, onDelete, onManagePromoters, onViewRecord }: 
             <td className="data-cell-menu">
                 <CardMenu
                     items={[
+                        { label: "View venue", onClick: () => onViewRecord("venue", venue.id) },
                         { label: "Edit venue", onClick: onEdit },
                         { label: "Edit promoters", onClick: onManagePromoters },
                         { label: "Delete venue", onClick: onDelete, danger: true },

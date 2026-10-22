@@ -120,7 +120,7 @@ function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onViewRecord 
                             <span className="data-tag-meta">{venue.city}</span>
                         </button>
                     ))}
-                    <AddChip kind="venue" label="Venue" title={`Link venues to ${promoter.name}`} onClick={onManageVenues} />
+                    <AddChip kind="venue" label="Venue…" title={`Link venues to ${promoter.name}`} onClick={onManageVenues} />
                 </div>
             </td>
             <td className="data-cell-links">
@@ -139,6 +139,7 @@ function PromoterRow({ promoter, onEdit, onDelete, onManageVenues, onViewRecord 
             <td className="data-cell-menu">
                 <CardMenu
                     items={[
+                        { label: "View promoter", onClick: () => onViewRecord("promoter", promoter.id) },
                         { label: "Edit promoter", onClick: onEdit },
                         { label: "Edit venues", onClick: onManageVenues },
                         { label: "Delete promoter", onClick: onDelete, danger: true },

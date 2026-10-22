@@ -1,6 +1,6 @@
 import "./TourTable.css";
 import type { ReactNode } from "react";
-import { FaBuilding, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
+import { FaBuilding, FaExclamationTriangle } from "react-icons/fa";
 import type { Promoter, Venue } from "../types/venue";
 import { channelLabel, statusLabel, type ContactLogEntry, type Outreach, type OutreachStatus } from "../types/tour";
 import { formatDate, formatDayMonth } from "../utils/date";
@@ -48,6 +48,7 @@ type TourGroupProps = {
     onToggle: () => void;
     onAddPromoter: (promoterId: string) => void;
     onAddVenue: (venueId: string) => void;
+    onShowOnly: () => void;
     onRemove: () => void;
     children: ReactNode;
 };
@@ -64,6 +65,7 @@ export function TourGroup({
     onToggle,
     onAddPromoter,
     onAddVenue,
+    onShowOnly,
     onRemove,
     children,
 }: TourGroupProps) {
@@ -99,15 +101,12 @@ export function TourGroup({
                 </>
             }
             actions={
-                <button
-                    className="ghost-button data-group-remove"
-                    type="button"
-                    onClick={onRemove}
-                    aria-label={`Remove ${city}`}
-                    title="Remove city"
-                >
-                    <FaTrashAlt />
-                </button>
+                <CardMenu
+                    items={[
+                        { label: `Show only ${city}`, onClick: onShowOnly },
+                        { label: "Remove city", onClick: onRemove, danger: true },
+                    ]}
+                />
             }
         >
             {count === 0 ? (
@@ -249,7 +248,9 @@ export function TourRow({
             {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
             <td className="data-cell-status">
                 <div className="data-row-status">
-                    <StatusBadge status={outreach.status} promoterBooked={promoterBooked} />
+                    <button className="data-badge-button" type="button" onClick={onUpdate} title="Update status">
+                        <StatusBadge status={outreach.status} promoterBooked={promoterBooked} />
+                    </button>
                     {outreach.showDate && (
                         <span className="data-row-muted">
                             {formatDate(outreach.showDate)}
@@ -280,15 +281,17 @@ export function TourRow({
                         )}
                     </button>
                 ) : (
-                    <span className="data-row-empty">–</span>
+                    <button className="data-row-action" type="button" onClick={onOpenLog}>
+                        Log contact
+                    </button>
                 )}
             </td>
             <td className="data-cell-menu">
                 <CardMenu
                     items={[
+                        { label: `View ${outreach.targetType}`, onClick: onViewTarget },
                         { label: "Update status", onClick: onUpdate },
                         { label: "Contact log", onClick: onOpenLog },
-                        { label: `View ${outreach.targetType}`, onClick: onViewTarget },
                         { label: "Remove from city", onClick: onRemove, danger: true },
                     ]}
                 />

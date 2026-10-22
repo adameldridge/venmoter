@@ -135,10 +135,10 @@ export default function TourTab({
     return (
         <div>
             <div className="tour-top">
-                <div className="tour-top-controls">
-                    {/* With a tour selected, "New tour" lives in the picker; otherwise it's the only action. */}
-                    <ListHeader addLabel="New Tour" onAdd={activeTour ? undefined : onNewTour}>
-                        {activeTour && (
+                {/* New tours are made from the picker, or from the empty state before there are any. */}
+                {activeTour && (
+                    <div className="tour-top-controls">
+                        <ListHeader>
                             <div className="filter-group">
                                 <select
                                     className="cities-select"
@@ -165,9 +165,9 @@ export default function TourTab({
                                     <FaPen />
                                 </button>
                             </div>
-                        )}
-                    </ListHeader>
-                </div>
+                        </ListHeader>
+                    </div>
+                )}
 
                 {activeTour && (
                     <div className="tour-top-calendar">
@@ -183,7 +183,10 @@ export default function TourTab({
 
             {!activeTour ? (
                 <div className="tour-empty">
-                    No tours yet. Create one to start tracking who you've contacted.
+                    <p>No tours yet. Create one to start tracking who you've contacted.</p>
+                    <button className="create-button" type="button" onClick={onNewTour}>
+                        New tour
+                    </button>
                 </div>
             ) : (
                 <>
@@ -241,6 +244,7 @@ export default function TourTab({
                                         onToggle={() => setCollapsed(stop.id, !collapsedIds.has(stop.id))}
                                         onAddPromoter={(promoterId) => onAddPromoter(stop, promoterId)}
                                         onAddVenue={(venueId) => onAddVenue(stop, venueId)}
+                                        onShowOnly={() => setCityFilter(stop.id)}
                                         onRemove={() => onRemoveStop(stop)}
                                     >
                                         {contacts.map(({ outreach: o, target, venues: venueEntries, noPromoters }) => (
