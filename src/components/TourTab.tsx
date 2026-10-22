@@ -127,7 +127,7 @@ export default function TourTab({
                     .filter((overlap) => overlap.outreachId === o.id)
                     .map((overlap) => overlap.message)}
                 latestContact={latestLogEntry(o.id, contactLog)}
-                viaPromoterName={promoters.find((p) => p.id === o.viaPromoterId)?.name}
+                viaPromoterName={nested ? undefined : promoters.find((p) => p.id === o.viaPromoterId)?.name}
                 clashMessages={clashes
                     .filter((clash) => clash.outreachId === o.id)
                     .map((clash) => clash.message)}
@@ -303,21 +303,28 @@ type Contact = TourEntry & {
 
 // Each city lists who you actually contact: promoters, in-house venues, and any other venue
 // none of whose promoters are on the list, since then the venue itself is the way in.
-// Promoters carry the listed venues they book, shown as rows nested under them. In-house
-// venues have their own row instead (a promoter overlap is flagged there).
+// Promoters carry the listed venues they book, shown as rows nested under them: only under the
+// promoter the booking went through, once that's recorded and that promoter is listed here;
+// otherwise under each listed promoter that could book it. In-house venues have their own row
+// instead (a promoter overlap is flagged there).
 function buildContacts(entries: TourEntry[]): Contact[] {
     const worksWith = (venue: TourEntry, promoterId: string) =>
         "promoters" in venue.target && venue.target.promoters.some((p) => p.id === promoterId);
     const listedPromoterIds = entries.filter((e) => e.outreach.targetType === "promoter").map((e) => e.target.id);
     const venueEntries = entries.filter((e) => e.outreach.targetType === "venue");
-    const reachedByPromoter = (venue: TourEntry) => listedPromoterIds.some((id) => worksWith(venue, id));
+    // The promoter a booking went through, if one is recorded and it's on this city's list.
+    const listedVia = (venue: TourEntry) =>
+        listedPromoterIds.includes(venue.outreach.viaPromoterId) ? venue.outreach.viaPromoterId : "";
+    const booksVia = (venue: TourEntry, promoterId: string) =>
+        listedVia(venue) ? listedVia(venue) === promoterId : worksWith(venue, promoterId);
+    const reachedByPromoter = (venue: TourEntry) => listedPromoterIds.some((id) => booksVia(venue, id));
     const tagOnly = venueEntries.filter((venue) => !isInHouse(venue.target) && reachedByPromoter(venue));
 
     return entries
         .filter((e) => !tagOnly.includes(e))
         .map((e) => {
             if (e.outreach.targetType === "promoter") {
-                const venues = venueEntries.filter((venue) => !isInHouse(venue.target) && worksWith(venue, e.target.id));
+                const venues = venueEntries.filter((venue) => !isInHouse(venue.target) && booksVia(venue, e.target.id));
                 return { ...e, venues, noPromoters: false };
             }
             // A venue whose promoters exist but aren't added says nothing extra; the city header
