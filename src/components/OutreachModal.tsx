@@ -97,6 +97,13 @@ export default function OutreachModal({
     if (formValues && !statusOptions.some((s) => s.value === formValues.status)) {
         statusOptions.push(...statusesFor(formValues.targetType).filter((s) => s.value === formValues.status));
     }
+    // Confirming a promoter-booked venue needs to say which promoter booked it (holds can wait).
+    const bookedByRequired = promoterBooked && formValues?.status === "confirmed";
+    const bookedByEmptyLabel = inHouse
+        ? "In-house"
+        : viaOptions.length === 0
+            ? "Direct (no linked promoters)"
+            : bookedByRequired ? "Choose a promoter…" : "Not decided yet";
     const bookingMethod = inHouse
         ? "In-house"
         : promoterBooked ? `Via promoter: ${viaOptions.map((p) => p.name).join(", ")}` : "Direct (no promoter linked)";
@@ -149,15 +156,16 @@ export default function OutreachModal({
                                     </div>
 
                                     <div>
-                                        <label htmlFor="outreachVia">Via promoter</label>
+                                        <label htmlFor="outreachVia">Booked by{bookedByRequired && " *"}</label>
                                         <select
                                             id="outreachVia"
                                             name="viaPromoterId"
+                                            required={bookedByRequired}
                                             value={formValues.viaPromoterId}
                                             onChange={handleChange}
                                         >
-                                            <option value="">
-                                                {viaOptions.length === 0 ? "No linked promoters" : "— None (direct)"}
+                                            <option value="" disabled={bookedByRequired}>
+                                                {bookedByEmptyLabel}
                                             </option>
                                             {viaOptions.map((promoter) => (
                                                 <option key={promoter.id} value={promoter.id}>
