@@ -123,15 +123,12 @@ export function TourGroup({
     );
 }
 
-// A venue reached through a promoter, shown as a tag; clicking opens the venue's own record
-// (hold, show date, via promoter).
+// A confirmed venue in the city header, shown with its date; clicking opens its booking.
 export type VenueTag = {
     key: string;
     name: string;
     status: OutreachStatus;
     showDate: string;
-    // Whether this tag shows the venue's status; otherwise it's a plain link to the venue.
-    showOutcome: boolean;
     clashMessages: string[];
     onClick: () => void;
 };
@@ -140,7 +137,7 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
     return (
         <div className="data-tags">
             {venues.map((venue) => {
-                const outcome = !venue.showOutcome || venue.status === "to-contact"
+                const outcome = venue.status === "to-contact"
                     ? ""
                     : `${statusLabel(venue.status)}${venue.showDate ? ` ${formatDate(venue.showDate)}` : ""}`;
                 // Phones show just "15 Apr"; the tag's colour already says confirmed or on hold.
@@ -181,8 +178,9 @@ function VenueTags({ venues }: { venues: VenueTag[] }) {
 type TourRowProps = {
     outreach: Outreach;
     target: Venue | Promoter;
-    // For a promoter, the listed venues it can put shows on at.
-    venues: VenueTag[];
+    // A venue booked through the promoter row above it: indented, and without Last contact,
+    // since it's the promoter that gets contacted.
+    nested?: boolean;
     inHouse: boolean;
     // A venue booked through its promoters, whose statuses read differently.
     promoterBooked: boolean;
@@ -201,7 +199,7 @@ type TourRowProps = {
 export function TourRow({
     outreach,
     target,
-    venues,
+    nested = false,
     inHouse,
     promoterBooked,
     noPromoters,
@@ -214,9 +212,12 @@ export function TourRow({
     onViewTarget,
 }: TourRowProps) {
     const overlapText = overlapMessages.join("\n");
-    const rowClassName = clashMessages.length > 0
-        ? "tour-row-clash"
-        : overlapMessages.length > 0 ? "tour-row-overlap" : undefined;
+    const rowClassName = [
+        nested && "tour-row-nested",
+        clashMessages.length > 0 ? "tour-row-clash" : overlapMessages.length > 0 && "tour-row-overlap",
+    ]
+        .filter(Boolean)
+        .join(" ") || undefined;
 
     return (
         <tr className={rowClassName}>
@@ -240,7 +241,6 @@ export function TourRow({
                         <span className="data-pill">{inHouse ? "In-house" : "No promoters"}</span>
                     </div>
                 )}
-                {venues.length > 0 && <VenueTags venues={venues} />}
             </NameCell>
             {/* Status and Links go unlabelled on phones; the pill and icons speak for themselves. */}
             <td className="data-cell-status">
@@ -268,21 +268,25 @@ export function TourRow({
                     preferred={target.preferredContact}
                 />
             </td>
-            <td className="data-cell-full" data-label="Last contact">
-                {latestContact ? (
-                    <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
-                        {formatDate(latestContact.date)}
-                        {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
-                        {latestContact.note && (
-                            <span className="tour-row-latest-note">“{latestContact.note}”</span>
-                        )}
-                    </button>
-                ) : (
-                    <button className="data-row-action" type="button" onClick={onOpenLog}>
-                        Log contact
-                    </button>
-                )}
-            </td>
+            {nested ? (
+                <td />
+            ) : (
+                <td className="data-cell-full" data-label="Last contact">
+                    {latestContact ? (
+                        <button className="tour-row-latest-contact" type="button" onClick={onOpenLog}>
+                            {formatDate(latestContact.date)}
+                            {latestContact.channel && ` - ${channelLabel(latestContact.channel)}`}
+                            {latestContact.note && (
+                                <span className="tour-row-latest-note">“{latestContact.note}”</span>
+                            )}
+                        </button>
+                    ) : (
+                        <button className="data-row-action" type="button" onClick={onOpenLog}>
+                            Log contact
+                        </button>
+                    )}
+                </td>
+            )}
         </tr>
     );
 }

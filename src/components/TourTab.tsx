@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { FaPen } from "react-icons/fa";
 import { isPromoterBooked, type PromoterWithVenues, type RecordKind, type VenueWithPromoters } from "../types/venue";
 import {
@@ -99,13 +99,12 @@ export default function TourTab({
         return `${target?.name ?? ""} – ${cityOf(o.stopId)}`;
     }
 
-    function toVenueTag({ outreach: o, target }: TourEntry, showOutcome: boolean): VenueTag {
+    function toVenueTag({ outreach: o, target }: TourEntry): VenueTag {
         return {
             key: o.id,
             name: target.name,
             status: o.status,
             showDate: o.showDate,
-            showOutcome,
             clashMessages: clashes.filter((clash) => clash.outreachId === o.id).map((clash) => clash.message),
             onClick: () => openCard(o),
         };
@@ -113,6 +112,30 @@ export default function TourTab({
 
     function openCard(o: Outreach) {
         onOpenOutreach(o, cardTitle(o));
+    }
+
+    function renderRow({ outreach: o, target }: TourEntry, { nested = false, noPromoters = false } = {}) {
+        return (
+            <TourRow
+                outreach={o}
+                target={target}
+                nested={nested}
+                inHouse={isInHouse(target)}
+                promoterBooked={"promoters" in target && isPromoterBooked(target)}
+                noPromoters={noPromoters}
+                overlapMessages={overlaps
+                    .filter((overlap) => overlap.outreachId === o.id)
+                    .map((overlap) => overlap.message)}
+                latestContact={latestLogEntry(o.id, contactLog)}
+                viaPromoterName={promoters.find((p) => p.id === o.viaPromoterId)?.name}
+                clashMessages={clashes
+                    .filter((clash) => clash.outreachId === o.id)
+                    .map((clash) => clash.message)}
+                onUpdate={() => openCard(o)}
+                onOpenLog={() => onOpenLog(o, cardTitle(o))}
+                onViewTarget={() => onViewRecord(o.targetType, o.targetId)}
+            />
+        );
     }
 
     function scrollToStop(stopId: string) {
@@ -232,7 +255,7 @@ export default function TourTab({
                                         city={stop.city}
                                         confirmedVenues={entries
                                             .filter((e) => e.outreach.targetType === "venue" && e.outreach.status === "confirmed")
-                                            .map((e) => toVenueTag(e, true))}
+                                            .map(toVenueTag)}
                                         count={entries.length}
                                         confirmed={isConfirmed(entries)}
                                         // A city with a confirmed show is sorted; no more suggestions.
@@ -245,27 +268,16 @@ export default function TourTab({
                                         onShowOnly={() => setCityFilter(stop.id)}
                                         onRemove={() => onRemoveStop(stop)}
                                     >
-                                        {contacts.map(({ outreach: o, target, venues: venueEntries, noPromoters }) => (
-                                            <TourRow
-                                                key={o.id}
-                                                outreach={o}
-                                                target={target}
-                                                venues={venueEntries.map((venue) => toVenueTag(venue, false))}
-                                                inHouse={isInHouse(target)}
-                                                promoterBooked={"promoters" in target && isPromoterBooked(target)}
-                                                noPromoters={noPromoters}
-                                                overlapMessages={overlaps
-                                                    .filter((overlap) => overlap.outreachId === o.id)
-                                                    .map((overlap) => overlap.message)}
-                                                latestContact={latestLogEntry(o.id, contactLog)}
-                                                viaPromoterName={promoters.find((p) => p.id === o.viaPromoterId)?.name}
-                                                clashMessages={clashes
-                                                    .filter((clash) => clash.outreachId === o.id)
-                                                    .map((clash) => clash.message)}
-                                                onUpdate={() => openCard(o)}
-                                                onOpenLog={() => onOpenLog(o, cardTitle(o))}
-                                                onViewTarget={() => onViewRecord(o.targetType, o.targetId)}
-                                            />
+                                        {/* Each promoter is followed by the venues it books, nested under it. */}
+                                        {contacts.map((contact) => (
+                                            <Fragment key={contact.outreach.id}>
+                                                {renderRow(contact, { noPromoters: contact.noPromoters })}
+                                                {contact.venues.map((venue) => (
+                                                    <Fragment key={venue.outreach.id}>
+                                                        {renderRow(venue, { nested: true })}
+                                                    </Fragment>
+                                                ))}
+                                            </Fragment>
                                         ))}
                                     </TourGroup>
                                 ))}
@@ -291,8 +303,8 @@ type Contact = TourEntry & {
 
 // Each city lists who you actually contact: promoters, in-house venues, and any other venue
 // none of whose promoters are on the list, since then the venue itself is the way in.
-// Promoters carry tags for the listed venues they work with (in-house ones included, so the
-// link is visible even though those venues also have their own row).
+// Promoters carry the listed venues they book, shown as rows nested under them. In-house
+// venues have their own row instead (a promoter overlap is flagged there).
 function buildContacts(entries: TourEntry[]): Contact[] {
     const worksWith = (venue: TourEntry, promoterId: string) =>
         "promoters" in venue.target && venue.target.promoters.some((p) => p.id === promoterId);
@@ -305,7 +317,7 @@ function buildContacts(entries: TourEntry[]): Contact[] {
         .filter((e) => !tagOnly.includes(e))
         .map((e) => {
             if (e.outreach.targetType === "promoter") {
-                const venues = venueEntries.filter((venue) => worksWith(venue, e.target.id));
+                const venues = venueEntries.filter((venue) => !isInHouse(venue.target) && worksWith(venue, e.target.id));
                 return { ...e, venues, noPromoters: false };
             }
             // A venue whose promoters exist but aren't added says nothing extra; the city header

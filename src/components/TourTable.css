@@ -19,6 +19,26 @@
     cursor: help;
 }
 
+/* Venues booked through the promoter above: indented with a ↳, and only a faint line between
+   the promoter and its venues so they read as one group. */
+.data-table .tour-row-nested .data-cell-name{
+    padding-left: 30px;
+}
+
+.tour-row-nested .data-row-identity::before{
+    content: "↳";
+    margin-right: -2px;
+    opacity: 0.4;
+}
+
+.data-table tbody tr:has(+ .tour-row-nested) td{
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+.data-table .tour-row-nested td{
+    padding-top: 6px;
+}
+
 .tour-row-inhouse{
     margin-top: 5px;
 }
@@ -81,6 +101,19 @@
 }
 
 @media (max-width: 640px){
+    .data-table .tour-row-nested{
+        padding-top: 6px;
+        padding-left: 30px;
+    }
+
+    .data-table .tour-row-nested .data-cell-name{
+        padding-left: 0;
+    }
+
+    .data-table tbody tr:has(+ .tour-row-nested){
+        border-bottom-color: rgba(255, 255, 255, 0.04);
+    }
+
     .tour-venue-tag-outcome-full{
         display: none;
     }
