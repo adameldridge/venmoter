@@ -1,6 +1,7 @@
-/* Only the statuses that need you get colour and a box: on hold (amber) and confirmed (green).
-   The rest are grey text whose leading dot brightens as a contact moves along; declined is red
-   text, and no response a hollow dot. All share the same padding so their text lines up. */
+/* Anything under way gets colour and a box, so it stands out from those not yet contacted:
+   contacted (blue outline), in discussion (blue fill), on hold (amber), confirmed (green). To
+   contact and no response are quiet grey with a hollow dot; declined is muted red text. All share
+   the same padding so their text lines up. */
 .status-badge{
     display: inline-flex;
     align-items: center;
@@ -24,19 +25,23 @@
 }
 
 .status-badge-to-contact{
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .status-badge-to-contact::before{
-    opacity: 0.5;
+    border: 1px solid currentColor;
+    background: none;
 }
 
 .status-badge-contacted{
-    color: rgba(255, 255, 255, 0.78);
+    border-color: var(--info-line);
+    color: var(--info-text);
 }
 
 .status-badge-in-discussion{
-    color: var(--text);
+    background: var(--info-soft);
+    border-color: var(--info-line);
+    color: var(--info-text);
 }
 
 .status-badge-on-hold{
