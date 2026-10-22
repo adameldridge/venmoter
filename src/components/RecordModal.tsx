@@ -167,7 +167,7 @@ function SectionHeading({ title, editLabel, onEdit }: { title: string; editLabel
     return (
         <div className="record-modal-heading-row">
             <h3 className="record-modal-heading">{title}</h3>
-            <button className="record-modal-heading-action" type="button" onClick={onEdit} aria-label={editLabel} title={editLabel}>
+            <button className="data-edit-link" type="button" onClick={onEdit} aria-label={editLabel} title={editLabel}>
                 <FaPen aria-hidden="true" />
                 Edit
             </button>

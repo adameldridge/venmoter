@@ -274,6 +274,35 @@
     white-space: nowrap;
 }
 
+/* Green pencil "Edit" link, in table rows and the record modal. */
+.data-edit-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #5fd18b;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.data-edit-link svg{
+    font-size: 11px;
+}
+
+/* A little apart from the chips it follows. */
+.data-tags .data-edit-link{
+    margin-left: 6px;
+}
+
+.data-edit-link:hover{
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 /* A status badge that opens its record when clicked. */
 .data-badge-button{
     display: inline-flex;

@@ -51,23 +51,6 @@
     margin: 0;
 }
 
-.record-modal-heading-action{
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    color: #5fd18b;
-    font-size: 13px;
-}
-
-.record-modal-heading-action:hover{
-    opacity: 1;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-}
 
 .record-modal-lines{
     display: flex;
