@@ -31,13 +31,13 @@
 /* A titled group of fields, e.g. a record's own fields and its contact details. */
 .form-section{
   min-width: 0;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   padding: 0;
   border: none;
 }
 
 .form-section + .form-section{
-  padding-top: 14px;
+  padding-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 

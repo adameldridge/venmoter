@@ -190,7 +190,7 @@ function ContactLine({ channel, value, href, preferred, icon }: ContactLineProps
     return (
         <li className={isPreferred ? "record-modal-line record-modal-line-preferred" : "record-modal-line"}>
             <span className="record-modal-line-icon" aria-hidden="true">{icon}</span>
-            <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+            <a href={href} title={value} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
                 {external ? displayUrl(value) : value}
             </a>
             {isPreferred && <span className="record-modal-preferred">Preferred</span>}
