@@ -1,5 +1,5 @@
 import type { Promoter, Venue, VenueWithPromoters } from "../types/venue";
-import type { ContactLogEntry, Outreach, Tour, TourStop } from "../types/tour";
+import { newestLogFirst, type ContactLogEntry, type Outreach, type Tour, type TourStop } from "../types/tour";
 import { parseIsoDate, todayIsoDate, toIsoDate } from "./date";
 
 export const NO_REPLY_DAYS = 7;
@@ -33,7 +33,7 @@ type InsightInput = {
 export function latestLogEntry(outreachId: string, contactLog: ContactLogEntry[]) {
     return contactLog
         .filter((entry) => entry.outreachId === outreachId)
-        .sort((a, b) => b.date.localeCompare(a.date))[0];
+        .sort(newestLogFirst)[0];
 }
 
 function targetName(o: Outreach, venues: Venue[], promoters: Promoter[]) {

@@ -2,11 +2,12 @@ import { useRef, useState, useImperativeHandle, type Ref } from "react";
 import {
     OUTREACH_CHANNELS,
     channelLabel,
+    newestLogFirst,
     type ContactLogEntry,
     type NewContactLogEntry,
     type Outreach,
 } from "../types/tour";
-import { formatDate, todayIsoDate } from "../utils/date";
+import { formatDate, nowTime, todayIsoDate } from "../utils/date";
 import Spinner from "./Spinner";
 import "./Modal.css";
 import "./Forms.css";
@@ -24,7 +25,7 @@ type ContactLogModalProps = {
     ref?: Ref<ContactLogModalHandle>;
 };
 
-const emptyDraft = (): LogDraft => ({ date: todayIsoDate(), channel: "", note: "" });
+const emptyDraft = (): LogDraft => ({ date: todayIsoDate(), time: nowTime(), channel: "", note: "" });
 
 export default function ContactLogModal({ contactLog, onLogContact, ref }: ContactLogModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
@@ -71,7 +72,7 @@ export default function ContactLogModal({ contactLog, onLogContact, ref }: Conta
     const entries = outreach
         ? contactLog
             .filter((entry) => entry.outreachId === outreach.id)
-            .sort((a, b) => b.date.localeCompare(a.date))
+            .sort(newestLogFirst)
         : [];
 
     return (
@@ -91,6 +92,7 @@ export default function ContactLogModal({ contactLog, onLogContact, ref }: Conta
                         value={draft.date}
                         onChange={handleChange}
                     />
+                    <input name="time" type="time" aria-label="Contact time" value={draft.time} onChange={handleChange} />
                     <select name="channel" aria-label="Channel" value={draft.channel} onChange={handleChange}>
                         <option value="">Channel…</option>
                         {OUTREACH_CHANNELS.map((channel) => (
@@ -121,8 +123,9 @@ export default function ContactLogModal({ contactLog, onLogContact, ref }: Conta
                             <li key={entry.id} className="contact-log-entry">
                                 <div>
                                     <span className="contact-log-date">{formatDate(entry.date)}</span>
+                                    {entry.time && <span className="contact-log-time"> {entry.time}</span>}
                                     {entry.channel && (
-                                        <span className="contact-log-channel"> - {channelLabel(entry.channel)}</span>
+                                        <span className="contact-log-channel"> · {channelLabel(entry.channel)}</span>
                                     )}
                                     {entry.note && <div className="contact-log-note">{entry.note}</div>}
                                 </div>
