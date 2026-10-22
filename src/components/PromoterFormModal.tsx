@@ -56,7 +56,7 @@ function PromoterFormModal({ onSubmit, onDelete, ref }: PromoterFormModalProps) 
         <dialog id="promoter-form-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
-                    {editingPromoterId ? "Edit Promoter" : "Add Promoter"}
+                    {editingPromoterId ? "Edit promoter" : "Add promoter"}
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div>

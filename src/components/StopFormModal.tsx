@@ -54,7 +54,7 @@ function StopFormModal({ cities, onSubmit, ref }: StopFormModalProps) {
     return (
         <dialog id="stop-form-modal" ref={modalRef}>
             <div className="modal-box entity-form">
-                <div className="modal-title">Add City</div>
+                <div className="modal-title">Add city</div>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="stopCity">City *</label>

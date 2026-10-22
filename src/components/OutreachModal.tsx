@@ -104,7 +104,10 @@ export default function OutreachModal({
     return (
         <dialog id="outreach-modal" ref={modalRef}>
             <div className="modal-box entity-form">
-                <div className="modal-title">{title}</div>
+                <div className="modal-title">
+                    Update status
+                    <div className="modal-subtitle">{title}</div>
+                </div>
                 {formValues && (
                     <>
                         <form onSubmit={handleSubmit}>

@@ -14,12 +14,13 @@ type LinkModalProps = {
 
 export type LinkModalHandle = {
     // onClose runs however the dialog closes, e.g. to go back to what opened it.
-    open: (subjectId: string, options: LinkOption[], selectedIds: string[], onClose?: () => void) => void;
+    open: (subject: { id: string; name: string }, options: LinkOption[], selectedIds: string[], onClose?: () => void) => void;
 };
 
 function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [subjectId, setSubjectId] = useState<string | null>(null);
+    const [subjectName, setSubjectName] = useState("");
     const [options, setOptions] = useState<LinkOption[]>([]);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState("");
@@ -28,9 +29,10 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     const onCloseRef = useRef<(() => void) | undefined>(undefined);
 
     useImperativeHandle(ref, () => ({
-        open(subjectId, options, selectedIds, onClose) {
+        open(subject, options, selectedIds, onClose) {
             onCloseRef.current = onClose;
-            setSubjectId(subjectId);
+            setSubjectId(subject.id);
+            setSubjectName(subject.name);
             setOptions(options);
             setCheckedIds(new Set(selectedIds));
             setSearch("");
@@ -86,7 +88,10 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
     return (
         <dialog id="link-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box">
-                <div className="modal-title">{title}</div>
+                <div className="modal-title">
+                    {title}
+                    <div className="modal-subtitle">{subjectName}</div>
+                </div>
 
                 <div className="filter-group link-modal-filters">
                     {cities && (

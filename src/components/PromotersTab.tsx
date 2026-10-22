@@ -43,7 +43,7 @@ export default function PromotersTab({
 }: PromotersTabProps) {
     return (
         <div>
-            <ListHeader addLabel="Add Promoter" onAdd={onAddPromoter}>
+            <ListHeader addLabel="Add promoter" onAdd={onAddPromoter}>
                 <div className="filter-group entity-filters">
                     <select
                         className="cities-select"
@@ -62,7 +62,7 @@ export default function PromotersTab({
                         type="search"
                         value={searchInput}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search promoters…"
+                        placeholder="Search…"
                         aria-label="Search promoters"
                     />
                 </div>

@@ -26,17 +26,6 @@
     }
 }
 
-/* Keeps the pencil beside the tour picker when the header goes full width on phones. */
-@media (max-width: 640px){
-    .tour-top .filter-group{
-        flex-wrap: nowrap;
-    }
-
-    .tour-top .list-header .tour-edit-button{
-        width: auto;
-    }
-}
-
 .tour-edit-button{
     display: flex;
     align-items: center;

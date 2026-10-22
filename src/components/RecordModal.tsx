@@ -76,8 +76,8 @@ export default function RecordModal({
                         <span className="record-modal-kind" aria-hidden="true">
                             {venue ? <FaBuilding /> : <FaBullhorn />}
                         </span>
-                        <div>
-                            <div className="record-modal-title">{record.name}</div>
+                        <div className="modal-title">
+                            {record.name}
                             {subtitle && <div className="modal-subtitle">{subtitle}</div>}
                         </div>
                     </div>
@@ -126,7 +126,7 @@ export default function RecordModal({
                         </div>
                     </section>
 
-                    <div className="modal-actions record-modal-actions">
+                    <div className="modal-actions">
                         <button
                             className="create-button"
                             type="button"

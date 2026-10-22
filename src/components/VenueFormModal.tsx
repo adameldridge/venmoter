@@ -64,7 +64,7 @@ function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModal
         <dialog id="venue-form-modal" ref={modalRef} onClose={handleDialogClose}>
             <div className="modal-box entity-form">
                 <div className="modal-title">
-                    {editingVenueId ? "Edit Venue" : "Add Venue"}
+                    {editingVenueId ? "Edit venue" : "Add venue"}
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div>

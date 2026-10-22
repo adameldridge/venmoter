@@ -27,7 +27,7 @@ export default function SignInPage() {
     return (
         <div className="sign-in-page">
             <div className="sign-in-box entity-form">
-                <div className="sign-in-title">Sign In</div>
+                <div className="sign-in-title">Sign in</div>
                 <form onSubmit={handleSubmit}>
                     <div>
                         <label htmlFor="loginEmail">Email *</label>
@@ -56,7 +56,7 @@ export default function SignInPage() {
                     </div>
 
                     <button className="create-button sign-in-submit" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? <Spinner size={14} /> : "Sign In"}
+                        {isSubmitting ? <Spinner size={14} /> : "Sign in"}
                     </button>
                 </form>
             </div>

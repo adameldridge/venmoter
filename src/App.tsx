@@ -84,11 +84,11 @@ export default function App() {
     function confirmSignOut() {
         confirmModalRef.current?.open({
             message: "Are you sure you want to sign out?",
-            confirmLabel: "Sign Out",
+            confirmLabel: "Sign out",
             danger: true,
             onConfirm: async () => {
                 await signOut(auth);
-                toast.success("Logged out");
+                toast.success("Signed out");
             },
         });
     }
@@ -267,7 +267,7 @@ export default function App() {
 
     function openVenuePromoterLinks(venue: VenueWithPromoters, onClose?: () => void) {
         venuePromotersLinkModalRef.current?.open(
-            venue.id,
+            venue,
             sortedPromoters.map((promoter) => ({
                 id: promoter.id,
                 name: promoter.name,
@@ -279,7 +279,7 @@ export default function App() {
 
     function openPromoterVenueLinks(promoter: PromoterWithVenues, onClose?: () => void) {
         promoterVenuesLinkModalRef.current?.open(
-            promoter.id,
+            promoter,
             sortedVenues.map((venue) => ({
                 id: venue.id,
                 name: venue.name,
@@ -332,7 +332,7 @@ export default function App() {
                 </button>
 
                 <button className="login-button ghost-button" type="button" onClick={confirmSignOut}>
-                    Sign Out
+                    Sign out
                 </button>
             </div>
 
@@ -433,7 +433,7 @@ export default function App() {
 
             <LinkModal
                 ref={venuePromotersLinkModalRef}
-                title="Manage Promoters"
+                title="Edit promoters"
                 itemLabel="promoters"
                 onSave={(venueId, promoterIds) =>
                     saveLinks("venueId", venueId, "promoterId", promoterIds)
@@ -441,7 +441,7 @@ export default function App() {
             />
             <LinkModal
                 ref={promoterVenuesLinkModalRef}
-                title="Manage Venues"
+                title="Edit venues"
                 itemLabel="venues"
                 cities={cities}
                 onSave={(promoterId, venueIds) =>

@@ -215,7 +215,7 @@ export default function TourTab({
                             </select>
                         )}
                         <button className="create-button" type="button" onClick={onAddStop}>
-                            Add City
+                            Add city
                         </button>
                     </div>
 

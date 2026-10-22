@@ -9,14 +9,14 @@
 }
 
 .link-modal-filters .cities-select{
-  border: 1px solid #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .link-modal-list{
   max-height: 250px;
   overflow-y: auto;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 5px;
   padding: 5px 10px;
 }

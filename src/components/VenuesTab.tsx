@@ -45,7 +45,7 @@ export default function VenuesTab({
 
     return (
         <div>
-            <ListHeader addLabel="Add Venue" onAdd={onAddVenue}>
+            <ListHeader addLabel="Add venue" onAdd={onAddVenue}>
                 <div className="filter-group entity-filters">
                     <select
                         className="cities-select"
@@ -64,7 +64,7 @@ export default function VenuesTab({
                         type="search"
                         value={searchInput}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Search venues…"
+                        placeholder="Search…"
                         aria-label="Search venues"
                     />
                 </div>

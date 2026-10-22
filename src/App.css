@@ -107,9 +107,9 @@ button{
 }
 
 .cancel-button{
-  background: #fffefe;
-  color: #454545;
-  border: 1px solid #454545;
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .danger-button{
@@ -152,14 +152,14 @@ button:hover{
     font-size: 14px;
   }
 
+  /* Filters and the Add button share one row, as on the Tour tab. */
   .list-header{
-    flex-wrap: wrap;
     padding: 10px 8px;
   }
 
   .filter-group{
-    flex-wrap: wrap;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   .search-input,
@@ -168,15 +168,13 @@ button:hover{
     box-sizing: border-box;
   }
 
-  .list-header button{
-    width: 100%;
+  .list-header .create-button{
+    flex-shrink: 0;
+    padding: 10px 14px;
+    white-space: nowrap;
   }
 
   /* City filter and search share a row on the Venues and Promoters tabs. */
-  .entity-filters{
-    flex-wrap: nowrap;
-  }
-
   .entity-filters .cities-select{
     flex: 0 1 auto;
     width: auto;
