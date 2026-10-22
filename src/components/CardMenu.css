@@ -40,6 +40,7 @@
     margin: 0;
     font-size: 13px;
     color: #fff;
+    white-space: nowrap;
 }
 
 .card-menu-item:hover{

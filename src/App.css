@@ -67,8 +67,6 @@ a{
 .filter-group{
     display: flex;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
 }
 
 .search-input,
@@ -175,9 +173,11 @@ button:hover{
   }
 
   /* City filter and search share a row on the Venues and Promoters tabs. */
+  /* Never narrower than "All cities", so a long Add button squeezes the search box instead. */
   .entity-filters .cities-select{
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     width: auto;
+    min-width: 108px;
     max-width: 45%;
   }
 
