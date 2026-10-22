@@ -1,3 +1,12 @@
+/* The optional setting above the list, e.g. a venue's in-house toggle. */
+.link-modal-toggle{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
 .link-modal-filters{
   padding: 8px;
   margin-bottom: 10px;

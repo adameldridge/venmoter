@@ -8,33 +8,46 @@ type LinkModalProps = {
     title: string;
     itemLabel: string;
     cities?: string[];
-    onSave: (subjectId: string, selectedIds: string[]) => Promise<void>;
+    // An on/off setting shown above the list, e.g. a venue's "Books some shows in-house".
+    toggleLabel?: string;
+    onSave: (subjectId: string, selectedIds: string[], toggled: boolean) => Promise<void>;
     ref?: Ref<LinkModalHandle>;
 };
 
-export type LinkModalHandle = {
-    // onClose runs however the dialog closes, e.g. to go back to what opened it.
-    open: (subject: { id: string; name: string }, options: LinkOption[], selectedIds: string[], onClose?: () => void) => void;
+type LinkModalOpenOptions = {
+    subject: { id: string; name: string };
+    options: LinkOption[];
+    selectedIds: string[];
+    // Starting value for the toggle, when there is one.
+    toggled?: boolean;
+    // Runs however the dialog closes, e.g. to go back to what opened it.
+    onClose?: () => void;
 };
 
-function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
+export type LinkModalHandle = {
+    open: (options: LinkModalOpenOptions) => void;
+};
+
+function LinkModal({ title, itemLabel, cities, toggleLabel, onSave, ref }: LinkModalProps) {
     const modalRef = useRef<HTMLDialogElement>(null);
     const [subjectId, setSubjectId] = useState<string | null>(null);
     const [subjectName, setSubjectName] = useState("");
     const [options, setOptions] = useState<LinkOption[]>([]);
     const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+    const [toggled, setToggled] = useState(false);
     const [search, setSearch] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const onCloseRef = useRef<(() => void) | undefined>(undefined);
 
     useImperativeHandle(ref, () => ({
-        open(subject, options, selectedIds, onClose) {
+        open({ subject, options, selectedIds, toggled = false, onClose }) {
             onCloseRef.current = onClose;
             setSubjectId(subject.id);
             setSubjectName(subject.name);
             setOptions(options);
             setCheckedIds(new Set(selectedIds));
+            setToggled(toggled);
             setSearch("");
             setSelectedCity("");
             modalRef.current?.showModal();
@@ -72,7 +85,7 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
         if (!subjectId) return;
         setIsSaving(true);
         try {
-            await onSave(subjectId, Array.from(checkedIds));
+            await onSave(subjectId, Array.from(checkedIds), toggled);
             closeModal();
         } catch (error) {
             console.error("Error saving links:", error);
@@ -92,6 +105,13 @@ function LinkModal({ title, itemLabel, cities, onSave, ref }: LinkModalProps) {
                     {title}
                     <div className="modal-subtitle">{subjectName}</div>
                 </div>
+
+                {toggleLabel && (
+                    <label className="link-modal-toggle">
+                        <input type="checkbox" checked={toggled} onChange={(e) => setToggled(e.target.checked)} />
+                        {toggleLabel}
+                    </label>
+                )}
 
                 <div className="filter-group link-modal-filters">
                     {cities && (

@@ -73,6 +73,7 @@ export default function App() {
         venuesWithPromoters,
         promotersWithVenues,
         saveVenue,
+        saveVenueInHouse,
         savePromoter,
         deleteVenue,
         deletePromoter,
@@ -265,29 +266,30 @@ export default function App() {
         recordModalRef.current?.open(kind, id);
     }
 
+    // A venue's Booked by: whether it books in-house, and which promoters book it.
     function openVenuePromoterLinks(venue: VenueWithPromoters, onClose?: () => void) {
-        venuePromotersLinkModalRef.current?.open(
-            venue,
-            sortedPromoters.map((promoter) => ({
-                id: promoter.id,
-                name: promoter.name,
-            })),
-            venue.promoters.map((promoter) => promoter.id),
+        venuePromotersLinkModalRef.current?.open({
+            subject: venue,
+            options: sortedPromoters.map((promoter) => ({ id: promoter.id, name: promoter.name })),
+            selectedIds: venue.promoters.map((promoter) => promoter.id),
+            toggled: !!venue.managesInHouse,
             onClose,
-        );
+        });
     }
 
     function openPromoterVenueLinks(promoter: PromoterWithVenues, onClose?: () => void) {
-        promoterVenuesLinkModalRef.current?.open(
-            promoter,
-            sortedVenues.map((venue) => ({
-                id: venue.id,
-                name: venue.name,
-                city: venue.city,
-            })),
-            promoter.venues.map((venue) => venue.id),
+        promoterVenuesLinkModalRef.current?.open({
+            subject: promoter,
+            options: sortedVenues.map((venue) => ({ id: venue.id, name: venue.name, city: venue.city })),
+            selectedIds: promoter.venues.map((venue) => venue.id),
             onClose,
-        );
+        });
+    }
+
+    async function saveVenueBooking(venueId: string, promoterIds: string[], inHouse: boolean) {
+        const venue = venues.find((v) => v.id === venueId);
+        if (venue && !!venue.managesInHouse !== inHouse) await saveVenueInHouse(venueId, inHouse);
+        await saveLinks("venueId", venueId, "promoterId", promoterIds);
     }
 
     const visibleVenues = venuesWithPromoters
@@ -428,11 +430,10 @@ export default function App() {
 
             <LinkModal
                 ref={venuePromotersLinkModalRef}
-                title="Edit promoters"
+                title="Booked by"
                 itemLabel="promoters"
-                onSave={(venueId, promoterIds) =>
-                    saveLinks("venueId", venueId, "promoterId", promoterIds)
-                }
+                toggleLabel="Books some shows in-house"
+                onSave={saveVenueBooking}
             />
             <LinkModal
                 ref={promoterVenuesLinkModalRef}

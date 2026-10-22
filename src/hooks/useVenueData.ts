@@ -150,6 +150,18 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
         }
     }
 
+    // Just the in-house flag, saved alongside the venue's promoter links from the Booked by dialog.
+    // No reload or toast here: saveLinks does both straight after.
+    async function saveVenueInHouse(venueId: string, managesInHouse: boolean) {
+        try {
+            await updateDoc(doc(db, "venues", venueId), { managesInHouse });
+        } catch (error) {
+            console.error("Error saving venue:", error);
+            toast.error("Failed to save venue");
+            throw error;
+        }
+    }
+
     async function deleteRelationshipsFor(field: "venueId" | "promoterId", id: string) {
         const toDelete = relationships.filter((r) => r[field] === id);
         await Promise.all(toDelete.map((r) => deleteDoc(doc(db, "venue-promoters", r.id))));
@@ -205,7 +217,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
             ]);
 
             await loadAll();
-            toast.success(fixedField === "venueId" ? "Promoters updated" : "Venues updated");
+            toast.success(fixedField === "venueId" ? "Booking updated" : "Venues updated");
         } catch (error) {
             console.error("Error saving links:", error);
             toast.error("Failed to save links");
@@ -224,6 +236,7 @@ export function useVenueData({ onDeleteTarget }: UseVenueDataOptions) {
         venuesWithPromoters,
         promotersWithVenues,
         saveVenue,
+        saveVenueInHouse,
         savePromoter,
         deleteVenue,
         deletePromoter,

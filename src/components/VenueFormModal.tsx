@@ -93,19 +93,6 @@ function VenueFormModal({ onSubmit, onDelete, cityWarning, ref }: VenueFormModal
                             />
                             {cityNote && <div className="form-warning">{cityNote}</div>}
                         </div>
-
-                        <div className="entity-form-checkbox">
-                            <label htmlFor="venueManagesInHouse">
-                                <input
-                                    id="venueManagesInHouse"
-                                    name="managesInHouse"
-                                    type="checkbox"
-                                    checked={formValues.managesInHouse ?? false}
-                                    onChange={handleChange}
-                                />
-                                Manages some promotions in-house
-                            </label>
-                        </div>
                     </fieldset>
 
                     <fieldset className="form-section">

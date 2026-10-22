@@ -121,7 +121,7 @@ function VenueRow({ venue, onManagePromoters, onViewRecord }: VenueRowProps) {
                         </button>
                     ))}
                     {!venue.managesInHouse && promoters.length === 0 && <span className="data-pill">No promoters</span>}
-                    <EditChip title={`Edit promoters for ${venue.name}`} onClick={onManagePromoters} />
+                    <EditChip title={`Edit who books ${venue.name}`} onClick={onManagePromoters} />
                 </div>
             </td>
             <td className="data-cell-links">

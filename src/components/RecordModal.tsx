@@ -108,7 +108,7 @@ export default function RecordModal({
                     <section className="record-modal-section">
                         <SectionHeading
                             title={venue ? "Booked by" : "Venues"}
-                            editLabel={venue ? `Edit ${record.name}'s promoters` : `Edit ${record.name}'s venues`}
+                            editLabel={venue ? `Edit who books ${record.name}` : `Edit ${record.name}'s venues`}
                             onEdit={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
                         />
                         {/* Same chips as the table's Booked by / Venues column. */}
