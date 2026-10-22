@@ -118,12 +118,12 @@ export function AddChip({ kind, label, title, onClick }: { kind: RecordKind; lab
     );
 }
 
-// "edit" link after a row's linked chips, opening the dialog for changing that whole list.
+// "Edit" link after a row's linked chips, opening the dialog for changing that whole list.
 // Same look as the Edit links in the record modal.
 export function EditLink({ title, onClick }: { title: string; onClick: () => void }) {
     return (
         <button className="data-edit-link" type="button" onClick={onClick} title={title} aria-label={title}>
-            edit
+            Edit
         </button>
     );
 }
