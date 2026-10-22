@@ -50,3 +50,14 @@
   color: #e5484d;
   text-decoration: underline;
 }
+
+/* Read-only fact shown above a form's fields, e.g. how a venue is booked. */
+.outreach-booking-method{
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.outreach-booking-method span{
+  margin-right: 6px;
+  opacity: 0.6;
+}

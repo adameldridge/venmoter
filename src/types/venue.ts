@@ -1,3 +1,13 @@
+// The channel a venue or promoter prefers to be contacted on; "" when there's no preference.
+export const CONTACT_CHANNELS = [
+  { value: "email", label: "Email" },
+  { value: "instagram", label: "Instagram" },
+  { value: "facebook", label: "Facebook" },
+  { value: "website", label: "Website" },
+] as const;
+
+export type ContactChannel = (typeof CONTACT_CHANNELS)[number]["value"];
+
 export type Venue = {
   id: string;
   name: string;
@@ -6,6 +16,7 @@ export type Venue = {
   facebook?: string;
   instagram?: string;
   email?: string;
+  preferredContact?: ContactChannel | "";
   managesInHouse?: boolean;
 };
 
@@ -16,6 +27,7 @@ export type Promoter = {
   facebook?: string;
   instagram?: string;
   email?: string;
+  preferredContact?: ContactChannel | "";
 };
 
 export type VenuePromoter = {

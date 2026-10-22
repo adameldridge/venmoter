@@ -26,25 +26,23 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
 
     if (!start || !end || start > end) {
         return (
-            <>
-                <CalendarHeading />
-                <div className="tour-calendar-hint">
-                    Add tour dates or holds to see the calendar.
-                </div>
-            </>
+            <div className="tour-calendar-hint">
+                Add tour dates or holds to see the calendar.
+            </div>
         );
     }
 
     const today = todayIsoDate();
     const dates = dateRange(start, end);
     const spansMonths = start.slice(0, 7) !== end.slice(0, 7);
-    const showLegend = entries.length > 0;
 
     return (
         <>
-            <CalendarHeading monthRange={formatMonthRange(start, end)} />
             <div className="tour-calendar-wrapper">
                 <div className="tour-calendar" role="list" aria-label="Tour calendar">
+                    <div className="tour-calendar-start-month" aria-hidden="true">
+                        {parseIsoDate(start).toLocaleDateString(undefined, { month: "short" })}
+                    </div>
                     {dates.map((date, index) => {
                         const day = parseIsoDate(date);
                         const dayEntries = entries.filter((entry) => entry.date === date);
@@ -56,6 +54,7 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
                             .map((entry) => `${entry.city}: ${entry.venueName} (${entry.kind === "on-hold" ? "on hold" : "confirmed"})`)
                             .concat(clashDates.has(date) ? ["Date clash"] : [])
                             .join("\n");
+                        // The first month is labelled before the strip; later ones on their 1st.
                         const showMonth = index > 0 && day.getDate() === 1;
                         const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
@@ -105,15 +104,6 @@ export default function TourCalendar({ tour, entries, clashDates, onSelectStop }
                         );
                     })}
                 </div>
-                {showLegend && (
-                    <div className="tour-calendar-legend">
-                        <span><span className="tour-calendar-swatch tour-calendar-swatch-booked" /> Confirmed</span>
-                        <span><span className="tour-calendar-swatch tour-calendar-swatch-provisional" /> On hold</span>
-                        {clashDates.size > 0 && (
-                            <span><span className="tour-calendar-swatch tour-calendar-swatch-clash" /> Clash</span>
-                        )}
-                    </div>
-                )}
             </div>
         </>
     );
@@ -129,28 +119,4 @@ function describeDay(entries: CalendarEntry[]) {
         cityLabel: cities.length === 1 ? cities[0] : `${cities.length} cities`,
         venueLabel: `${entries.length} ${noun}`,
     };
-}
-
-// Uses the Tour tab's shared section heading styles so Calendar and Cities read as equal sections.
-function CalendarHeading({ monthRange }: { monthRange?: string }) {
-    return (
-        <div className="tour-section-header">
-            <h2 className="tour-section-title">
-                Calendar
-                {monthRange && <span className="tour-section-subtitle">{monthRange}</span>}
-            </h2>
-        </div>
-    );
-}
-
-// e.g. "April 2027", "April – May 2027", "December 2026 – January 2027".
-function formatMonthRange(startIso: string, endIso: string) {
-    const start = parseIsoDate(startIso);
-    const end = parseIsoDate(endIso);
-    const monthYear = (date: Date) => date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-    if (startIso.slice(0, 7) === endIso.slice(0, 7)) return monthYear(start);
-    if (start.getFullYear() === end.getFullYear()) {
-        return `${start.toLocaleDateString(undefined, { month: "long" })} – ${monthYear(end)}`;
-    }
-    return `${monthYear(start)} – ${monthYear(end)}`;
 }

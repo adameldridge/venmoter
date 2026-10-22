@@ -2,6 +2,7 @@ import type { Ref } from "react";
 import type { NewPromoter, Promoter } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
+import PreferredContactField from "./PreferredContactField";
 import "./Modal.css";
 import "./Forms.css";
 
@@ -16,6 +17,7 @@ const emptyPromoter: NewPromoter = {
     instagram: "",
     facebook: "",
     email: "",
+    preferredContact: "",
 };
 
 function toFormValues(promoter: Promoter): NewPromoter {
@@ -25,6 +27,7 @@ function toFormValues(promoter: Promoter): NewPromoter {
         instagram: promoter.instagram ?? "",
         facebook: promoter.facebook ?? "",
         email: promoter.email ?? "",
+        preferredContact: promoter.preferredContact ?? "",
     };
 }
 
@@ -34,6 +37,7 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
     const {
         modalRef,
         formValues,
+        setFormValues,
         editingId: editingPromoterId,
         isSaving,
         closeModal,
@@ -107,6 +111,13 @@ function PromoterFormModal({ onSubmit, ref }: PromoterFormModalProps) {
                             onChange={handleChange}
                         />
                     </div>
+
+                    <PreferredContactField
+                        id="promoterPreferredContact"
+                        value={formValues.preferredContact ?? ""}
+                        details={formValues}
+                        onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
+                    />
 
                     <div className="modal-actions">
                         <button className="create-button" type="submit" disabled={isSaving}>

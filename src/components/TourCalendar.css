@@ -1,19 +1,23 @@
+/* A long strip shrinks to the space available and scrolls sideways. */
 .tour-calendar-wrapper{
+    display: flex;
+    align-items: center;
+    gap: 15px;
     margin: 0 10px;
 }
 
 .tour-calendar{
     display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
     gap: 4px;
     padding-bottom: 6px;
     overflow-x: auto;
     scroll-snap-type: x proximity;
 }
 
-/* Short tours stretch to fill the row; long ones scroll. */
 .tour-calendar-cell{
-    flex: 1 0 56px;
-    max-width: 120px;
+    flex: 0 0 104px;
     scroll-snap-align: start;
 }
 
@@ -26,9 +30,9 @@
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    min-height: 64px;
+    min-height: 50px;
     margin: 0;
-    padding: 8px 4px;
+    padding: 5px 4px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 5px;
@@ -42,14 +46,15 @@
 }
 
 .tour-calendar-day-provisional{
-    background: #f2a900;
-    border-color: #f2a900;
-    color: #1a1a1a;
+    background: rgba(242, 169, 0, 0.16);
+    border-color: rgba(242, 169, 0, 0.6);
+    color: #f5c451;
 }
 
 .tour-calendar-day-booked{
-    background: #029742;
-    border-color: #029742;
+    background: rgba(2, 151, 66, 0.22);
+    border-color: rgba(2, 151, 66, 0.7);
+    color: #5fd18b;
 }
 
 .tour-calendar-day{
@@ -78,20 +83,31 @@
     box-shadow: inset 0 0 0 2px #fff;
 }
 
+.tour-calendar-start-month{
+    flex: 0 0 auto;
+    align-self: center;
+    padding: 0 6px 0 0;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+}
+
 .tour-calendar-month{
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
     opacity: 0.8;
 }
 
 .tour-calendar-weekday{
-    font-size: 10px;
+    font-size: 11px;
     opacity: 0.7;
 }
 
 .tour-calendar-date{
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
 }
 
@@ -104,47 +120,13 @@
 }
 
 .tour-calendar-label{
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 .tour-calendar-sublabel{
-    font-size: 10px;
+    font-size: 11px;
     opacity: 0.85;
-}
-
-.tour-calendar-legend{
-    display: flex;
-    gap: 15px;
-    margin-top: 6px;
-    font-size: 12px;
-    opacity: 0.75;
-}
-
-.tour-calendar-legend > span{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.tour-calendar-swatch{
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    box-sizing: border-box;
-}
-
-.tour-calendar-swatch-booked{
-    background: #029742;
-}
-
-.tour-calendar-swatch-clash{
-    border: 2px solid #e5484d;
-}
-
-.tour-calendar-swatch-provisional{
-    background: #f2a900;
 }
 
 .tour-calendar-hint{
@@ -158,5 +140,15 @@
     .tour-calendar-hint{
         margin-left: 8px;
         margin-right: 8px;
+    }
+
+    .tour-calendar-wrapper{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .tour-calendar-cell{
+        flex-basis: 72px;
     }
 }

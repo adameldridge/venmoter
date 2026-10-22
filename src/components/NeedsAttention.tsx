@@ -3,7 +3,6 @@ import { NO_REPLY_DAYS } from "../utils/tourInsights";
 import "./NeedsAttention.css";
 
 const GROUPS: { kind: AttentionKind; label: string }[] = [
-    { kind: "follow-up", label: "Follow-ups due" },
     { kind: "no-reply", label: `No reply after ${NO_REPLY_DAYS} days` },
 ];
 

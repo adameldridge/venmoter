@@ -1,4 +1,6 @@
-import type { Promoter, Venue } from "../types/venue";
+import { useState } from "react";
+import { FaPen } from "react-icons/fa";
+import type { PromoterWithVenues, VenueWithPromoters } from "../types/venue";
 import {
     OUTREACH_STATUSES,
     hasShowDate,
@@ -7,10 +9,10 @@ import {
     type Tour,
     type TourStop,
 } from "../types/tour";
-import { dateRange, formatDate, formatDateRange } from "../utils/date";
-import { buildAttentionItems, findClashes, latestLogEntry, type AttentionItem } from "../utils/tourInsights";
+import { buildAttentionItems, findClashes, findOverlaps, latestLogEntry, type AttentionItem } from "../utils/tourInsights";
 import ListHeader from "./ListHeader";
-import TourCard from "./TourCard";
+import { TourGroup, TourRow, TourTable, type AvailablePromoter, type AvailableVenue, type VenueTag } from "./TourTable";
+import { sameCity } from "../utils/city";
 import TourCalendar, { type CalendarEntry } from "./TourCalendar";
 import NeedsAttention from "./NeedsAttention";
 import "./TourTab.css";
@@ -21,22 +23,45 @@ type TourTabProps = {
     stops: TourStop[];
     outreach: Outreach[];
     contactLog: ContactLogEntry[];
-    venues: Venue[];
-    promoters: Promoter[];
+    venues: VenueWithPromoters[];
+    promoters: PromoterWithVenues[];
     onSelectTour: (tourId: string) => void;
     onNewTour: () => void;
     onEditTour: (tour: Tour) => void;
     onAddStop: () => void;
-    onEditStop: (stop: TourStop) => void;
-    onFillStop: (stop: TourStop) => void;
+    onRemoveStop: (stop: TourStop) => void;
+    onAddPromoter: (stop: TourStop, promoterId: string) => void;
+    onAddVenue: (stop: TourStop, venueId: string) => void;
     onOpenOutreach: (outreach: Outreach, title: string) => void;
     onOpenLog: (outreach: Outreach, title: string) => void;
     onRemoveOutreach: (outreach: Outreach) => void;
 };
 
+const NEW_TOUR_OPTION = "__new-tour";
+
+// Collapsed cities are a per-browser convenience, so they're kept in localStorage; storage can
+// be unavailable (private mode, blocked site data), in which case everything starts expanded.
+const COLLAPSED_CITIES_KEY = "venmoter.collapsedCities";
+
+function loadCollapsedCities(): Set<string> {
+    try {
+        return new Set(JSON.parse(localStorage.getItem(COLLAPSED_CITIES_KEY) ?? "[]") as string[]);
+    } catch {
+        return new Set();
+    }
+}
+
+function saveCollapsedCities(ids: Set<string>) {
+    try {
+        localStorage.setItem(COLLAPSED_CITIES_KEY, JSON.stringify([...ids]));
+    } catch {
+        // Not remembered this time; nothing else depends on it.
+    }
+}
+
 type TourEntry = {
     outreach: Outreach;
-    target: Venue | Promoter;
+    target: VenueWithPromoters | PromoterWithVenues;
 };
 
 export default function TourTab({
@@ -51,14 +76,20 @@ export default function TourTab({
     onNewTour,
     onEditTour,
     onAddStop,
-    onEditStop,
-    onFillStop,
+    onRemoveStop,
+    onAddPromoter,
+    onAddVenue,
     onOpenOutreach,
     onOpenLog,
     onRemoveOutreach,
 }: TourTabProps) {
+    const [cityFilter, setCityFilter] = useState("");
+    const [collapsedIds, setCollapsedIds] = useState(loadCollapsedCities);
     const sortedTours = [...tours].sort((a, b) => a.name.localeCompare(b.name));
-    const stopEntries = sortStops(stops, outreach).map((stop) => ({
+    const sortedStops = sortStops(stops, outreach);
+    // Falls back to all cities if the selected one was deleted or belongs to another tour.
+    const filterStop = sortedStops.find((stop) => stop.id === cityFilter);
+    const stopEntries = sortedStops.map((stop) => ({
         stop,
         entries: buildEntries(
             outreach.filter((o) => o.stopId === stop.id),
@@ -71,6 +102,10 @@ export default function TourTab({
     const attentionItems = insightInput ? buildAttentionItems(insightInput) : [];
     const clashes = insightInput ? findClashes(insightInput) : [];
     const clashDates = new Set(clashes.map((clash) => clash.date));
+    const overlaps = findOverlaps(outreach, venues, promoters);
+    const visibleStopEntries = stopEntries
+        .filter(({ stop }) => !filterStop || stop.id === filterStop.id)
+        .map((stopEntry) => ({ ...stopEntry, contacts: buildContacts(stopEntry.entries) }));
 
     function cityOf(stopId: string) {
         return stops.find((stop) => stop.id === stopId)?.city ?? "";
@@ -83,14 +118,36 @@ export default function TourTab({
         return `${target?.name ?? ""} – ${cityOf(o.stopId)}`;
     }
 
+    function toVenueTag({ outreach: o, target }: TourEntry, showOutcome: boolean): VenueTag {
+        return {
+            key: o.id,
+            name: target.name,
+            status: o.status,
+            showDate: o.showDate,
+            showOutcome,
+            clashMessages: clashes.filter((clash) => clash.outreachId === o.id).map((clash) => clash.message),
+            onClick: () => openCard(o),
+        };
+    }
+
     function openCard(o: Outreach) {
         onOpenOutreach(o, cardTitle(o));
     }
 
+    function setCollapsed(stopId: string, collapsed: boolean) {
+        setCollapsedIds((current) => {
+            const next = new Set(current);
+            if (collapsed) next.add(stopId);
+            else next.delete(stopId);
+            saveCollapsedCities(next);
+            return next;
+        });
+    }
+
     function scrollToStop(stopId: string) {
-        const section = document.getElementById(`tour-stop-${stopId}`);
-        if (section instanceof HTMLDetailsElement) section.open = true;
-        section?.scrollIntoView({ behavior: "smooth", block: "start" });
+        setCityFilter(stopId);
+        setCollapsed(stopId, false);
+        document.getElementById("tour-cities")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function handleAttentionSelect(item: AttentionItem) {
@@ -104,38 +161,52 @@ export default function TourTab({
 
     return (
         <div>
-            <ListHeader addLabel="New Tour" onAdd={onNewTour}>
+            <div className="tour-top">
+                <div className="tour-top-controls">
+                    {/* With a tour selected, "New tour" lives in the picker; otherwise it's the only action. */}
+                    <ListHeader addLabel="New Tour" onAdd={activeTour ? undefined : onNewTour}>
+                        {activeTour && (
+                            <div className="filter-group">
+                                <select
+                                    className="cities-select"
+                                    value={activeTour.id}
+                                    onChange={(e) => {
+                                        if (e.target.value === NEW_TOUR_OPTION) onNewTour();
+                                        else onSelectTour(e.target.value);
+                                    }}
+                                    aria-label="Active tour"
+                                >
+                                    {sortedTours.map((tour) => (
+                                        <option value={tour.id} key={tour.id}>{tour.name}</option>
+                                    ))}
+                                    <option disabled>──────────</option>
+                                    <option value={NEW_TOUR_OPTION}>+ New tour…</option>
+                                </select>
+                                <button
+                                    className="ghost-button tour-edit-button"
+                                    type="button"
+                                    onClick={() => onEditTour(activeTour)}
+                                    aria-label="Edit tour"
+                                    title="Edit tour"
+                                >
+                                    <FaPen />
+                                </button>
+                            </div>
+                        )}
+                    </ListHeader>
+                </div>
+
                 {activeTour && (
-                    <div className="filter-group">
-                        <select
-                            className="cities-select"
-                            value={activeTour.id}
-                            onChange={(e) => onSelectTour(e.target.value)}
-                            aria-label="Active tour"
-                        >
-                            {sortedTours.map((tour) => (
-                                <option value={tour.id} key={tour.id}>{tour.name}</option>
-                            ))}
-                        </select>
+                    <div className="tour-top-calendar">
+                        <TourCalendar
+                            tour={activeTour}
+                            entries={calendarEntries}
+                            clashDates={clashDates}
+                            onSelectStop={scrollToStop}
+                        />
                     </div>
                 )}
-            </ListHeader>
-
-            {activeTour && (
-                <div className="tour-toolbar">
-                    {(activeTour.startDate || activeTour.endDate) && (
-                        <div className="tour-dates">
-                            {formatDateRange(activeTour.startDate, activeTour.endDate)}
-                            {activeTour.startDate && activeTour.endDate && (
-                                ` · ${dateRange(activeTour.startDate, activeTour.endDate).length} days`
-                            )}
-                        </div>
-                    )}
-                    <button className="ghost-button" type="button" onClick={() => onEditTour(activeTour)}>
-                        Edit Tour
-                    </button>
-                </div>
-            )}
+            </div>
 
             {!activeTour ? (
                 <div className="tour-empty">
@@ -145,14 +216,7 @@ export default function TourTab({
                 <>
                     <NeedsAttention items={attentionItems} onSelect={handleAttentionSelect} />
 
-                    <TourCalendar
-                        tour={activeTour}
-                        entries={calendarEntries}
-                        clashDates={clashDates}
-                        onSelectStop={scrollToStop}
-                    />
-
-                    <div className="tour-section-header">
+                    <div className="tour-section-header" id="tour-cities">
                         <h2 className="tour-section-title">
                             Cities
                             {stops.length > 0 && (
@@ -161,6 +225,19 @@ export default function TourTab({
                                 </span>
                             )}
                         </h2>
+                        {stops.length > 0 && (
+                            <select
+                                className="cities-select"
+                                value={filterStop?.id ?? ""}
+                                onChange={(e) => setCityFilter(e.target.value)}
+                                aria-label="Filter by city"
+                            >
+                                <option value="">All cities</option>
+                                {sortedStops.map((stop) => (
+                                    <option value={stop.id} key={stop.id}>{stop.city}</option>
+                                ))}
+                            </select>
+                        )}
                         <button className="create-button" type="button" onClick={onAddStop}>
                             Add City
                         </button>
@@ -172,44 +249,38 @@ export default function TourTab({
                         </div>
                     )}
 
-                    {stopEntries.map(({ stop, entries }) => {
-                        const confirmed = entries.filter(({ outreach }) => outreach.status === "confirmed");
-                        const onHold = entries.filter(({ outreach }) => outreach.status === "on-hold");
-
-                        return (
-                            <details key={stop.id} id={`tour-stop-${stop.id}`} open>
-                                <summary className="city-heading">
-                                    {stop.city}
-                                    {confirmed.length > 0 ? (
-                                        <span className="tour-stop-date">
-                                            {confirmed.map(({ outreach }) => formatDate(outreach.showDate)).join(", ")}
-                                        </span>
-                                    ) : (
-                                        onHold.length > 0 && (
-                                            <span className="tour-stop-date">{onHold.length} on hold</span>
-                                        )
-                                    )}
-                                    <span className="tour-group-count">{entries.length}</span>
-                                </summary>
-
-                                <div className="tour-stop-actions">
-                                    <button className="ghost-button" type="button" onClick={() => onFillStop(stop)}>
-                                        Add venues &amp; promoters
-                                    </button>
-                                    <button className="ghost-button" type="button" onClick={() => onEditStop(stop)}>
-                                        Edit City
-                                    </button>
-                                </div>
-
-                                {entries.length === 0 ? (
-                                    <div className="tour-stop-empty">Nothing added yet.</div>
-                                ) : (
-                                    <div className="card-grid">
-                                        {entries.map(({ outreach: o, target }) => (
-                                            <TourCard
+                    {stops.length > 0 && (
+                        <>
+                            <TourTable>
+                                {visibleStopEntries.map(({ stop, entries, contacts }) => (
+                                    <TourGroup
+                                        key={stop.id}
+                                        city={stop.city}
+                                        confirmedVenues={entries
+                                            .filter((e) => e.outreach.targetType === "venue" && e.outreach.status === "confirmed")
+                                            .map((e) => toVenueTag(e, true))}
+                                        count={entries.length}
+                                        confirmed={isConfirmed(entries)}
+                                        // A city with a confirmed show is sorted; no more suggestions.
+                                        availablePromoters={isConfirmed(entries) ? [] : availablePromoters(entries)}
+                                        availableVenues={isConfirmed(entries) ? [] : availableVenues(stop, entries, venues)}
+                                        collapsed={collapsedIds.has(stop.id)}
+                                        onToggle={() => setCollapsed(stop.id, !collapsedIds.has(stop.id))}
+                                        onAddPromoter={(promoterId) => onAddPromoter(stop, promoterId)}
+                                        onAddVenue={(venueId) => onAddVenue(stop, venueId)}
+                                        onRemove={() => onRemoveStop(stop)}
+                                    >
+                                        {contacts.map(({ outreach: o, target, venues: venueEntries, noPromoters }) => (
+                                            <TourRow
                                                 key={o.id}
                                                 outreach={o}
                                                 target={target}
+                                                venues={venueEntries.map((venue) => toVenueTag(venue, false))}
+                                                inHouse={isInHouse(target)}
+                                                noPromoters={noPromoters}
+                                                overlapMessages={overlaps
+                                                    .filter((overlap) => overlap.outreachId === o.id)
+                                                    .map((overlap) => overlap.message)}
                                                 latestContact={latestLogEntry(o.id, contactLog)}
                                                 viaPromoterName={promoters.find((p) => p.id === o.viaPromoterId)?.name}
                                                 clashMessages={clashes
@@ -220,11 +291,11 @@ export default function TourTab({
                                                 onRemove={() => onRemoveOutreach(o)}
                                             />
                                         ))}
-                                    </div>
-                                )}
-                            </details>
-                        );
-                    })}
+                                    </TourGroup>
+                                ))}
+                            </TourTable>
+                        </>
+                    )}
                 </>
             )}
         </div>
@@ -233,8 +304,81 @@ export default function TourTab({
 
 const statusOrder = OUTREACH_STATUSES.map((status) => status.value);
 
+function isInHouse(target: TourEntry["target"]) {
+    return "managesInHouse" in target && !!target.managesInHouse;
+}
+
+type Contact = TourEntry & {
+    venues: TourEntry[];
+    noPromoters: boolean;
+};
+
+// Each city lists who you actually contact: promoters, in-house venues, and any other venue
+// none of whose promoters are on the list, since then the venue itself is the way in.
+// Promoters carry tags for the listed venues they work with (in-house ones included, so the
+// link is visible even though those venues also have their own row).
+function buildContacts(entries: TourEntry[]): Contact[] {
+    const worksWith = (venue: TourEntry, promoterId: string) =>
+        "promoters" in venue.target && venue.target.promoters.some((p) => p.id === promoterId);
+    const listedPromoterIds = entries.filter((e) => e.outreach.targetType === "promoter").map((e) => e.target.id);
+    const venueEntries = entries.filter((e) => e.outreach.targetType === "venue");
+    const reachedByPromoter = (venue: TourEntry) => listedPromoterIds.some((id) => worksWith(venue, id));
+    const tagOnly = venueEntries.filter((venue) => !isInHouse(venue.target) && reachedByPromoter(venue));
+
+    return entries
+        .filter((e) => !tagOnly.includes(e))
+        .map((e) => {
+            if (e.outreach.targetType === "promoter") {
+                const venues = venueEntries.filter((venue) => worksWith(venue, e.target.id));
+                return { ...e, venues, noPromoters: false };
+            }
+            // A venue whose promoters exist but aren't added says nothing extra; the city header
+            // offers those promoters instead.
+            const hasPromoters = "promoters" in e.target && e.target.promoters.length > 0;
+            return { ...e, venues: [], noPromoters: !isInHouse(e.target) && !hasPromoters };
+        });
+}
+
+// Promoters linked to the city's venues that aren't on its list yet.
+function isConfirmed(entries: TourEntry[]) {
+    return entries.some(({ outreach }) => outreach.status === "confirmed");
+}
+
+// Venues in the city that aren't on its list yet.
+function availableVenues(stop: TourStop, entries: TourEntry[], venues: VenueWithPromoters[]): AvailableVenue[] {
+    const listed = new Set(entries.filter((e) => e.outreach.targetType === "venue").map((e) => e.target.id));
+    return venues
+        .filter((venue) => sameCity(venue.city, stop.city) && !listed.has(venue.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((venue) => ({
+            id: venue.id,
+            name: venue.name,
+            detail: venue.managesInHouse
+                ? "In-house"
+                : venue.promoters.length > 0 ? `via ${venue.promoters.map((p) => p.name).join(", ")}` : "No promoters",
+        }));
+}
+
+function availablePromoters(entries: TourEntry[]): AvailablePromoter[] {
+    const listed = new Set(entries.filter((e) => e.outreach.targetType === "promoter").map((e) => e.target.id));
+    const available = new Map<string, AvailablePromoter>();
+    for (const { outreach, target } of entries) {
+        if (!("promoters" in target) || outreach.status === "declined") continue;
+        for (const promoter of target.promoters.filter((p) => !listed.has(p.id))) {
+            const entry = available.get(promoter.id) ?? { id: promoter.id, name: promoter.name, venueNames: [] };
+            entry.venueNames.push(target.name);
+            available.set(promoter.id, entry);
+        }
+    }
+    return [...available.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 // Sorted by pipeline status, then name.
-function buildEntries(outreach: Outreach[], venues: Venue[], promoters: Promoter[]): TourEntry[] {
+function buildEntries(
+    outreach: Outreach[],
+    venues: VenueWithPromoters[],
+    promoters: PromoterWithVenues[],
+): TourEntry[] {
     const entries: TourEntry[] = [];
     for (const o of outreach) {
         const target =
