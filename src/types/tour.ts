@@ -48,8 +48,6 @@ export type Outreach = {
   status: OutreachStatus;
   showDate: string;
   viaPromoterId: string;
-  followUpDate: string;
-  notes: string;
 };
 
 export type NewOutreach = Omit<Outreach, "id">;
@@ -70,18 +68,20 @@ export type OutreachTarget = {
   targetId: string;
 };
 
-// An outreach record paired with the city of the tour stop it belongs to.
-export type StopOutreach = {
-  outreach: Outreach;
-  city: string;
-};
+// How a venue is booked (in-house, or through its promoters) is a property of the venue, not
+// a status. Promoter-booked venues aren't contacted directly, so their status only tracks the
+// booking itself, and the starting status reads "Not booked" rather than "To contact".
+const PROMOTER_BOOKED_STATUSES: OutreachStatus[] = ["to-contact", "on-hold", "confirmed", "declined"];
 
-export function statusLabel(status: OutreachStatus) {
+export function statusLabel(status: OutreachStatus, promoterBooked = false) {
+  if (status === "to-contact" && promoterBooked) return "Not booked";
   return OUTREACH_STATUSES.find((s) => s.value === status)?.label ?? status;
 }
 
-export function statusesFor(targetType: OutreachTargetType) {
-  return OUTREACH_STATUSES.filter((s) => targetType === "venue" || !s.venueOnly);
+export function statusesFor(targetType: OutreachTargetType, promoterBooked = false) {
+  return OUTREACH_STATUSES.filter(
+    (s) => (targetType === "venue" || !s.venueOnly) && (!promoterBooked || PROMOTER_BOOKED_STATUSES.includes(s.value)),
+  );
 }
 
 export function hasShowDate(status: OutreachStatus) {

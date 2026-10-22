@@ -18,15 +18,14 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase/config";
 import { useVenueData } from "./hooks/useVenueData";
 import { useTourData } from "./hooks/useTourData";
-import type { LinkOption } from "./types/venue";
-import type { NewOutreach, Outreach, OutreachTarget, OutreachTargetType, StopOutreach, Tour, TourStop } from "./types/tour";
+import type { NewOutreach, Outreach, OutreachTarget, Tour, TourStop } from "./types/tour";
 import { sameCity } from "./utils/city";
 import { formatDate } from "./utils/date";
 
 type Tab = "venues" | "promoters" | "tour";
 
 export default function App() {
-    const [activeTab, setActiveTab] = useState<Tab>("venues");
+    const [activeTab, setActiveTab] = useState<Tab>("tour");
     const [selectedCity, setSelectedCity] = useState("All Cities");
     const [searchInput, setSearchInput] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +39,6 @@ export default function App() {
     const outreachModalRef = useRef<OutreachModalHandle>(null);
     const contactLogModalRef = useRef<ContactLogModalHandle>(null);
     const stopFormModalRef = useRef<StopFormModalHandle>(null);
-    const stopTargetsLinkModalRef = useRef<LinkModalHandle>(null);
 
     const {
         tours,
@@ -131,13 +129,35 @@ export default function App() {
         });
     }
 
+    // Removing a venue also removes promoters that were only on the list for it.
     function confirmRemoveOutreach(outreach: Outreach) {
         const city = activeStops.find((stop) => stop.id === outreach.stopId)?.city ?? "this city";
+        if (outreach.targetType === "promoter") {
+            confirmModalRef.current?.open({
+                message: `Remove ${targetName(outreach)} from ${city}?`,
+                confirmLabel: "Remove",
+                danger: true,
+                onConfirm: () => deleteOutreach(outreach.id),
+            });
+            return;
+        }
+
+        const remainingVenueIds = activeOutreach
+            .filter((o) => o.stopId === outreach.stopId && o.targetType === "venue" && o.id !== outreach.id)
+            .map((o) => o.targetId);
+        const remaining = stopTargetsFor(outreach.stopId, remainingVenueIds);
+        const goingPromoters = activeOutreach
+            .filter((o) => o.stopId === outreach.stopId && o.targetType === "promoter")
+            .filter((o) => !remaining.some((t) => t.targetType === "promoter" && t.targetId === o.targetId))
+            .map(targetName);
+        const names = [targetName(outreach), ...goingPromoters];
+        const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+
         confirmModalRef.current?.open({
-            message: `Remove ${targetName(outreach)} from ${city}?`,
+            message: `Remove ${list} from ${city}?`,
             confirmLabel: "Remove",
             danger: true,
-            onConfirm: () => deleteOutreach(outreach.id),
+            onConfirm: () => saveStopTargets(outreach.stopId, remaining),
         });
     }
 
@@ -146,56 +166,39 @@ export default function App() {
         return list.find((item) => item.id === target.targetId)?.name ?? "";
     }
 
-    function outreachFor(targetType: OutreachTargetType, targetId: string): StopOutreach[] {
-        return activeOutreach
-            .filter((o) => o.targetType === targetType && o.targetId === targetId)
-            .map((o) => ({ outreach: o, city: activeStops.find((stop) => stop.id === o.stopId)?.city ?? "" }));
-    }
+    // The full list for a city given its venues: those venues, every promoter linked to them,
+    // and any promoter already on the list that's still linked to one of them (or to none, if
+    // it was added before promoters followed venues). Promoters left with only removed venues go.
+    function stopTargetsFor(stopId: string, venueIds: string[]): OutreachTarget[] {
+        const promotersOf = (venueId: string) => venuesWithPromoters.find((v) => v.id === venueId)?.promoters ?? [];
+        const linkedIds = new Set(venueIds.flatMap((id) => promotersOf(id).map((p) => p.id)));
+        const current = activeOutreach.filter((o) => o.stopId === stopId);
+        const listedVenueIds = current.filter((o) => o.targetType === "venue").map((o) => o.targetId);
+        const orphanedIds = new Set(
+            listedVenueIds.filter((id) => !venueIds.includes(id)).flatMap((id) => promotersOf(id).map((p) => p.id)),
+        );
+        const keptPromoterIds = current
+            .filter((o) => o.targetType === "promoter" && !orphanedIds.has(o.targetId))
+            .map((o) => o.targetId);
 
-    // Picker options: the stop's city venues, promoters linked to them, plus anything already added.
-    function openStopTargets(stop: TourStop) {
-        const toOptionId = (target: OutreachTarget) => `${target.targetType}:${target.targetId}`;
-        const cityVenues = sortedVenues.filter((venue) => sameCity(venue.city, stop.city));
-        const cityVenueIds = new Set(cityVenues.map((venue) => venue.id));
-        const linkedPromoters = promotersWithVenues
-            .filter((promoter) => promoter.venues.some((venue) => cityVenueIds.has(venue.id)))
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-        const options: LinkOption[] = [
-            ...cityVenues.map((venue) => ({
-                id: toOptionId({ targetType: "venue", targetId: venue.id }),
-                name: venue.name,
-                detail: "Venue",
-            })),
-            ...linkedPromoters.map((promoter) => ({
-                id: toOptionId({ targetType: "promoter", targetId: promoter.id }),
-                name: promoter.name,
-                detail: "Promoter",
+        return [
+            ...venueIds.map((targetId) => ({ targetType: "venue" as const, targetId })),
+            ...[...new Set([...linkedIds, ...keptPromoterIds])].map((targetId) => ({
+                targetType: "promoter" as const,
+                targetId,
             })),
         ];
-
-        const selectedIds = activeOutreach.filter((o) => o.stopId === stop.id).map(toOptionId);
-        for (const o of activeOutreach.filter((o) => o.stopId === stop.id)) {
-            if (!options.some((option) => option.id === toOptionId(o))) {
-                options.push({
-                    id: toOptionId(o),
-                    name: targetName(o),
-                    detail: o.targetType === "venue" ? "Venue" : "Promoter",
-                });
-            }
-        }
-
-        stopTargetsLinkModalRef.current?.open(stop.id, options, selectedIds);
     }
 
-    function saveStopTargetIds(stopId: string, optionIds: string[]) {
-        return saveStopTargets(
-            stopId,
-            optionIds.map((optionId) => {
-                const [targetType, targetId] = optionId.split(":");
-                return { targetType: targetType as OutreachTargetType, targetId };
-            }),
-        );
+    function addStopPromoter(stop: TourStop, promoterId: string) {
+        const current = activeOutreach
+            .filter((o) => o.stopId === stop.id)
+            .map((o) => ({ targetType: o.targetType, targetId: o.targetId }));
+        return saveStopTargets(stop.id, [...current, { targetType: "promoter", targetId: promoterId }]);
+    }
+
+    function saveStopTargetIds(stopId: string, venueIds: string[]) {
+        return saveStopTargets(stopId, stopTargetsFor(stopId, venueIds));
     }
 
     function linkedPromoters(venueId: string) {
@@ -243,6 +246,13 @@ export default function App() {
         <div>
             <div className="tabs">
                 <button
+                    className={activeTab === "tour" ? "tab-button tab-button-active" : "tab-button"}
+                    type="button"
+                    onClick={() => setActiveTab("tour")}
+                >
+                    Tour
+                </button>
+                <button
                     className={activeTab === "venues" ? "tab-button tab-button-active" : "tab-button"}
                     type="button"
                     onClick={() => setActiveTab("venues")}
@@ -255,13 +265,6 @@ export default function App() {
                     onClick={() => setActiveTab("promoters")}
                 >
                     Promoters
-                </button>
-                <button
-                    className={activeTab === "tour" ? "tab-button tab-button-active" : "tab-button"}
-                    type="button"
-                    onClick={() => setActiveTab("tour")}
-                >
-                    Tour
                 </button>
 
                 <button className="login-button ghost-button" type="button" onClick={confirmSignOut}>
@@ -297,7 +300,6 @@ export default function App() {
                                     venue.promoters.map((promoter) => promoter.id),
                                 )
                             }
-                            outreachFor={(venueId) => outreachFor("venue", venueId)}
                         />
                     )}
 
@@ -321,7 +323,6 @@ export default function App() {
                                     promoter.venues.map((venue) => venue.id),
                                 )
                             }
-                            outreachFor={(promoterId) => outreachFor("promoter", promoterId)}
                         />
                     )}
 
@@ -332,14 +333,20 @@ export default function App() {
                             stops={activeStops}
                             outreach={activeOutreach}
                             contactLog={activeContactLog}
-                            venues={venues}
-                            promoters={promoters}
+                            venues={venuesWithPromoters}
+                            promoters={promotersWithVenues}
                             onSelectTour={setActiveTour}
                             onNewTour={() => tourFormModalRef.current?.open()}
                             onEditTour={(tour) => tourFormModalRef.current?.open(tour)}
                             onAddStop={() => stopFormModalRef.current?.open()}
-                            onEditStop={(stop) => stopFormModalRef.current?.open(stop)}
-                            onFillStop={openStopTargets}
+                            onRemoveStop={confirmDeleteStop}
+                            onAddPromoter={addStopPromoter}
+                            onAddVenue={(stop, venueId) => {
+                                const listedVenueIds = activeOutreach
+                                    .filter((o) => o.stopId === stop.id && o.targetType === "venue")
+                                    .map((o) => o.targetId);
+                                return saveStopTargetIds(stop.id, [...listedVenueIds, venueId]);
+                            }}
                             onOpenOutreach={(outreach, title) => outreachModalRef.current?.open(outreach, title)}
                             onOpenLog={(outreach, title) => contactLogModalRef.current?.open(outreach, title)}
                             onRemoveOutreach={confirmRemoveOutreach}
@@ -383,20 +390,17 @@ export default function App() {
                     const stop = activeStops.find((s) => s.id === stopId);
                     if (stop) confirmDeleteStop(stop);
                 }}
-                cities={cities.filter((city) => city !== "All Cities")}
+                cities={cities.filter(
+                    (city) => city !== "All Cities" && !activeStops.some((stop) => sameCity(stop.city, city)),
+                )}
                 onSubmit={(stop, editingStopId) =>
                     activeTour ? saveStop({ ...stop, tourId: activeTour.id }, editingStopId) : Promise.resolve()
                 }
             />
-            <LinkModal
-                ref={stopTargetsLinkModalRef}
-                title="Venues & Promoters"
-                itemLabel="venues & promoters"
-                onSave={saveStopTargetIds}
-            />
             <OutreachModal
                 ref={outreachModalRef}
                 linkedPromoters={linkedPromoters}
+                isInHouse={(venueId) => !!venues.find((venue) => venue.id === venueId)?.managesInHouse}
                 onSave={saveOutreachWithConfirm}
                 onRemove={confirmRemoveOutreach}
             />

@@ -24,6 +24,7 @@ import type {
     OutreachTargetType,
 } from "../types/tour";
 import { todayIsoDate } from "../utils/date";
+import { sameCity } from "../utils/city";
 
 const settingsDoc = doc(db, "settings", "app");
 
@@ -36,8 +37,6 @@ function toOutreach(id: string, data: Record<string, unknown>): Outreach {
     return {
         showDate: "",
         viaPromoterId: "",
-        followUpDate: "",
-        notes: "",
         ...data,
         id,
     } as Outreach;
@@ -135,7 +134,16 @@ export function useTourData() {
         }
     }
 
+    // A city can only appear once per tour (compared ignoring case and spacing).
     async function saveStop(stop: NewTourStop, editingStopId: string | null) {
+        const duplicate = stops.some(
+            (s) => s.tourId === stop.tourId && s.id !== editingStopId && sameCity(s.city, stop.city),
+        );
+        if (duplicate) {
+            toast.error(`${stop.city} is already in this tour`);
+            throw new Error(`Duplicate city: ${stop.city}`);
+        }
+
         try {
             if (editingStopId) {
                 await updateDoc(doc(db, "tour-stops", editingStopId), stop);
@@ -187,8 +195,6 @@ export function useTourData() {
                         status: "to-contact",
                         showDate: "",
                         viaPromoterId: "",
-                        followUpDate: "",
-                        notes: "",
                     };
                     return addDoc(collection(db, "outreach"), values);
                 }),

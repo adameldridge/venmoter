@@ -1,33 +1,59 @@
-/* Pulled up against the ListHeader above so the selected tour's dates read as part of the picker. */
-.tour-toolbar{
+/* Tour picker on the left, calendar strip filling the rest of the row; stacks on narrower screens. */
+.tour-top{
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 10px 15px;
-    margin: -12px 10px 0;
+    gap: 10px;
 }
 
-.tour-dates{
-    font-size: 14px;
-    opacity: 0.75;
+.tour-top-controls{
+    flex: 0 0 auto;
 }
 
-.tour-toolbar button,
-.tour-stop-actions button{
-    margin: 0;
-    padding: 7px 14px;
+.tour-top-calendar{
+    flex: 1;
+    min-width: 0;
+    padding: 10px 0;
+}
+
+@media (max-width: 900px){
+    .tour-top{
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tour-top-calendar{
+        padding-top: 0;
+    }
+}
+
+/* Keeps the pencil beside the tour picker when the header goes full width on phones. */
+@media (max-width: 640px){
+    .tour-top .filter-group{
+        flex-wrap: nowrap;
+    }
+
+    .tour-top .list-header .tour-edit-button{
+        width: auto;
+    }
+}
+
+.tour-edit-button{
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
     font-size: 13px;
 }
 
 .tour-section-header{
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 10px 20px;
-    margin: 30px 10px 12px;
+    margin: 20px 10px 10px;
 }
 
 .tour-section-header button{
-    margin-top: 0;
+    margin: 0;
 }
 
 .tour-section-title{
@@ -56,45 +82,12 @@
     opacity: 0.8;
 }
 
-.tour-stop-date{
-    font-size: 12px;
-    font-weight: normal;
-    opacity: 0.8;
-}
-
-.tour-group-count{
-    margin-left: auto;
-    font-size: 12px;
-    font-weight: normal;
-    opacity: 0.7;
-}
-
-.tour-stop-actions{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 10px 15px;
-}
-
-.tour-stop-empty{
-    margin: 0 10px 20px;
-    font-size: 13px;
-    opacity: 0.6;
-}
-
 @media (max-width: 640px){
-    .tour-section-header{
-        flex-wrap: wrap;
-    }
-
     .tour-section-header button{
         width: 100%;
     }
 
-    .tour-toolbar,
     .tour-section-header,
-    .tour-stop-actions,
-    .tour-stop-empty,
     .tour-empty{
         margin-left: 8px;
         margin-right: 8px;

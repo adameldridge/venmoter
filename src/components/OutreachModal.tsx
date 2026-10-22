@@ -1,6 +1,6 @@
 import { useRef, useState, useImperativeHandle, type Ref } from "react";
 import type { Promoter } from "../types/venue";
-import { hasShowDate, statusesFor, type NewOutreach, type Outreach } from "../types/tour";
+import { hasShowDate, statusLabel, statusesFor, type NewOutreach, type Outreach } from "../types/tour";
 import Spinner from "./Spinner";
 import "./Modal.css";
 import "./Forms.css";
@@ -11,6 +11,7 @@ export type OutreachModalHandle = {
 
 type OutreachModalProps = {
     linkedPromoters: (venueId: string) => Promoter[];
+    isInHouse: (venueId: string) => boolean;
     onSave: (values: NewOutreach, outreachId: string) => Promise<void>;
     onRemove: (outreach: Outreach) => void;
     ref?: Ref<OutreachModalHandle>;
@@ -18,6 +19,7 @@ type OutreachModalProps = {
 
 export default function OutreachModal({
     linkedPromoters,
+    isInHouse,
     onSave,
     onRemove,
     ref,
@@ -40,8 +42,6 @@ export default function OutreachModal({
                 status: outreach.status,
                 showDate: outreach.showDate,
                 viaPromoterId: outreach.viaPromoterId,
-                followUpDate: outreach.followUpDate,
-                notes: outreach.notes,
             });
             modalRef.current?.showModal();
         },
@@ -89,6 +89,16 @@ export default function OutreachModal({
     const isVenue = formValues?.targetType === "venue";
     const showDateFields = !!formValues && hasShowDate(formValues.status);
     const viaOptions = isVenue && formValues ? linkedPromoters(formValues.targetId) : [];
+    const inHouse = isVenue && !!formValues && isInHouse(formValues.targetId);
+    const promoterBooked = isVenue && !inHouse && viaOptions.length > 0;
+    // Keep a status that no longer fits the booking method selectable, so saving doesn't silently change it.
+    const statusOptions = formValues ? statusesFor(formValues.targetType, promoterBooked) : [];
+    if (formValues && !statusOptions.some((s) => s.value === formValues.status)) {
+        statusOptions.push(...statusesFor(formValues.targetType).filter((s) => s.value === formValues.status));
+    }
+    const bookingMethod = inHouse
+        ? "In-house"
+        : promoterBooked ? `Via promoter: ${viaOptions.map((p) => p.name).join(", ")}` : "Direct (no promoter linked)";
 
     return (
         <dialog id="outreach-modal" ref={modalRef}>
@@ -97,6 +107,12 @@ export default function OutreachModal({
                 {formValues && (
                     <>
                         <form onSubmit={handleSubmit}>
+                            {isVenue && (
+                                <div className="outreach-booking-method">
+                                    <span>Booking</span> {bookingMethod}
+                                </div>
+                            )}
+
                             <div>
                                 <label htmlFor="outreachStatus">Status *</label>
                                 <select
@@ -106,9 +122,9 @@ export default function OutreachModal({
                                     value={formValues.status}
                                     onChange={handleChange}
                                 >
-                                    {statusesFor(formValues.targetType).map((status) => (
+                                    {statusOptions.map((status) => (
                                         <option key={status.value} value={status.value}>
-                                            {status.label}
+                                            {statusLabel(status.value, promoterBooked)}
                                         </option>
                                     ))}
                                 </select>
@@ -148,28 +164,6 @@ export default function OutreachModal({
                                     </div>
                                 </>
                             )}
-
-                            <div>
-                                <label htmlFor="outreachFollowUp">Follow up by</label>
-                                <input
-                                    id="outreachFollowUp"
-                                    name="followUpDate"
-                                    type="date"
-                                    value={formValues.followUpDate}
-                                    onChange={handleChange}
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="outreachNotes">Notes</label>
-                                <textarea
-                                    id="outreachNotes"
-                                    name="notes"
-                                    rows={2}
-                                    value={formValues.notes}
-                                    onChange={handleChange}
-                                />
-                            </div>
 
                             <div className="modal-actions">
                                 <button className="create-button" type="submit" disabled={isSaving}>

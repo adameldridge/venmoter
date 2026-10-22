@@ -1,10 +1,10 @@
-import type { Promoter, Venue } from "../types/venue";
+import type { Promoter, Venue, VenueWithPromoters } from "../types/venue";
 import type { ContactLogEntry, Outreach, Tour, TourStop } from "../types/tour";
-import { formatDate, parseIsoDate, todayIsoDate, toIsoDate } from "./date";
+import { parseIsoDate, todayIsoDate, toIsoDate } from "./date";
 
 export const NO_REPLY_DAYS = 7;
 
-export type AttentionKind = "follow-up" | "no-reply";
+export type AttentionKind = "no-reply";
 
 export type AttentionItem = {
     key: string;
@@ -97,6 +97,46 @@ export function findClashes({ tour, stops, outreach, venues, promoters }: Insigh
     return clashes;
 }
 
+// A venue and one of its promoters both on a city's list, worded for one of the two rows.
+export type Overlap = {
+    outreachId: string;
+    message: string;
+};
+
+// Flags a venue and its linked promoter in the same city once either has been contacted,
+// so the in-house team and a promoter aren't both approached for the same room.
+// A venue booked via that promoter is the intended route and isn't flagged.
+export function findOverlaps(outreach: Outreach[], venues: VenueWithPromoters[], promoters: Promoter[]): Overlap[] {
+    const overlaps: Overlap[] = [];
+    const contacted = (o: Outreach) => o.status !== "to-contact";
+    const venueOutreach = outreach.filter((o) => o.targetType === "venue");
+
+    for (const v of venueOutreach) {
+        // Other venues are only reached through promoters, so there's no direct contact to double up.
+        const venue = venues.find((item) => item.id === v.targetId);
+        if (!venue?.managesInHouse) continue;
+
+        for (const p of outreach.filter((o) => o.targetType === "promoter" && o.stopId === v.stopId)) {
+            if (!venue.promoters.some((promoter) => promoter.id === p.targetId)) continue;
+            if (v.viaPromoterId === p.targetId) continue;
+            const nameOf = (id: string) => promoters.find((promoter) => promoter.id === id)?.name ?? "a promoter";
+            const promoterName = nameOf(p.targetId);
+            const route = v.viaPromoterId ? `via ${nameOf(v.viaPromoterId)}` : "directly";
+
+            if (contacted(v) && contacted(p)) {
+                overlaps.push({ outreachId: v.id, message: `Also contacting ${promoterName}, who promotes here` });
+                overlaps.push({ outreachId: p.id, message: `Also contacting ${venue.name} ${route}` });
+            } else if (contacted(v)) {
+                overlaps.push({ outreachId: p.id, message: `Already in touch with ${venue.name} ${route}` });
+            } else if (contacted(p)) {
+                overlaps.push({ outreachId: v.id, message: `Already in touch with ${promoterName}, who promotes here` });
+            }
+        }
+    }
+
+    return overlaps;
+}
+
 const CLOSED_STATUSES: Outreach["status"][] = ["confirmed", "declined", "no-response"];
 
 export function buildAttentionItems(input: InsightInput): AttentionItem[] {
@@ -110,22 +150,8 @@ export function buildAttentionItems(input: InsightInput): AttentionItem[] {
     for (const o of outreach) {
         if (CLOSED_STATUSES.includes(o.status)) continue;
 
-        if (o.followUpDate && o.followUpDate <= today) {
-            items.push({
-                key: `follow-up-${o.id}`,
-                kind: "follow-up",
-                message:
-                    o.followUpDate === today
-                        ? `Follow up with ${label(o)} today`
-                        : `Follow up with ${label(o)} (due ${formatDate(o.followUpDate)})`,
-                stopId: o.stopId,
-                outreachId: o.id,
-            });
-            continue;
-        }
-
         const latest = latestLogEntry(o.id, contactLog);
-        if (o.status === "contacted" && !o.followUpDate && latest && latest.date < noReplyCutoff) {
+        if (o.status === "contacted" && latest && latest.date < noReplyCutoff) {
             const days = Math.round(
                 (parseIsoDate(today).getTime() - parseIsoDate(latest.date).getTime()) / 86_400_000,
             );

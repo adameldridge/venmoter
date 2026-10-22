@@ -1,3 +1,4 @@
+/* Tinted rather than solid so a table full of badges stays calm on the dark background. */
 .status-badge{
     display: inline-block;
     padding: 3px 10px;
@@ -9,37 +10,43 @@
 }
 
 .status-badge-to-contact{
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .status-badge-contacted{
-    background: #1f6feb;
-    color: #fff;
+    background: rgba(31, 111, 235, 0.2);
+    border-color: rgba(31, 111, 235, 0.45);
+    color: #8ab4ff;
 }
 
 .status-badge-in-discussion{
-    background: #8b5cf6;
-    color: #fff;
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.45);
+    color: #c0a8ff;
 }
 
 .status-badge-on-hold{
-    background: #f2a900;
-    color: #1a1a1a;
+    background: rgba(242, 169, 0, 0.16);
+    border-color: rgba(242, 169, 0, 0.45);
+    color: #f5c451;
 }
 
 .status-badge-confirmed{
-    background: #029742;
-    color: #fff;
+    background: rgba(2, 151, 66, 0.2);
+    border-color: rgba(2, 151, 66, 0.55);
+    color: #5fd18b;
 }
 
 .status-badge-declined{
-    background: #e5484d;
-    color: #fff;
+    background: rgba(229, 72, 77, 0.16);
+    border-color: rgba(229, 72, 77, 0.45);
+    color: #ff8a8d;
 }
 
 .status-badge-no-response{
-    background: #6b7280;
-    color: #fff;
+    background: rgba(107, 114, 128, 0.22);
+    border-color: rgba(107, 114, 128, 0.5);
+    color: #c4c8cf;
 }

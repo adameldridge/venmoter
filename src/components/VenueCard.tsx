@@ -3,9 +3,6 @@ import './Cards.css';
 import type { VenueWithPromoters, PromoterWithVenues } from "../types/venue";
 import SocialLinks from "./SocialLinks";
 import CardMenu from "./CardMenu";
-import StatusBadge from "./StatusBadge";
-import type { StopOutreach } from "../types/tour";
-import { formatDate } from "../utils/date";
 
 type VenueCardProps = {
     venue: VenueWithPromoters;
@@ -13,10 +10,9 @@ type VenueCardProps = {
     onDelete: () => void;
     onManagePromoters: () => void;
     allPromoters: PromoterWithVenues[];
-    outreach: StopOutreach[];
 };
 
-export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters, outreach }: VenueCardProps) {
+export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, allPromoters }: VenueCardProps) {
     const [activePromoterId, setActivePromoterId] = useState<string | null>(null);
 
     function toggleActivePromoter(promoterId: string) {
@@ -38,24 +34,12 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
                     ]}
                 />
             </div>
-            {outreach.length > 0 && (
-                <div className="entity-card-statuses">
-                    {outreach.map((stopOutreach) => (
-                        <div key={stopOutreach.outreach.id} className="entity-card-status">
-                            <StatusBadge status={stopOutreach.outreach.status} />
-                            <span className="entity-card-status-date">
-                                {stopOutreach.city}
-                                {stopOutreach.outreach.showDate && ` · ${formatDate(stopOutreach.outreach.showDate)}`}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
             <SocialLinks
                 website={venue.website}
                 instagram={venue.instagram}
                 facebook={venue.facebook}
                 email={venue.email}
+                preferred={venue.preferredContact}
             />
 
             <div className="entity-card-relations">
@@ -95,6 +79,7 @@ export default function VenueCard({ venue, onEdit, onDelete, onManagePromoters, 
                             instagram={activePromoter.instagram}
                             facebook={activePromoter.facebook}
                             email={activePromoter.email}
+                            preferred={activePromoter.preferredContact}
                             className="entity-card-chip-detail-icons"
                         />
                         <div className="entity-card-chip-detail-relations">

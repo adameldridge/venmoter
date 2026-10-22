@@ -1,0 +1,432 @@
+.tour-table-wrap{
+    max-width: 1100px;
+    margin: 0 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.tour-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.tour-table thead th{
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+/* Name gets room for its tags; Status and Links are compact; Last contact takes what's left. */
+.tour-col-name{
+    width: 32%;
+    min-width: 200px;
+}
+
+.tour-col-status{
+    width: 16%;
+}
+
+.tour-col-links{
+    width: 110px;
+}
+
+.tour-table .tour-col-fit{
+    width: 1%;
+}
+
+.tour-table td{
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: top;
+}
+
+.tour-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.tour-table tbody tr:not(.tour-group-row, .tour-group-empty):hover{
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.tour-group-row th{
+    padding: 12px 12px 12px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    font-weight: normal;
+    text-align: left;
+}
+
+.tour-group-row-confirmed th{
+    background: rgba(2, 151, 66, 0.14);
+}
+
+.tour-group-toggle{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    text-align: left;
+}
+
+.tour-group-chevron{
+    flex-shrink: 0;
+    font-size: 11px;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+}
+
+.tour-group-toggle[aria-expanded="false"] .tour-group-chevron{
+    transform: rotate(-90deg);
+}
+
+.tour-group-row-confirmed .tour-group-city{
+    color: #5fd18b;
+}
+
+.tour-group:first-of-type .tour-group-row th{
+    border-top: none;
+}
+
+.tour-group-header{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+}
+
+.tour-group-city{
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.tour-group-header .tour-venue-tags{
+    margin-top: 0;
+}
+
+.tour-group-count{
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Promoters of listed venues that aren't on the list yet; one click adds them. */
+.tour-group-available{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 2px 9px;
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.tour-group-available svg{
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+.tour-group-available:hover{
+    opacity: 1;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.tour-group-actions{
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* A fixed square, neutral until hovered, so a column of bins doesn't shout. */
+.tour-group-actions .tour-group-remove{
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    border-color: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.tour-group-actions .tour-group-remove:hover{
+    opacity: 1;
+    color: #ff8a8d;
+    border-color: rgba(229, 72, 77, 0.6);
+}
+
+.tour-group-empty td{
+    font-size: 13px;
+    opacity: 0.6;
+}
+
+/* Inset shadow rather than a border so clash rows don't shift the columns. */
+.tour-row-clash{
+    box-shadow: inset 3px 0 0 #e5484d;
+}
+
+.tour-row-identity{
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* Venue/promoter icon, in a fixed-width slot so names line up. */
+.tour-row-kind{
+    flex: 0 0 14px;
+    display: flex;
+    justify-content: center;
+    padding-top: 3px;
+    font-size: 12px;
+    opacity: 0.55;
+}
+
+.tour-row-name{
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.tour-row-inhouse{
+    margin-top: 5px;
+}
+
+/* The Venues-tab pill, at the table's tag size so every pill in a row matches. */
+.tour-table .entity-card-chip-inhouse{
+    display: inline-block;
+    padding: 2px 9px;
+    border-color: rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* Venue tags: plain links under promoters; the city header's confirmed venues are green. */
+.tour-venue-tags{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+.tour-venue-tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 2px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tour-venue-tag:hover{
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.tour-venue-tag-icon{
+    flex-shrink: 0;
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* Status after the venue name, e.g. "Chalk · Confirmed 15 Apr 2027". */
+.tour-venue-tag-outcome{
+    font-weight: 600;
+}
+
+.tour-venue-tag-outcome::before{
+    content: "·";
+    margin-right: 5px;
+    font-weight: normal;
+    opacity: 0.6;
+}
+
+.tour-venue-tag-confirmed{
+    border-color: rgba(2, 151, 66, 0.7);
+    background: rgba(2, 151, 66, 0.18);
+    color: #5fd18b;
+}
+
+.tour-venue-tag-declined{
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: line-through;
+}
+
+.tour-venue-tag-clash{
+    box-shadow: 0 0 0 1px #e5484d;
+}
+
+/* Same inset bar as clashes, in amber: a venue and its promoter are both being approached. */
+.tour-row-overlap{
+    box-shadow: inset 3px 0 0 #f2a900;
+}
+
+.tour-row-overlap-icon{
+    display: inline-flex;
+    margin-left: 6px;
+    font-size: 12px;
+    vertical-align: -1px;
+    color: #f5c451;
+    cursor: help;
+}
+
+.tour-row-status{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+}
+
+.tour-row-muted{
+    font-size: 12px;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.tour-row-clash-note{
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ff8a8d;
+}
+
+.tour-row-latest-contact{
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: none;
+    color: #fff;
+    font-size: 12px;
+    text-align: left;
+}
+
+.tour-row-latest-note{
+    display: block;
+    margin-top: 2px;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.tour-row-empty{
+    opacity: 0.4;
+}
+
+/* Every icon sits in the same box, so the preferred one's ring doesn't shift the row. */
+.tour-row-links{
+    display: flex;
+    gap: 4px;
+    margin-top: -3px;
+}
+
+.tour-row-links a{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 15px;
+}
+
+.tour-cell-menu{
+    width: 1%;
+    text-align: right;
+}
+
+/* Rows stack into labelled blocks on narrow screens. */
+@media (max-width: 640px){
+    .tour-table-wrap{
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+
+    .tour-table thead{
+        display: none;
+    }
+
+    .tour-table,
+    .tour-table tbody,
+    .tour-table tr,
+    .tour-table td,
+    .tour-group-row th{
+        display: block;
+    }
+
+    .tour-table .tour-group-row{
+        padding: 0;
+    }
+
+    .tour-table tr{
+        position: relative;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tour-table tbody tr:last-child{
+        border-bottom: none;
+    }
+
+    .tour-table td{
+        display: flex;
+        gap: 10px;
+        padding: 3px 0;
+        border-bottom: none;
+    }
+
+    .tour-table td[data-label]::before{
+        content: attr(data-label);
+        flex: 0 0 90px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+    }
+
+    .tour-table td:empty,
+    .tour-table td:has(.tour-row-empty){
+        display: none;
+    }
+
+    .tour-table .tour-cell-name{
+        display: block;
+        padding-right: 30px;
+        margin-bottom: 4px;
+    }
+
+    .tour-table .tour-cell-menu{
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: auto;
+    }
+}

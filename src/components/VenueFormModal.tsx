@@ -2,6 +2,7 @@ import type { Ref } from "react";
 import type { NewVenue, Venue } from "../types/venue";
 import { useEntityFormModal, type EntityFormModalHandle } from "../hooks/useEntityFormModal";
 import Spinner from "./Spinner";
+import PreferredContactField from "./PreferredContactField";
 import "./Modal.css";
 import "./Forms.css";
 
@@ -17,6 +18,7 @@ const emptyVenue: NewVenue = {
     instagram: "",
     facebook: "",
     email: "",
+    preferredContact: "",
     managesInHouse: false,
 };
 
@@ -28,6 +30,7 @@ function toFormValues(venue: Venue): NewVenue {
         instagram: venue.instagram ?? "",
         facebook: venue.facebook ?? "",
         email: venue.email ?? "",
+        preferredContact: venue.preferredContact ?? "",
         managesInHouse: venue.managesInHouse ?? false,
     };
 }
@@ -38,6 +41,7 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
     const {
         modalRef,
         formValues,
+        setFormValues,
         editingId: editingVenueId,
         isSaving,
         closeModal,
@@ -122,6 +126,13 @@ function VenueFormModal({ onSubmit, ref }: VenueFormModalProps) {
                             onChange={handleChange}
                         />
                     </div>
+
+                    <PreferredContactField
+                        id="venuePreferredContact"
+                        value={formValues.preferredContact ?? ""}
+                        details={formValues}
+                        onChange={(preferredContact) => setFormValues((current) => ({ ...current, preferredContact }))}
+                    />
 
                     <div className="entity-form-checkbox">
                         <label htmlFor="venueManagesInHouse">
