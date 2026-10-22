@@ -58,6 +58,15 @@ export default function RecordModal({
         modalRef.current?.close();
     }
 
+    // Clicking the backdrop closes it, since there's nothing here to lose. Both the press and the
+    // release must be outside the box, so selecting text and dragging out doesn't count.
+    const pressedOutsideRef = useRef(false);
+
+    function isOutside(e: React.MouseEvent<HTMLDialogElement>) {
+        const box = e.currentTarget.getBoundingClientRect();
+        return e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom;
+    }
+
     // Closes first so the form opens on its own rather than stacked over this.
     function handOver(action: () => void) {
         close();
@@ -66,7 +75,17 @@ export default function RecordModal({
 
 
     return (
-        <dialog id="record-modal" ref={modalRef} onClose={() => setShown(null)}>
+        <dialog
+            id="record-modal"
+            ref={modalRef}
+            onClose={() => setShown(null)}
+            onMouseDown={(e) => {
+                pressedOutsideRef.current = isOutside(e);
+            }}
+            onClick={(e) => {
+                if (pressedOutsideRef.current && isOutside(e)) close();
+            }}
+        >
             {record && (
                 <div className="modal-box record-modal">
                     <button className="modal-close" type="button" onClick={close} aria-label="Close" title="Close">
