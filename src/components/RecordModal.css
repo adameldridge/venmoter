@@ -21,6 +21,10 @@
     margin-bottom: 18px;
 }
 
+.record-modal-section:last-child{
+    margin-bottom: 0;
+}
+
 .record-modal-heading{
     margin: 0 0 8px;
     font-size: 11px;
@@ -44,6 +48,9 @@
 }
 
 .record-modal-heading-action{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     margin: 0;
     padding: 0;
     background: none;
@@ -58,7 +65,7 @@
     text-underline-offset: 3px;
 }
 
-.record-modal-contacts{
+.record-modal-lines{
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -67,7 +74,7 @@
     list-style: none;
 }
 
-.record-modal-contact{
+.record-modal-line{
     display: flex;
     align-items: center;
     gap: 10px;
@@ -75,20 +82,20 @@
     font-size: 14px;
 }
 
-.record-modal-contact a{
+.record-modal-line a{
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.record-modal-contact-icon{
+.record-modal-line-icon{
     flex: 0 0 16px;
     display: flex;
     justify-content: center;
     opacity: 0.7;
 }
 
-.record-modal-contact-preferred .record-modal-contact-icon{
+.record-modal-line-preferred .record-modal-line-icon{
     color: #5fd18b;
     opacity: 1;
 }

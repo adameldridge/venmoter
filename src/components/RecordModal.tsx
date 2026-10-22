@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ReactNode, type Ref } from "react";
-import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaInstagram, FaLink, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaBullhorn, FaEnvelope, FaFacebook, FaHome, FaInstagram, FaLink, FaMapMarkerAlt, FaPen, FaTimes } from "react-icons/fa";
 import type { ContactChannel, PromoterWithVenues, RecordKind, VenueWithPromoters } from "../types/venue";
 import { hasContact } from "../utils/contact";
 import "./Modal.css";
@@ -20,9 +20,9 @@ type RecordModalProps = {
     ref?: Ref<RecordModalHandle>;
 };
 
-// A read-only look at a venue or promoter: contact details and who it's linked to. Linked
-// chips swap the modal to that record; Edit by the list heading changes the links; Edit details
-// hands over to the usual form.
+// A read-only look at a venue or promoter in two sections, each with its own Edit: Details (the
+// record's own fields, edited in the usual form) and its linked promoters or venues (edited in
+// the link dialog). Linked chips swap the modal to that record.
 export default function RecordModal({
     venues,
     promoters,
@@ -63,11 +63,6 @@ export default function RecordModal({
         action();
     }
 
-    const subtitle = venue
-        ? [venue.city, venue.managesInHouse ? "Books in-house" : ""].filter(Boolean).join(" · ")
-        : promoter
-            ? `Promoter · ${promoter.venues.length} ${promoter.venues.length === 1 ? "venue" : "venues"}`
-            : "";
 
     return (
         <dialog id="record-modal" ref={modalRef} onClose={() => setShown(null)}>
@@ -82,38 +77,46 @@ export default function RecordModal({
                         </span>
                         <div className="modal-title">
                             {record.name}
-                            {subtitle && <div className="modal-subtitle">{subtitle}</div>}
+                            <div className="modal-subtitle">{venue ? "Venue" : "Promoter"}</div>
                         </div>
                     </div>
 
                     <section className="record-modal-section">
-                        <h3 className="record-modal-heading">Contact</h3>
-                        {hasContact(record) ? (
-                            <ul className="record-modal-contacts">
-                                <ContactLine channel="email" value={record.email} href={record.email && `mailto:${record.email}`} preferred={record.preferredContact} icon={<FaEnvelope />} />
-                                <ContactLine channel="website" value={record.website} href={record.website} preferred={record.preferredContact} icon={<FaLink />} />
-                                <ContactLine channel="instagram" value={record.instagram} href={record.instagram} preferred={record.preferredContact} icon={<FaInstagram />} />
-                                <ContactLine channel="facebook" value={record.facebook} href={record.facebook} preferred={record.preferredContact} icon={<FaFacebook />} />
-                            </ul>
-                        ) : (
-                            <div className="record-modal-empty">No contact details yet.</div>
-                        )}
+                        <SectionHeading
+                            title="Details"
+                            editLabel={`Edit ${record.name}'s details`}
+                            onEdit={() => handOver(() => (venue ? onEditVenue(venue) : onEditPromoter(promoter!)))}
+                        />
+                        <ul className="record-modal-lines">
+                            {venue && (
+                                <li className="record-modal-line">
+                                    <span className="record-modal-line-icon" aria-hidden="true"><FaMapMarkerAlt /></span>
+                                    {venue.city}
+                                </li>
+                            )}
+                            {venue?.managesInHouse && (
+                                <li className="record-modal-line">
+                                    <span className="record-modal-line-icon" aria-hidden="true"><FaHome /></span>
+                                    Books some shows in-house
+                                </li>
+                            )}
+                            <ContactLine channel="email" value={record.email} href={record.email && `mailto:${record.email}`} preferred={record.preferredContact} icon={<FaEnvelope />} />
+                            <ContactLine channel="website" value={record.website} href={record.website} preferred={record.preferredContact} icon={<FaLink />} />
+                            <ContactLine channel="instagram" value={record.instagram} href={record.instagram} preferred={record.preferredContact} icon={<FaInstagram />} />
+                            <ContactLine channel="facebook" value={record.facebook} href={record.facebook} preferred={record.preferredContact} icon={<FaFacebook />} />
+                            {!hasContact(record) && (
+                                <li className="record-modal-line record-modal-empty">No contact details yet.</li>
+                            )}
+                        </ul>
                     </section>
 
                     <section className="record-modal-section">
-                        <div className="record-modal-heading-row">
-                            <h3 className="record-modal-heading">{venue ? "Promoters" : "Venues"}</h3>
-                            <button
-                                className="record-modal-heading-action"
-                                type="button"
-                                onClick={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
-                                aria-label={venue ? "Edit promoters" : "Edit venues"}
-                            >
-                                Edit
-                            </button>
-                        </div>
+                        <SectionHeading
+                            title={venue ? "Promoters" : "Venues"}
+                            editLabel={venue ? `Edit ${record.name}'s promoters` : `Edit ${record.name}'s venues`}
+                            onEdit={() => handOver(() => (venue ? onLinkPromoters(venue) : onLinkVenues(promoter!)))}
+                        />
                         <div className="data-tags">
-                            {venue?.managesInHouse && <span className="data-pill">In-house</span>}
                             {venue && [...venue.promoters]
                                 .sort((a, b) => a.name.localeCompare(b.name))
                                 .map((p) => (
@@ -131,25 +134,26 @@ export default function RecordModal({
                                         <span className="data-tag-meta">{v.city}</span>
                                     </button>
                                 ))}
-                            {venue && !venue.managesInHouse && venue.promoters.length === 0 && (
-                                <span className="data-pill">No promoters</span>
-                            )}
+                            {venue && venue.promoters.length === 0 && <span className="data-pill">No promoters</span>}
                             {promoter && promoter.venues.length === 0 && <span className="data-pill">No venues</span>}
                         </div>
                     </section>
-
-                    <div className="modal-actions">
-                        <button
-                            className="create-button"
-                            type="button"
-                            onClick={() => handOver(() => (venue ? onEditVenue(venue) : onEditPromoter(promoter!)))}
-                        >
-                            Edit details
-                        </button>
-                    </div>
                 </div>
             )}
         </dialog>
+    );
+}
+
+// A section title with its own Edit on the right, so it's clear what each Edit changes.
+function SectionHeading({ title, editLabel, onEdit }: { title: string; editLabel: string; onEdit: () => void }) {
+    return (
+        <div className="record-modal-heading-row">
+            <h3 className="record-modal-heading">{title}</h3>
+            <button className="record-modal-heading-action" type="button" onClick={onEdit} aria-label={editLabel} title={editLabel}>
+                <FaPen aria-hidden="true" />
+                Edit
+            </button>
+        </div>
     );
 }
 
@@ -166,8 +170,8 @@ function ContactLine({ channel, value, href, preferred, icon }: ContactLineProps
     const isPreferred = channel === preferred;
     const external = channel !== "email";
     return (
-        <li className={isPreferred ? "record-modal-contact record-modal-contact-preferred" : "record-modal-contact"}>
-            <span className="record-modal-contact-icon" aria-hidden="true">{icon}</span>
+        <li className={isPreferred ? "record-modal-line record-modal-line-preferred" : "record-modal-line"}>
+            <span className="record-modal-line-icon" aria-hidden="true">{icon}</span>
             <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
                 {external ? displayUrl(value) : value}
             </a>
