@@ -268,6 +268,26 @@
     gap: 4px 8px;
 }
 
+/* On wider screens the Status column is centred: pills share a centre line and the date sits
+   centred underneath, rather than beside the pill or wrapping to the left. */
+@media (min-width: 641px){
+    .data-table th.data-col-status,
+    .data-table td.data-cell-status{
+        text-align: center;
+    }
+
+    .data-row-status{
+        display: inline-flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 3px;
+    }
+
+    .data-row-status .data-row-muted{
+        white-space: normal;
+    }
+}
+
 .data-row-muted{
     font-size: 12px;
     opacity: 0.8;
